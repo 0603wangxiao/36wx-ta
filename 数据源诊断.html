@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<title>数据源诊断 · 大宗商品</title>
+<style>
+ body{ font:14px/1.6 -apple-system,"PingFang SC",sans-serif; max-width:900px; margin:24px auto; padding:0 18px; color:#1b1813; background:#f6f3ec; }
+ h1{ font-size:19px; margin:0 0 4px; } .sub{ color:#8a8375; font-size:12px; margin-bottom:18px; }
+ .row{ background:#fffdf8; border:1px solid #e3ded2; border-left:4px solid #ccc; border-radius:8px; padding:11px 14px; margin:9px 0; }
+ .ok{ border-left-color:#2e7d5b; } .bad{ border-left-color:#b23a26; } .run{ border-left-color:#a3823c; }
+ .nm{ font-weight:700; } .ms{ color:#8a8375; font-size:12px; }
+ .det{ font-family:ui-monospace,Menlo,monospace; font-size:11.5px; color:#5b5548; word-break:break-all; margin-top:5px; white-space:pre-wrap; }
+ .u{ color:#2e4b52; } .e{ color:#b23a26; }
+ .box{ background:#fffdf8; border:1px solid #e3ded2; border-radius:8px; padding:14px; margin-top:18px; font-size:13px; }
+ code{ background:#efeade; padding:1px 5px; border-radius:3px; font-size:12px; }
+</style></head><body>
+<h1>数据源诊断 · 大宗商品</h1>
+<div class="sub">这一页只做一件事：把每一条取数路径单独跑一遍，把原始结果和原始报错都打出来。</div>
+<div id="out"></div>
+<div class="box" id="env"></div>
+
+<script>
+const O=document.getElementById('out');
+function row(nm, cls, ms, det){ const d=document.createElement('div'); d.className='row '+cls;
+  d.innerHTML='<span class="nm">'+nm+'</span> <span class="ms">'+ms+' ms</span><div class="det">'+det+'</div>';
+  O.appendChild(d); return d; }
+function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
+
+/* 通用 JSONP：把回调名塞进路径 */
+function jsonp(url, tag){
+  return new Promise((res,rej)=>{
+    const cb='__cb'+Math.floor(Math.random()*1e9);
+    const el=document.createElement('script'); let done=false;
+    const fin=(ok,d)=>{ if(done) return; done=true; clearTimeout(to);
+      try{ delete window[cb]; }catch(e){ window[cb]=null; }
+      if(el.parentNode) el.parentNode.removeChild(el);
+      ok? res(d) : rej(d); };
+    const to=setTimeout(()=>fin(false,new Error('超时 20 秒')),20000);
+    window[cb]=d=>fin(true,d);
+    el.onerror=()=>fin(false,new Error('onerror：脚本加载被拒（可能是扩展拦截 / DNS / TLS / 404'));
+    el.src=url.replace('__CB__', cb);
+    document.head.appendChild(el);
+  });
+}
+
+const T=(p)=>p.then(v=>({ok:true,v}), e=>({ok:false,e}));
+async function run(name, urlTpl, pick){
+  const t0=Date.now(); const url=urlTpl.replace('__CB__','__cbPROBE');
+  const r=await T(jsonp(urlTpl));
+  const ms=Date.now()-t0;
+  if(r.ok){
+    let n='?', extra='';
+    try{ n=pick(r.v); }catch(e){ extra=' | 取值失败: '+e.message; }
+    row('✓ '+name,'ok',ms,'<span class="u">'+esc(url)+'</span>\n类型 '+typeof r.v+
+      '　'+(Array.isArray(r.v)?'数组长度 '+r.v.length:'')+'　'+esc(extra)+
+      (Array.isArray(r.v)&&r.v[0]? '\n首条 '+esc(JSON.stringify(r.v[0]).slice(0,120)) : ''));
+  } else {
+    row('✗ '+name,'bad',ms,'<span class="u">'+esc(url)+'</span>\n<span class="e">'+esc(r.e&&r.e.message||r.e)+'</span>');
+  }
+}
+/* fetch 探针：目的是看 CORS 的真实报错 */
+async function runFetch(name, url){
+  const t0=Date.now();
+  try{ const r=await fetch(url); const txt=await r.text();
+    row('✓ '+name,'ok',Date.now()-t0,'HTTP '+r.status+'　长度 '+txt.length+'\n'+esc(txt.slice(0,120)));
+  }catch(e){ row('✗ '+name,'bad',Date.now()-t0,'<span class="u">'+esc(url)+'</span>\n<span class="e">'+
+    esc(e&&e.message||e)+'</span>\n（fetch 失败多半是 CORS —— 这个接口本来就只支持 JSONP）'); }
+}
+
+(async()=>{
+  const S='https://stock2.finance.sina.com.cn/futures/api/jsonp.php/__CB__/';
+  const E='https://push2his.eastmoney.com/api/qt/stock/kline/get';
+  await run('新浪 · 内盘期货（RB0 螺纹钢）', S+'InnerFuturesNewService.getDailyKLine?symbol=RB0', v=>v.length+' 根');
+  await run('新浪 · 外盘商品（CL 纽约原油）', S+'GlobalFuturesService.getGlobalFuturesDailyKLine?symbol=CL', v=>v.length+' 根');
+  await run('新浪 · 外盘商品（GC 纽约黄金）', S+'GlobalFuturesService.getGlobalFuturesDailyKLine?symbol=GC', v=>v.length+' 根');
+  await run('东财 · 外盘商品（HG COMEX铜）',
+    E+'?cb=__CB__&secid=101.HG00Y&fields1=f1,f2,f3&fields2=f51,f52,f53,f54,f55,f56&klt=101&fqt=0&end=20500101&lmt=60', v=>v&&v.data&&v.data.klines?v.data.klines.length+' 根':'无');
+  await run('东财 · 股票（对照 600150）',
+    E+'?cb=__CB__&secid=1.600150&fields1=f1,f2,f3&fields2=f51,f52,f53&klt=101&fqt=1&end=20500101&lmt=60', v=>v&&v.data&&v.data.klines?v.data.klines.length+' 根':'无');
+  await runFetch('新浪 · 用 fetch 直取（预期失败）', 'https://stock2.finance.sina.com.cn/futures/api/jsonp.php/__cb/x/InnerFuturesNewService.getDailyKLine?symbol=RB0');
+
+  document.getElementById('env').innerHTML=
+    '<strong>环境</strong><br>运行地址：<code>'+esc(location.href.slice(0,90))+'</code><br>'+
+    '协议：<code>'+esc(location.protocol)+'</code>　UA：<code>'+esc(navigator.userAgent.slice(0,90))+'</code><br>'+
+    '<span style="color:#8a8375">若全部 ✗ 且报「onerror」，说明本机到新浪的脚本加载被拦（扩展／DNS／代理）；'+
+    '若「东财」✓ 而「新浪」✗，我可以把商品页改用东财。</span>';
+})();
+</script></body></html>
