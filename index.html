@@ -1,0 +1,1007 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>三变·六反 — 技术指标分析 · 知识图谱</title>
+<meta name="description" content="《三变·六反》技术指标分析知识图谱：三变=形态之变（形态十二图）·成交量之变·市场情绪之变；六反指标观察=成交量·换手率·MACD·布林通道·ATR·K线形态。以颈线破立为分界、以等幅满足计算定目标、以量能与波幅验真假，给出一套可观测、可执行的看盘与止损框架。" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+<style>
+:root{
+  --seed-bg:#f6f3ec;
+  --seed-fg:#1b1813;
+  --seed-primary:#b23a26;
+  --seed-accent:#2e4b52;
+  --seed-surface:#fffdf8;
+  --seed-gold:#a3823c;
+  --seed-radius:12px;
+  --seed-density:1;
+  --seed-type:1;
+  --seed-motion:1;
+  --seed-edge:1;
+  --bg:var(--seed-bg);
+  --fg:var(--seed-fg);
+  --surface:var(--seed-surface);
+  --surface-2:color-mix(in srgb, var(--seed-surface) 88%, var(--seed-fg) 12%);
+  --line:color-mix(in srgb, var(--seed-fg) 13%, transparent);
+  --line-strong:color-mix(in srgb, var(--seed-fg) 26%, transparent);
+  --muted:color-mix(in srgb, var(--seed-fg) 62%, var(--seed-bg));
+  --faint:color-mix(in srgb, var(--seed-fg) 40%, var(--seed-bg));
+  --neutral:color-mix(in srgb, var(--seed-fg) 58%, var(--seed-bg));
+  --primary:var(--seed-primary);
+  --primary-soft:color-mix(in srgb, var(--seed-primary) 12%, var(--seed-surface));
+  --primary-line:color-mix(in srgb, var(--seed-primary) 45%, transparent);
+  --accent:var(--seed-accent);
+  --accent-soft:color-mix(in srgb, var(--seed-accent) 12%, var(--seed-surface));
+  --accent-line:color-mix(in srgb, var(--seed-accent) 45%, transparent);
+  --gold:var(--seed-gold);
+  --gold-soft:color-mix(in srgb, var(--seed-gold) 14%, var(--seed-surface));
+  --gold-line:color-mix(in srgb, var(--seed-gold) 48%, transparent);
+  --u:calc(8px * var(--seed-density));
+  --r:var(--seed-radius);
+  --r-sm:calc(var(--seed-radius) * .5);
+  --r-pill:999px;
+  --m:var(--seed-motion);
+  --t-fast:calc(140ms * var(--m));
+  --t:calc(240ms * var(--m));
+  --t-slow:calc(520ms * var(--m));
+  --ease:cubic-bezier(.22,.61,.36,1);
+  --ew:var(--seed-edge);
+  --shadow-1:0 1px 2px color-mix(in srgb, var(--seed-fg) 8%, transparent);
+  --shadow-2:0 10px 30px -12px color-mix(in srgb, var(--seed-fg) 30%, transparent), 0 2px 8px -2px color-mix(in srgb, var(--seed-fg) 12%, transparent);
+  --serif:"Noto Serif SC","Songti SC","Source Han Serif SC","STSong",Georgia,"Times New Roman",serif;
+  --sans:"Inter","PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,-apple-system,"Segoe UI",sans-serif;
+  color-scheme:light;
+}
+@media (prefers-reduced-motion: reduce){ :root{ --m:.001; } *{ scroll-behavior:auto !important; } }
+*,*::before,*::after{ box-sizing:border-box; }
+html{ font-size:calc(16px * var(--seed-type)); -webkit-text-size-adjust:100%; }
+body{ margin:0; background:var(--bg); color:var(--fg); font-family:var(--sans); font-size:.875rem; line-height:1.6; -webkit-font-smoothing:antialiased; overflow:hidden; }
+button{ font:inherit; color:inherit; background:none; border:none; cursor:pointer; }
+::selection{ background:color-mix(in srgb,var(--seed-primary) 26%, transparent); }
+.grain{ position:fixed; inset:0; z-index:9; pointer-events:none; opacity:.5; mix-blend-mode:multiply; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.045'/%3E%3C/svg%3E"); }
+@media (prefers-color-scheme: dark){ .grain{ mix-blend-mode:soft-light; } }
+.app{ position:relative; z-index:1; height:100vh; height:100dvh; display:grid; grid-template-columns:calc(30 * var(--u)) 1fr calc(44 * var(--u)); grid-template-rows:auto 1fr auto; grid-template-areas:"head head head" "rail stage panel" "tl tl tl"; }
+.head{ grid-area:head; display:flex; flex-wrap:wrap; align-items:center; row-gap:.5rem; gap:calc(3*var(--u)); padding:calc(1.75*var(--u)) calc(3*var(--u)); border-bottom:1px solid var(--line); background:color-mix(in srgb,var(--bg) 92%, transparent); position:relative; }
+.head::after{ content:""; position:absolute; left:0; right:0; bottom:-1px; height:1px; background:linear-gradient(90deg,transparent,color-mix(in srgb,var(--seed-gold) 60%,transparent) 20%,color-mix(in srgb,var(--seed-primary) 42%,transparent) 52%,transparent); opacity:.75; }
+.brand{ display:flex; align-items:center; gap:calc(1.75*var(--u)); min-width:0; }
+.seal{ flex:none; width:calc(5.5*var(--u)); height:calc(5.5*var(--u)); display:grid; place-items:center; border-radius:var(--r-sm); border:1px solid var(--primary-line); background:var(--primary-soft); color:var(--primary); position:relative; transition:transform var(--t) var(--ease); }
+.seal::after{ content:""; position:absolute; inset:-4px; border-radius:calc(var(--r-sm) + 4px); border:1px solid color-mix(in srgb,var(--seed-primary) 26%,transparent); opacity:0; transform:scale(.94); transition:opacity var(--t) var(--ease), transform var(--t) var(--ease); }
+.brand:hover .seal{ transform:rotate(-5deg); } .brand:hover .seal::after{ opacity:1; transform:scale(1); }
+.seal svg{ width:66%; height:76%; }
+.titles h1{ margin:0; font-family:var(--serif); font-weight:600; font-size:1.35rem; letter-spacing:.06em; line-height:1.15; }
+.titles h1 .lat{ font-family:var(--sans); font-weight:400; font-size:.62rem; letter-spacing:.34em; color:var(--faint); text-transform:uppercase; margin-left:.7em; }
+.titles p{ margin:.15rem 0 0; font-size:.72rem; color:var(--muted); letter-spacing:.12em; }
+.head-spacer{ flex:1; }
+.motto{ font-family:var(--serif); font-size:.9rem; letter-spacing:.18em; color:var(--accent); padding:.35rem calc(1.5*var(--u)); border:1px solid var(--line); border-radius:var(--r-pill); background:var(--accent-soft); white-space:nowrap; display:inline-flex; align-items:center; gap:.6em; }
+.motto::before,.motto::after{ content:""; width:.36rem; height:.36rem; border-radius:50%; flex:none; }
+.motto::before{ background:var(--accent); } .motto::after{ background:var(--primary); }
+.icon-btn{ width:calc(4.25*var(--u)); height:calc(4.25*var(--u)); flex:none; display:grid; place-items:center; border-radius:var(--r-sm); border:1px solid var(--line); color:var(--muted); background:var(--surface); transition:color var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), transform var(--t-fast) var(--ease); }
+.icon-btn:hover{ color:var(--fg); border-color:var(--line-strong); transform:translateY(-1px); }
+.icon-btn svg{ width:18px; height:18px; }
+.mx-btn{ display:inline-flex; align-items:center; gap:.5em; flex:none; padding:.45rem calc(1.2*var(--u)); border-radius:var(--r-pill); border:1px solid var(--gold-line); background:var(--gold-soft); color:var(--gold); font-family:var(--serif); font-size:.8rem; letter-spacing:.08em; font-weight:600; box-shadow:var(--shadow-1); transition:color var(--t-fast) var(--ease), background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), transform var(--t-fast) var(--ease), filter var(--t-fast) var(--ease); }
+.mx-btn svg{ width:15px; height:15px; }
+.mx-btn:hover{ filter:brightness(1.05); transform:translateY(-1px); border-color:var(--gold); }
+.mx-btn.on{ background:var(--primary); border-color:var(--primary); color:var(--surface); }
+.rail{ grid-area:rail; overflow-y:auto; padding:calc(2.5*var(--u)) calc(2.25*var(--u)); border-right:1px solid var(--line); display:flex; flex-direction:column; gap:calc(2.75*var(--u)); background:color-mix(in srgb,var(--surface) 40%, transparent); }
+.rail-sec h2{ margin:0 0 calc(1.25*var(--u)); font-size:.66rem; font-weight:600; letter-spacing:.2em; color:var(--faint); text-transform:uppercase; display:flex; align-items:center; gap:.6em; }
+.rail-sec h2::after{ content:""; flex:1; height:1px; background:var(--line); }
+.stage-list{ display:flex; flex-direction:column; gap:2px; }
+.stage-item{ display:flex; align-items:center; gap:calc(1.25*var(--u)); width:100%; padding:.5rem calc(1*var(--u)); border-radius:var(--r-sm); text-align:left; border:1px solid transparent; position:relative; transition:background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease); }
+.stage-item::before{ content:""; position:absolute; left:-1px; top:16%; bottom:16%; width:2px; border-radius:2px; background:var(--accent); transform:scaleY(0); transform-origin:center; transition:transform var(--t) var(--ease); }
+.stage-item[aria-current="true"]{ background:var(--accent-soft); border-color:var(--accent-line); }
+.stage-item[aria-current="true"]::before{ transform:scaleY(1); }
+.stage-item:hover{ background:var(--surface); border-color:var(--line); }
+.stage-item .num{ flex:none; width:1.6rem; height:1.6rem; border-radius:50%; display:grid; place-items:center; font-family:var(--serif); font-size:.9rem; border:1px solid var(--accent-line); color:var(--accent); background:var(--surface); }
+.stage-item[aria-current="true"] .num{ background:var(--accent); color:var(--surface); border-color:var(--accent); }
+.stage-item .sl-name{ font-family:var(--serif); font-size:.9rem; letter-spacing:.04em; transition:color var(--t-fast) var(--ease); }
+.stage-item:hover .sl-name{ color:var(--accent); }
+.stage-item .sl-role{ font-size:.64rem; color:var(--faint); letter-spacing:.06em; }
+.filters{ display:flex; flex-direction:column; gap:.4rem; }
+.filter{ display:flex; align-items:center; gap:.7em; padding:.35rem .25rem; cursor:pointer; font-size:.8rem; color:var(--muted); border-radius:var(--r-sm); transition:color var(--t-fast) var(--ease); }
+.filter:hover{ color:var(--fg); }
+.filter input{ position:absolute; opacity:0; pointer-events:none; }
+.swatch{ flex:none; width:.85rem; height:.85rem; border-radius:3px; border:1px solid var(--line-strong); position:relative; }
+.swatch::after{ content:""; position:absolute; inset:2px; border-radius:1px; background:currentColor; opacity:0; transition:opacity var(--t-fast) var(--ease); }
+.filter input:checked + .swatch::after{ opacity:1; }
+.filter input:focus-visible + .swatch{ outline:2px solid var(--primary); outline-offset:2px; }
+.f-fan .swatch{ color:var(--accent); } .f-bian .swatch{ color:var(--gold); } .f-shi .swatch{ color:var(--neutral); } .f-core .swatch{ color:var(--primary); }
+.legend{ display:flex; flex-direction:column; gap:.5rem; }
+.legend-row{ display:flex; align-items:center; gap:.7em; font-size:.72rem; color:var(--muted); }
+.legend-line{ flex:none; width:1.75rem; height:0; border-top-width:calc(1.6px * var(--ew)); border-top-style:solid; }
+.ll-cycle{ border-color:var(--accent); } .ll-chapter{ border-color:var(--gold); } .ll-map{ border-color:var(--neutral); border-top-style:dashed; } .ll-def{ border-color:var(--primary); border-top-style:dotted; }
+.rail-note{ font-size:.68rem; line-height:1.65; color:var(--faint); border-top:1px solid var(--line); padding-top:calc(1.5*var(--u)); }
+.stage{ grid-area:stage; position:relative; overflow:hidden; background:var(--bg); }
+.stage-svg{ width:100%; height:100%; display:block; cursor:grab; touch-action:none; position:relative; z-index:1; }
+.stage-svg.dragging{ cursor:grabbing; }
+.stage-tools{ position:absolute; top:calc(2*var(--u)); right:calc(2*var(--u)); display:flex; flex-direction:column; gap:.4rem; z-index:3; }
+.stage-hint{ position:absolute; left:calc(2.5*var(--u)); bottom:calc(2*var(--u)); z-index:3; font-size:.68rem; letter-spacing:.08em; color:var(--faint); display:flex; align-items:center; gap:.6em; pointer-events:none; }
+.kbd{ font-family:var(--sans); font-size:.62rem; border:1px solid var(--line); border-bottom-width:2px; border-radius:5px; padding:.05rem .4rem; color:var(--muted); background:var(--surface); }
+.mx-wrap{ position:absolute; inset:0; z-index:2; overflow:auto; padding:calc(7*var(--u)) calc(3*var(--u)) calc(3*var(--u)); background:var(--bg); }
+.mx-title{ font-family:var(--serif); font-size:1.1rem; letter-spacing:.06em; margin-bottom:calc(1.5*var(--u)); color:var(--fg); }
+.mx-grid{ display:grid; gap:3px; grid-template-columns:minmax(150px,1.5fr) repeat(5,minmax(78px,1fr)) minmax(104px,1.2fr); }
+.mx-h{ font-family:var(--serif); font-size:.8rem; letter-spacing:.04em; color:var(--muted); padding:.5rem .4rem; text-align:center; border-bottom:1px solid var(--line); cursor:pointer; transition:color var(--t-fast) var(--ease); }
+.mx-h:hover{ color:var(--fg); }
+.mx-h.rowhead{ text-align:left; cursor:default; }
+.mx-h.cons{ color:var(--gold); cursor:default; }
+.mx-h.col-on{ color:var(--primary); }
+.mx-rh{ font-family:var(--serif); font-size:.8rem; color:var(--fg); padding:.5rem .4rem; display:flex; align-items:center; border-bottom:1px solid var(--line); }
+.mx-cell{ display:flex; align-items:center; justify-content:center; gap:.35em; padding:.55rem .3rem; border-radius:var(--r-sm); font-family:var(--serif); font-size:.95rem; border-bottom:1px solid var(--line); transition:box-shadow var(--t-fast) var(--ease), background var(--t-fast) var(--ease); }
+.mx-cell .mx-fan{ font-size:.62rem; color:var(--faint); font-family:var(--sans); letter-spacing:.05em; }
+.st-plus{ background:color-mix(in srgb,var(--seed-accent) 12%, transparent); color:var(--accent); }
+.st-hedge{ background:color-mix(in srgb,var(--seed-gold) 14%, transparent); color:var(--gold); }
+.st-avoid{ background:color-mix(in srgb,var(--seed-primary) 12%, transparent); color:var(--primary); }
+.st-neutral{ background:transparent; color:var(--faint); }
+.mx-cell.col-on{ box-shadow:inset 0 0 0 2px color-mix(in srgb,var(--seed-primary) 55%,transparent); }
+.mx-cell.fan-on{ box-shadow:inset 0 0 0 2px color-mix(in srgb,var(--seed-gold) 60%,transparent); }
+.mx-foot-cell{ font-size:.7rem; color:var(--muted); padding:.55rem .4rem; border-top:1px solid var(--line-strong); text-align:center; font-family:var(--sans); letter-spacing:.02em; }
+.mx-foot-cell.cons{ color:var(--gold); }
+.mx-legend{ display:flex; gap:.8rem; margin-top:calc(1.5*var(--u)); font-size:.7rem; color:var(--muted); flex-wrap:wrap; align-items:center; }
+.mx-lg{ display:inline-flex; align-items:center; gap:.3em; padding:.15rem .55rem; border-radius:var(--r-pill); }
+.g-bg circle,.g-bg path{ fill:none; }
+.hexbar{ fill:currentColor; }
+.edge{ fill:none; stroke-linecap:round; transition:opacity var(--t) var(--ease), stroke-width var(--t) var(--ease); }
+.edge.cycle{ stroke:var(--accent); stroke-width:calc(1.5px * var(--ew)); opacity:.5; }
+.edge.chapter{ stroke:var(--gold); stroke-width:calc(1.4px * var(--ew)); opacity:.6; }
+.edge.map{ stroke:var(--neutral); stroke-width:calc(1.3px * var(--ew)); opacity:.5; stroke-dasharray:5 5; }
+.edge.def{ stroke:var(--primary); stroke-width:calc(1.3px * var(--ew)); opacity:.55; stroke-dasharray:1.5 4; }
+.edge-label{ font-size:9px; letter-spacing:.08em; fill:var(--muted); font-family:var(--sans); paint-order:stroke; stroke:var(--bg); stroke-width:3px; stroke-linejoin:round; }
+.node{ cursor:pointer; transform-box:fill-box; transform-origin:center; }
+.node .halo{ fill:none; stroke:transparent; stroke-width:1; opacity:0; transition:opacity var(--t) var(--ease); transform-box:fill-box; transform-origin:center; }
+.node .disc{ fill:var(--surface); stroke-width:calc(1.4px * var(--ew)); filter:url(#nodeShadow); transition:fill var(--t) var(--ease), stroke var(--t) var(--ease), filter var(--t) var(--ease), stroke-width var(--t-fast) var(--ease); }
+.node .inner{ fill:none; stroke:currentColor; stroke-width:.7; opacity:.3; pointer-events:none; }
+.node .glyph{ font-family:var(--serif); text-anchor:middle; dominant-baseline:central; pointer-events:none; }
+.node .name{ font-family:var(--serif); text-anchor:middle; letter-spacing:.03em; fill:var(--fg); paint-order:stroke; stroke:var(--bg); stroke-width:3.5px; stroke-linejoin:round; pointer-events:none; }
+.node .tag{ font-family:var(--sans); text-anchor:middle; font-size:8.5px; letter-spacing:.04em; fill:var(--faint); paint-order:stroke; stroke:var(--bg); stroke-width:3px; stroke-linejoin:round; pointer-events:none; }
+.node.g-core{ color:var(--primary); } .node.g-core .disc{ stroke:var(--primary); fill:var(--primary-soft); }
+.node.g-fan{ color:var(--accent); } .node.g-fan .disc{ stroke:var(--accent); } .node.g-fan .glyph{ fill:var(--accent); }
+.node.g-bian{ color:var(--gold); } .node.g-bian .disc{ stroke:var(--gold); fill:var(--gold-soft); }
+.node.g-shi{ color:var(--neutral); } .node.g-shi .disc{ stroke:var(--neutral); }
+.node.g-groot{ color:var(--primary); } .node.g-groot .disc{ stroke:var(--primary); fill:var(--primary-soft); }
+.node.g-gsub{ color:var(--neutral); } .node.g-gsub .disc{ stroke:var(--neutral); }
+.node.g-gact{ color:var(--gold); } .node.g-gact .disc{ stroke:var(--gold); fill:var(--gold-soft); }
+.node.g-groot.sel .halo{ stroke:var(--primary); } .node.g-gsub.sel .halo{ stroke:var(--neutral); } .node.g-gact.sel .halo{ stroke:var(--gold); }
+.node:focus{ outline:none; }
+.node.sel .halo{ opacity:.9; stroke-width:1; stroke-dasharray:2 6; animation:spin calc(14s*var(--m)) linear infinite; }
+.node.sel .disc{ stroke-width:calc(1.8px*var(--ew)); filter:url(#nodeShadow) drop-shadow(0 0 7px color-mix(in srgb, currentColor 40%, transparent)); }
+.node:focus-visible{ outline:none; }
+.node:focus-visible .halo{ opacity:.9; stroke:var(--primary); stroke-width:1; stroke-dasharray:2 6; }
+.drill-btn{ display:flex; align-items:center; justify-content:center; gap:.6em; width:100%; padding:.7rem calc(1.2*var(--u)); border-radius:var(--r-pill); border:1px solid var(--accent-line); background:var(--accent-soft); color:var(--accent); font-family:var(--serif); font-size:.92rem; letter-spacing:.1em; font-weight:600; box-shadow:var(--shadow-1); transition:color var(--t-fast) var(--ease), background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), transform var(--t-fast) var(--ease), filter var(--t-fast) var(--ease); }
+.drill-btn:hover{ filter:brightness(1.04); transform:translateY(-1px); border-color:var(--accent); }
+.drill-btn .ar{ font-family:var(--sans); font-size:.85rem; }
+.sg-back{ position:absolute; top:calc(2*var(--u)); left:calc(2*var(--u)); z-index:3; font-family:var(--serif); font-size:.8rem; letter-spacing:.08em; color:var(--muted); background:var(--surface); border:1px solid var(--line); border-radius:var(--r-pill); padding:.35rem calc(1.2*var(--u)); display:none; align-items:center; gap:.4em; transition:color var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease); }
+.sg-back:hover{ color:var(--fg); border-color:var(--line-strong); }
+.node:hover .disc{ filter:url(#nodeShadow) drop-shadow(0 4px 12px color-mix(in srgb,var(--seed-fg) 22%, transparent)); }
+.graph.has-sel .node:not(.sel):not(.rel){ opacity:.28; }
+.graph.has-sel .edge:not(.rel){ opacity:.08; }
+.graph.has-sel .edge.rel{ opacity:.95; stroke-width:calc(2.2px * var(--ew)); }
+.node.sel .disc{ stroke-width:calc(1.8px * var(--ew)); } .node.sel .halo{ opacity:.9; }
+.node.g-core.sel .halo{ stroke:var(--primary); } .node.g-fan.sel .halo{ stroke:var(--accent); } .node.g-bian.sel .halo{ stroke:var(--gold); } .node.g-shi.sel .halo{ stroke:var(--neutral); }
+.node.rel .disc{ stroke-width:calc(2px * var(--ew)); }
+.edge.active{ opacity:1 !important; stroke-width:calc(2.6px * var(--ew)) !important; }
+.node.active .disc{ stroke-width:calc(2.6px * var(--ew)); } .node.active .halo{ opacity:1; }
+.node.active{ animation:pulse calc(1600ms * var(--m)) var(--ease) infinite; }
+@keyframes pulse{ 0%,100%{ transform:scale(1);} 50%{ transform:scale(1.045);} }
+.graph.hide-fan .g-fan,.graph.hide-fan .e-fan, .graph.hide-bian .g-bian,.graph.hide-bian .e-bian, .graph.hide-shi .g-shi,.graph.hide-shi .e-shi, .graph.hide-core .g-core,.graph.hide-core .e-core{ opacity:.06 !important; pointer-events:none; }
+@keyframes draw{ from{ stroke-dashoffset:var(--len);} to{ stroke-dashoffset:0;} }
+.core-spin{ fill:none; stroke:var(--gold); stroke-width:1; stroke-dasharray:2 8; opacity:.55; transform-box:fill-box; transform-origin:center; animation:spin calc(40s * var(--m)) linear infinite; }
+@keyframes spin{ to{ transform:rotate(360deg); } }
+.panel{ grid-area:panel; overflow-y:auto; border-left:1px solid var(--line); background:var(--surface); padding:calc(3*var(--u)) calc(2.75*var(--u)); display:flex; flex-direction:column; gap:calc(2*var(--u)); }
+.panel-badge{ flex:none; font-size:.6rem; letter-spacing:.16em; text-transform:uppercase; font-weight:600; padding:.25rem .6rem; border-radius:var(--r-pill); border:1px solid var(--line); color:var(--muted); background:var(--bg); }
+.panel-badge.b-core{ color:var(--primary); border-color:var(--primary-line); background:var(--primary-soft); }
+.panel-badge.b-fan{ color:var(--accent); border-color:var(--accent-line); background:var(--accent-soft); }
+.panel-badge.b-bian{ color:var(--gold); border-color:var(--gold-line); background:var(--gold-soft); }
+.panel-badge.b-shi{ color:var(--neutral); border-color:var(--line-strong); background:var(--surface-2); }
+.panel-badge.b-groot{ color:var(--primary); border-color:var(--primary-line); background:var(--primary-soft); }
+.panel-badge.b-gsub{ color:var(--neutral); border-color:var(--line-strong); background:var(--surface-2); }
+.panel-badge.b-gact{ color:var(--gold); border-color:var(--gold-line); background:var(--gold-soft); }
+.panel h3{ margin:.5rem 0 0; font-family:var(--serif); font-weight:600; font-size:1.5rem; line-height:1.25; letter-spacing:.03em; }
+.panel .role{ margin:.35rem 0 0; font-size:.74rem; letter-spacing:.1em; color:var(--primary); }
+.panel .lede{ font-family:var(--serif); font-size:.98rem; line-height:1.85; color:color-mix(in srgb,var(--fg) 88%, var(--bg)); }
+.panel h4{ margin:calc(1*var(--u)) 0 .5rem; font-size:.66rem; font-weight:600; letter-spacing:.2em; text-transform:uppercase; color:var(--faint); display:flex; align-items:center; gap:.6em; }
+.panel h4::after{ content:""; flex:1; height:1px; background:var(--line); }
+.points{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:.6rem; }
+.points li{ position:relative; padding-left:1.15rem; font-size:.82rem; line-height:1.7; color:var(--muted); }
+.points li::before{ content:""; position:absolute; left:0; top:.62em; width:.42rem; height:.42rem; border-radius:50%; background:var(--gold); }
+.points li strong{ color:var(--fg); font-weight:600; }
+.quote{ font-family:var(--serif); font-size:.9rem; line-height:1.8; color:var(--accent); border-left:2px solid var(--gold-line); padding:.25rem 0 .25rem calc(2.5*var(--u)); background:linear-gradient(90deg,var(--gold-soft),transparent 70%); position:relative; }
+.quote::before{ content:"”"; position:absolute; left:.15em; top:-.34em; font-size:2.6rem; line-height:1; color:color-mix(in srgb,var(--seed-gold) 55%,transparent); }
+.chips{ display:flex; flex-wrap:wrap; gap:.4rem; }
+.chip{ font-size:.72rem; padding:.3rem .7rem; border-radius:var(--r-pill); border:1px solid var(--line); color:var(--muted); background:var(--bg); transition:all var(--t-fast) var(--ease); }
+.chip:hover{ color:var(--fg); border-color:var(--line-strong); transform:translateY(-1px); }
+.chip .dot{ display:inline-block; width:.4rem; height:.4rem; border-radius:50%; margin-right:.4em; vertical-align:middle; }
+.intro-hero{ font-family:var(--serif); }
+.intro-hero .big{ font-size:2rem; line-height:1.25; letter-spacing:.04em; margin:.25rem 0 .5rem; }
+.intro-hero .big em{ font-style:normal; color:var(--primary); } .intro-hero .big .ac{ color:var(--accent); } .intro-hero .big .gd{ color:var(--gold); }
+.intro-steps{ display:flex; flex-direction:column; gap:.5rem; counter-reset:s; }
+.intro-steps div{ display:flex; gap:.7rem; align-items:baseline; font-size:.8rem; color:var(--muted); }
+.intro-steps div::before{ counter-increment:s; content:counter(s,decimal-leading-zero); font-family:var(--serif); color:var(--gold); font-size:.78rem; letter-spacing:.05em; }
+.panel > *{ animation:fadeUp calc(420ms*var(--m)) var(--ease) both; }
+.panel > *:nth-child(2){ animation-delay:calc(45ms*var(--m)); } .panel > *:nth-child(3){ animation-delay:calc(90ms*var(--m)); }
+.panel > *:nth-child(4){ animation-delay:calc(135ms*var(--m)); } .panel > *:nth-child(5){ animation-delay:calc(180ms*var(--m)); } .panel > *:nth-child(6){ animation-delay:calc(225ms*var(--m)); }
+@keyframes fadeUp{ from{ opacity:0; transform:translateY(9px);} to{ opacity:1; transform:none;} }
+.tl{ grid-area:tl; border-top:1px solid var(--line); background:var(--surface); padding:calc(1.5*var(--u)) calc(3*var(--u)) calc(1.75*var(--u)); display:grid; grid-template-columns:auto 1fr; gap:calc(2.5*var(--u)); align-items:center; position:relative; }
+.tl::before{ content:""; position:absolute; left:0; right:0; top:-1px; height:1px; background:linear-gradient(90deg,color-mix(in srgb,var(--seed-primary) 34%,transparent),transparent 40%); opacity:.6; }
+.tl-ctrl{ display:flex; align-items:center; gap:.5rem; }
+.play{ display:flex; align-items:center; gap:.6em; padding:.5rem calc(1.5*var(--u)); border-radius:var(--r-pill); background:linear-gradient(180deg,color-mix(in srgb,var(--seed-primary) 96%, var(--seed-surface) 4%),var(--primary)); color:var(--surface); font-size:.78rem; letter-spacing:.08em; font-weight:500; box-shadow:0 1px 2px color-mix(in srgb,var(--seed-fg) 20%,transparent), inset 0 1px 0 color-mix(in srgb,var(--seed-surface) 12%,transparent); transition:transform var(--t-fast) var(--ease), filter var(--t-fast) var(--ease); }
+.play:hover{ transform:translateY(-1px); filter:brightness(1.06); }
+.play svg{ width:14px; height:14px; }
+.tl-body{ min-width:0; }
+.tl-caption{ display:flex; flex-direction:column; align-items:flex-start; justify-content:center; gap:.3rem; min-height:3.5em; }
+.cap-move{ display:flex; align-items:center; gap:.65em; flex-wrap:wrap; }
+.cap-idx{ font-family:var(--sans); font-size:.64rem; font-weight:600; letter-spacing:.12em; color:var(--gold); border:1px solid var(--gold-line); background:var(--gold-soft); border-radius:var(--r-pill); padding:.08rem .55rem; }
+.cap-t{ font-family:var(--serif); font-size:1.06rem; font-weight:600; letter-spacing:.02em; color:var(--fg); }
+.cap-t .arw{ color:var(--primary); padding:0 .14em; font-weight:400; }
+.cap-text{ font-size:.82rem; line-height:1.6; color:var(--muted); max-width:78ch; }
+.tl-track{ display:flex; gap:4px; margin-top:.6rem; }
+.tl-pill{ flex:1 1 0; min-width:0; display:flex; align-items:center; justify-content:center; padding:.32rem .15rem; border-radius:var(--r-pill); border:1px solid var(--line); background:var(--bg); color:var(--faint); font-family:var(--serif); font-size:.68rem; letter-spacing:.02em; cursor:pointer; white-space:nowrap; overflow:hidden; transition:color var(--t) var(--ease), background var(--t) var(--ease), border-color var(--t) var(--ease), box-shadow var(--t) var(--ease); }
+.tl-pill:hover{ color:var(--muted); border-color:var(--line-strong); }
+.tl-pill.done{ color:color-mix(in srgb,var(--seed-gold) 78%, var(--fg)); border-color:color-mix(in srgb,var(--seed-gold) 42%,transparent); background:var(--gold-soft); }
+.tl-pill.cur{ color:var(--surface); background:var(--primary); border-color:var(--primary); font-weight:600; box-shadow:0 0 0 3px color-mix(in srgb,var(--seed-primary) 16%,transparent); }
+@media (max-width:1080px){ .tl-pill{ font-size:0; padding:.36rem .1rem; } }
+.rail::-webkit-scrollbar,.panel::-webkit-scrollbar{ width:9px; }
+.rail::-webkit-scrollbar-thumb,.panel::-webkit-scrollbar-thumb{ background:color-mix(in srgb,var(--seed-fg) 20%,transparent); border-radius:9px; border:3px solid transparent; background-clip:padding-box; }
+:where(button,input,[tabindex]):focus-visible{ outline:2px solid var(--primary); outline-offset:2px; }
+.panel-scrim{ position:fixed; inset:0; background:color-mix(in srgb,var(--seed-fg) 40%, transparent); opacity:0; pointer-events:none; transition:opacity var(--t) var(--ease); z-index:12; }
+@media (max-width:1180px){
+  .app{ grid-template-columns:calc(28*var(--u)) 1fr; grid-template-areas:"head head" "rail stage" "tl tl"; }
+  .panel{ position:fixed; top:0; right:0; bottom:0; width:min(400px,88vw); z-index:14; transform:translateX(102%); transition:transform var(--t-slow) var(--ease); box-shadow:var(--shadow-2); }
+  body.panel-open .panel{ transform:none; } body.panel-open .panel-scrim{ opacity:1; pointer-events:auto; }
+}
+/* ===== 技术指标分析版 · 追加样式 ===== */
+.mx-grid{ grid-template-columns:minmax(126px,1.5fr) repeat(7,minmax(68px,1fr)) minmax(92px,1.1fr); }
+.mx-rh{ font-size:.72rem; letter-spacing:.01em; }
+.mx-cell{ font-size:.9rem; }
+.fig-wrap{ margin:0; border:1px solid var(--line); border-radius:var(--r-sm); overflow:hidden; background:var(--bg); }
+.mx-btn{ text-decoration:none; }
+.fig-wrap{ cursor:zoom-in; position:relative; }
+.fig-tag{ position:absolute; right:.5rem; top:.45rem; font-size:.6rem; letter-spacing:.06em; color:var(--faint); background:color-mix(in srgb,var(--bg) 82%,transparent); padding:.05rem .4rem; border-radius:var(--r-pill); }
+.figsvg{ display:block; width:100%; height:auto; }
+.figsvg .fig-bg{ fill:var(--bg); }
+.figsvg .fp{ fill:none; stroke:var(--fg); stroke-width:2.2; stroke-linejoin:round; stroke-linecap:round; }
+.figsvg .fl-plain{ stroke:var(--line-strong); stroke-width:1; stroke-dasharray:3 4; }
+.figsvg .fl-neck{ stroke:var(--primary); stroke-width:1.7; }
+.figsvg .fl-target{ stroke:var(--accent); stroke-width:1.4; stroke-dasharray:7 4; }
+.figsvg .vm-line,.figsvg .vm-tick{ stroke:var(--accent); stroke-width:1.1; opacity:.85; }
+.figsvg .an-line{ stroke:var(--line-strong); stroke-width:.9; }
+.figsvg .an-dot{ fill:var(--gold); }
+.figsvg text{ font-family:var(--sans); }
+.figsvg .lv-plain{ fill:var(--muted); font-size:12px; }
+.figsvg .lv-neck{ fill:var(--primary); font-size:12.5px; font-weight:600; }
+.figsvg .lv-target{ fill:var(--accent); font-size:12.5px; font-weight:600; }
+.figsvg .vm-t{ fill:var(--accent); font-size:11px; font-weight:600; }
+.figsvg .an{ fill:var(--muted); font-size:10px; }
+.fig-wrap figcaption{ font-size:.6rem; letter-spacing:.05em; color:var(--faint); padding:.42rem .6rem; border-top:1px solid var(--line); text-align:center; }
+.figbox{ position:fixed; inset:0; z-index:40; display:grid; place-items:center; background:color-mix(in srgb,var(--seed-fg) 84%, transparent); padding:3vmin; cursor:zoom-out; }
+.figbox svg{ width:min(94vw,1180px); height:auto; max-height:92vh; border-radius:var(--r-sm); box-shadow:var(--shadow-2); background:var(--surface); }
+.figbox[hidden]{ display:none; }
+.credit-line{ font-size:.6rem; line-height:1.7; letter-spacing:.06em; color:var(--faint); border-top:1px solid var(--line); padding-top:calc(1.2*var(--u)); }
+/* ===== 移动端：左栏转横向条，画布让位 ===== */
+@media (max-width:760px){
+  .app{ grid-template-columns:1fr; grid-template-rows:auto auto 1fr auto; grid-template-areas:"head" "rail" "stage" "tl"; }
+  .rail{ flex-direction:row; align-items:flex-start; overflow-x:auto; overflow-y:hidden; border-right:none; border-bottom:1px solid var(--line); padding:calc(1.4*var(--u)) calc(2*var(--u)); gap:calc(2*var(--u)); }
+  .rail-sec{ flex:none; }
+  .rail-sec h2{ white-space:nowrap; margin-bottom:.5rem; } .rail-sec h2::after{ display:none; }
+  .stage-list{ flex-direction:row; gap:.35rem; }
+  .stage-item{ width:auto; padding:.4rem .6rem; border:1px solid var(--line); background:var(--surface); }
+  .stage-item::before{ display:none; }
+  .stage-item .sl-role{ display:none; } .stage-item br{ display:none; }
+  .filters{ flex-direction:row; gap:.9rem; flex-wrap:wrap; }
+  .legend{ flex-direction:row; gap:.7rem; flex-wrap:wrap; }
+  .rail-note,.stage-hint{ display:none; }
+  .tl{ grid-template-columns:1fr; gap:calc(1.2*var(--u)); }
+  .tl-ctrl{ justify-content:center; }
+  .cap-text{ font-size:.76rem; max-width:100%; }
+  .cap-t{ font-size:.95rem; }
+  .mx-wrap{ padding:calc(4*var(--u)) calc(1.5*var(--u)) calc(2*var(--u)); }
+  .mx-grid{ grid-template-columns:minmax(88px,1.4fr) repeat(7,minmax(46px,1fr)); }
+  .mx-h,.mx-rh,.mx-cell,.mx-foot-cell{ font-size:.6rem; padding:.34rem .12rem; }
+  .mx-cell .mx-fan{ display:none; }
+  .mx-h.cons,.mx-foot-cell.cons,.mx-cell[data-col="cons"]{ display:none; }
+}
+</style>
+</head>
+<body>
+<div class="grain" aria-hidden="true"></div>
+<div aria-hidden="true" style="position:absolute;left:-9999px;top:0;width:1px;height:1px;overflow:hidden;opacity:0;font-size:0;color:transparent;user-select:none;pointer-events:none">
+  王潇 © 2026 ·《三变·六反》技术指标分析知识图谱 · 三变（形态之变／成交量之变／市场情绪之变）× 六反指标观察 · 十二图自绘矢量示意 · 指纹 WX-36TA-A-0913
+</div>
+<div class="app">
+  <header class="head" data-component="site-header">
+    <div class="brand">
+      <span class="seal" aria-hidden="true">
+        <svg viewBox="0 0 24 28" fill="none">
+          <rect x="2" y="1" width="20" height="3" rx="0.8" fill="currentColor"/>
+          <rect x="2" y="5.8" width="20" height="3" rx="0.8" fill="currentColor"/>
+          <rect x="2" y="10.6" width="8.4" height="3" rx="0.8" fill="currentColor"/><rect x="13.6" y="10.6" width="8.4" height="3" rx="0.8" fill="currentColor"/>
+          <rect x="2" y="15.4" width="20" height="3" rx="0.8" fill="currentColor"/>
+          <rect x="2" y="20.2" width="8.4" height="3" rx="0.8" fill="currentColor"/><rect x="13.6" y="20.2" width="8.4" height="3" rx="0.8" fill="currentColor"/>
+          <rect x="2" y="25" width="8.4" height="3" rx="0.8" fill="currentColor"/><rect x="13.6" y="25" width="8.4" height="3" rx="0.8" fill="currentColor"/>
+        </svg>
+      </span>
+      <div class="titles">
+        <h1>三变 · 六反<span class="lat">San Bian · Liu Fan</span></h1>
+        <p>形为象 · 量为证 · 筹为位 &nbsp;/&nbsp; 形态十二图 · 六指标</p>
+      </div>
+    </div>
+    <div class="head-spacer"></div>
+    <div class="motto">先算满足 · 再等确认</div>
+    <button class="mx-btn" id="btn-matrix" title="十二图 × 七判据 ＋ 站住确认律" aria-label="十二图 × 七判据 ＋ 站住确认律"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M4 4h16v16H4z"/><path d="M4 10h16M4 15h16M10 4v16M15 4v16"/></svg>确认矩阵</button>
+    <a class="mx-btn" href="calibrate.html" title="十二图自校准工具" aria-label="十二图自校准工具" style="margin-left:.4rem"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>自校准</a>
+    <a class="mx-btn" href="scan.html" title="批量分工扫描" aria-label="批量分工扫描" style="margin-left:.4rem"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M3 12h18M3 18h18"/><circle cx="7" cy="6" r="1.6" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none"/><circle cx="16" cy="18" r="1.6" fill="currentColor" stroke="none"/></svg>批量扫描</a>
+    <a class="mx-btn" id="btn-guide" href="guide.html" title="十二图盘前对照清单" aria-label="十二图盘前对照清单"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4"/><path d="M9 12h6M9 16h6"/></svg>盘前清单</a>
+    <button class="icon-btn" id="btn-reset" title="重置视图" aria-label="重置视图"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg></button>
+    <button class="icon-btn" id="btn-panel" title="详情面板" aria-label="切换详情面板" style="display:none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg></button>
+  </header>
+  <aside class="rail" data-component="control-rail">
+    <section class="rail-sec"><h2>六反 · 指标观察</h2><div class="stage-list" id="stage-list"></div></section>
+    <section class="rail-sec"><h2>图层</h2>
+      <div class="filters">
+        <label class="filter f-core"><input type="checkbox" data-layer="core" checked><span class="swatch"></span>宗 · 象数（核心）</label>
+        <label class="filter f-fan"><input type="checkbox" data-layer="fan" checked><span class="swatch"></span>六反 · 指标观察（内环）</label>
+        <label class="filter f-bian"><input type="checkbox" data-layer="bian" checked><span class="swatch"></span>三变 · 形态/量能/情绪（中环）</label>
+        <label class="filter f-shi"><input type="checkbox" data-layer="shi" checked><span class="swatch"></span>形态十二图（外环）</label>
+      </div>
+    </section>
+    <section class="rail-sec"><h2>图例</h2>
+      <div class="legend">
+        <div class="legend-row"><span class="legend-line ll-cycle"></span>六反观察环（墨青）</div>
+        <div class="legend-row"><span class="legend-line ll-def"></span>站住确认律（全场适用）</div>
+        <div class="legend-row"><span class="legend-line ll-chapter"></span>三变·分解到指标（金）</div>
+        <div class="legend-row"><span class="legend-line ll-map"></span>十二图→确认指标（灰虚）</div>
+        <div class="legend-row"><span class="legend-line ll-def"></span>宗·立三变（朱点线）</div>
+      </div>
+    </section>
+    <p class="rail-note">本图谱为交互式看盘框架：形态给出方向与目标位，量能与波幅验证真假，情绪决定加减幅度。所有满足点均为事前假设，须等颈线破立确认方可成立。仅供研究学习，不构成任何投资建议。市场有风险，投资需谨慎。</p>
+    <p class="credit-line">© 2026 王潇 · 自由使用，请注明来处；禁止商用</p>
+    <div aria-hidden="true" style="position:absolute;left:-9999px;top:0;width:1px;height:1px;overflow:hidden;opacity:0;font-size:0;color:transparent">
+      本图谱作者：王潇 · 自由使用，请注明来处；禁止商用 · 指纹 WX-36TA-B-0913
+    </div>
+  </aside>
+  <main class="stage" data-component="graph-stage">
+    <button class="sg-back" id="sg-back">‹ 返回总图</button>
+    <div class="stage-tools">
+      <button class="icon-btn" id="zoom-in" title="放大" aria-label="放大"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M11 8v6M8 11h6M20 20l-3.5-3.5"/></svg></button>
+      <button class="icon-btn" id="zoom-out" title="缩小" aria-label="缩小"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M8 11h6M20 20l-3.5-3.5"/></svg></button>
+      <button class="icon-btn" id="zoom-fit" title="适应画布" aria-label="适应画布"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V5h4M20 9V5h-4M4 15v4h4M20 15v4h-4"/></svg></button>
+    </div>
+    <svg class="stage-svg" id="graph" viewBox="0 0 1180 800" preserveAspectRatio="xMidYMid meet" role="img" aria-label="三变六反技术指标分析知识图谱"></svg>
+    <div class="mx-wrap" id="mx-wrap" hidden>
+      <div class="mx-title">十二图 × 六指标 ＋ 站住确认律</div>
+      <div class="mx-grid" id="mx-grid"></div>
+      <div class="mx-legend">
+        <span class="mx-lg st-plus">+ 偏多</span><span class="mx-lg st-hedge">△ 对冲</span><span class="mx-lg st-avoid">− 回避</span><span class="mx-lg st-neutral">· 中性</span>
+        <span class="mx-lg">格内小字 = 该形态下该指标的确认要点 · + 主要依据 / △ 辅助参考 / − 反向警示 / · 不适用 · 「站住」列 = 该图的强制项编号 · 「筹码」列 = 该形态要看的筹码结构</span>
+      </div>
+    </div>
+    <div class="stage-hint"><span class="kbd">拖拽</span>平移 · <span class="kbd">滚轮</span>缩放 · <span class="kbd">点击</span>查看算法与信号 · <span class="kbd">双击</span>三变节点进入子图</div>
+  </main>
+  <section class="panel" id="panel" data-component="detail-panel" aria-live="polite"></section>
+  <footer class="tl" data-component="deduction-timeline">
+    <div class="tl-ctrl">
+      <button class="play" id="btn-play" aria-label="播放推演"><svg id="play-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13l11-6.5-11-6.5Z"/></svg><span id="play-label">播放推演</span></button>
+      <button class="icon-btn" id="btn-prev" title="上一步" aria-label="上一步"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></button>
+      <button class="icon-btn" id="btn-next" title="下一步" aria-label="下一步"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></button>
+    </div>
+    <div class="tl-body">
+      <div class="tl-caption" id="tl-caption"><div class="cap-move"><span class="cap-idx">推演</span><span class="cap-t">点击「播放推演」，从宗到三变到十二图逐步演绎</span></div><div class="cap-text">每一步点亮对应节点、以彗星标出方向，并在下方累积路径；点击节点查看算法、信号与失效线，双击三变节点可进入子图。</div></div>
+      <div class="tl-track" id="tl-track"></div>
+    </div>
+  </footer>
+</div>
+<div class="figbox" id="figbox" hidden role="dialog" aria-label="示意图放大"></div>
+<div class="panel-scrim" id="panel-scrim"></div>
+<script>
+(function(){
+"use strict";
+/* ============ 1. 数据模型：宗 / 三变 / 六反·指标 / 形态十二图 ============ */
+const C={x:590,y:390};
+const ORB={fan:140,bian:245,shi:345};
+const P=(deg,r)=>{const a=deg*Math.PI/180;return {x:C.x+r*Math.cos(a), y:C.y+r*Math.sin(a)};};
+const RING=(i,n)=>-90+i*360/n;
+const NODES=[
+ {id:'core',g:'core',x:C.x,y:C.y,r:60,hex:true,name:'三变·六反',tag:'象 · 数 · 势',badge:'宗',role:'全体系之宗 · 形态为象、指标为数、情绪为势',
+  lede:'技术分析只有一个前提：价格包容一切。形态（象）由多空反复博弈留下，给出方向与目标位；指标（数）由统计得出，负责验证真假；情绪（势）由筹码与波动读出，决定加减的幅度。三者不同步时——以形态定方向、以量能定真假、以情绪定仓位。',
+  points:['<strong>先算满足，再等确认</strong>：目标位可以事前算（等幅移动），但动手必须等颈线破立。','<strong>先设失效，后谈目标</strong>：任何一笔先想清楚「什么情况下我错了」。','<strong>逆本能</strong>：破下轨不是买点、放量不一定是利好——位置决定含义。'],
+  quote:'“先算满足点，再等确认；满足点到了就走。”'},
+ {id:'k_xing',g:'fan',...P(RING(0,6),ORB.fan),r:30,num:'形',name:'反一 · 形',tag:'K线形态 · 转折的第一提示',badge:'六反',role:'K线形态 · 单根与组合',
+  lede:'K线形态是价格留下的最原始痕迹：单根（长下影、十字、吞噬）与组合（晨星、三兵、缺口）给出转折的第一个提示。它的价值不在预测，而在「位置＋形态」同时出现时才成立。',
+  points:['<strong>观察</strong>：实体与影线的比例、收盘在区间中的位置、有无跳空缺口。','<strong>六反含义</strong>：形态是「果」不是「因」——先有量能与位置，形态才可信；单看形态猜转折，就是顺着本能赌。','<strong>与十二图</strong>：无论旗形、头肩还是三角形，最终都要落到「颈线破立」这一根K线上。','<strong>失效</strong>：无位置、无量能配合的孤立形态，一律不算信号。']},
+ {id:'k_liang',g:'fan',...P(RING(1,6),ORB.fan),r:30,num:'量',name:'反二 · 量',tag:'成交量 · 过线的量能门槛',badge:'六反',role:'成交量 · 形态的验钞机',
+  lede:'成交量是形态真假唯一的验钞机：突破要有量、破位要有量；缩量过线多半是假突破。量在价先——量能是价格之前的先行证据。',
+  points:['<strong>观察</strong>：突破日成交量 ÷ 5日与20日均量；量比 ≥ 1.5 才算有效放量。','<strong>六反含义</strong>：市场本能只看价格，量能是要「反过来」看的那一层——价涨量缩才最该警惕。','<strong>与十二图</strong>：矩形假突破、头肩顶假突破（图三、图四）的核心判据就是缩量过线。','<strong>失效</strong>：一字板、停复牌等异常交易日不适用。']},
+ {id:'k_huan',g:'fan',...P(RING(2,6),ORB.fan),r:30,num:'换',name:'反三 · 换',tag:'换手率 · 筹码与拥挤度',badge:'六反',role:'换手率 · 位置决定含义',
+  lede:'换手率衡量筹码交换的强度：低位放量换手是换手，高位放量换手是派发。同一个数字，位置不同，含义相反。',
+  points:['<strong>观察</strong>：换手率 ÷ 自身20日均值的倍数；破底翻当日换手是否明显放大。','<strong>六反含义</strong>：高位高换手不是活跃，而是拥挤——本能把高换手当利好，须反过来读。','<strong>与十二图</strong>：破底翻（图五、图六）要求破底时换手放大，说明筹码在换手而非无人接盘。','<strong>失效</strong>：小盘股与大盘股不可套用同一阈值。']},
+ {id:'k_cha',g:'fan',...P(RING(3,6),ORB.fan),r:30,num:'叉',name:'反四 · 叉',tag:'MACD 12/26/9 · 背离优先于交叉',badge:'六反',role:'MACD · 动能与背离',
+  lede:'MACD 是动能指标。金叉死叉在震荡市里频繁失效，真正有价值的是背离：价格创新高而 MACD 不创新高。',
+  points:['<strong>观察</strong>：DIF 与 DEA 的交叉、红绿柱的缩短与放大、零轴位置。','<strong>六反含义</strong>：交叉是滞后的确认，背离是领先的警告——本能追交叉，反向者盯背离。','<strong>与十二图</strong>：M头（图十一）、头肩顶（图十）的右头常伴 MACD 顶背离。','<strong>失效</strong>：单边急涨急跌中背离可连续出现多次，不能单独作为反手依据。']},
+ {id:'k_dai',g:'fan',...P(RING(4,6),ORB.fan),r:30,num:'带',name:'反五 · 带',tag:'布林通道 20日/2σ · 收口与开口',badge:'六反',role:'布林通道 · 位置与波动状态',
+  lede:'布林通道给出价格的相对位置与波动状态：通道收口＝变盘前夜，开口扩张＝趋势确认。',
+  points:['<strong>观察</strong>：带宽（BandWidth）的历史分位；触上轨／下轨后是沿轨走还是快速回归。','<strong>六反含义</strong>：触上轨不是卖点、破下轨不是买点——要看带宽是收是放；本能把破下轨当崩盘，反向者看的是收敛后的方向选择。','<strong>与十二图</strong>：收敛三角形（图七、图八）对应布林收口，突破点就是开口起点。','<strong>失效</strong>：强趋势中价格沿轨运行，触轨不构成反向信号。']},
+ {id:'k_chou',g:'fan',...P(RING(5,6),ORB.fan),r:30,num:'筹',name:'反六 · 筹',tag:'筹码分布 · 获利盘与密集峰',badge:'六反',role:'筹码 · 谁在什么价位拿着',
+  lede:'筹码分布把每根 K 线的成交量按三角形铺在当日最高—最低之间、旧筹码按换手率衰减，算出「谁在什么价位还拿着」。它的用途不是猜方向，而是给出三个真实价位：下方谁在托、上方谁被套、空间够不够。',
+  points:['<strong>观察</strong>：获利盘比例、平均成本、90% 成本区间、集中度、筹码峰（支撑峰 / 套牢峰）。','<strong>六反含义</strong>：价格是结果，筹码是原因——本能看价格站不站得住，反向者看<strong>站住的位置上方压着多少套牢盘</strong>。','<strong>与十二图</strong>：止损放<strong>最近下方筹码峰之下</strong>，目标看<strong>最近上方筹码峰</strong>；90% 成本区间宽度决定满足位是不是噪音。','<strong>失效</strong>：刚上市、次新、长期停牌复牌的个股筹码未沉淀；流通股本变动（解禁/增发）会让历史筹码失真。']},
+ {id:'b_xing',g:'bian',...P(RING(0,3),ORB.bian),r:27,name:'形态之变',tag:'形态十二图 · 颈线与满足计算',badge:'三变',role:'第一变 · 方向与目标位',
+  lede:'形态之变是三者中最慢的一层：形态由多空反复博弈留下，给出方向与目标位。十二图把它拆成三类——中继、反转、骗线。',
+  points:['<strong>中继</strong>（上飘／下飘旗形）：沿原方向续走。','<strong>反转</strong>（头肩顶底、M头、W底、收敛三角形）：方向改变。','<strong>骗线</strong>（假突破、破底翻）：反向诱杀，是最容易亏钱的一类。','<strong>统一算法（一句话）</strong>：以颈线为起跑线，形态高度为步长，顺着突破方向迈一步＝第一目标、再迈一步＝第二目标。','<strong>下钻</strong>：双击本节点进入「形态之变」子图。']},
+ {id:'b_liang',g:'bian',...P(RING(1,3),ORB.bian),r:27,name:'成交量之变',tag:'量价配合 · 真假之辨',badge:'三变',role:'第二变 · 形态真伪',
+  lede:'成交量之变回答的是「这个形态是真的吗」：量能是形态的验钞机，也是筹码交换的现场记录。',
+  points:['<strong>三种关系</strong>：价涨量增（健康）、价涨量缩（背离，警惕）、价跌量增（恐慌或换手，看位置）。','<strong>硬门槛</strong>：突破与破位当日的量能，是唯一不可替代的证据。','<strong>累积结果</strong>：成交的日积月累就是<strong>筹码分布</strong>——量是流量，筹码是存量。','<strong>下钻</strong>：双击本节点进入「成交量之变」子图。']},
+ {id:'b_qingxu',g:'bian',...P(RING(2,3),ORB.bian),r:27,name:'市场情绪之变',tag:'动能与波幅 · 拥挤与恐慌',badge:'三变',role:'第三变 · 幅度调节',
+  lede:'市场情绪之变是最快的一层，也是最快失效的一层：它给出「现在该逆着谁」的答案。',
+  points:['<strong>两个读数</strong>：动能（MACD 背离）、拥挤（换手与涨跌停家数）。','<strong>六反法则</strong>：情绪极端处反向用，情绪平稳处顺势用。','<strong>下钻</strong>：双击本节点进入「市场情绪之变」子图。']},
+ {id:'t01',g:'shi',...P(RING(0,12),ORB.shi),r:26,name:'上飘旗形 · 跌幅满足',tag:'90→70 · 满足 55',badge:'十二图',role:'中继 · 做空',
+  fig:'f01',
+  lede:'下跌一段后反弹，反弹高点逐级下移而低点抬高，形成上飘旗形。这是空方的中继整理：只有跌破前低，旗形才算成立，跌幅满足点才算得出来。',
+  points:['<strong>算法</strong>：先量一段——90 跌到 70，跌了 20。反弹到 75 之后，从 75 往下再走同样一段 → <strong>55</strong>。跌一段、歇一下、再跌一段。','<strong>信号</strong>：跌破前低 70 才能确认 75 是高点，也才能计算满足；未破前低前不得预设。','<strong>操作</strong>：破 70 进场做空，止损设 75 之上；到 55 减仓或止盈。','<strong>失效</strong>：站回 75 之上，或破 70 后立刻拉回 70 上方（假跌破）→ 离场。']},
+ {id:'t02',g:'shi',...P(RING(1,12),ORB.shi),r:26,name:'下飘旗形 · 涨幅满足',tag:'20→35 · 满足 45',badge:'十二图',role:'中继 · 做多',
+  fig:'f02',
+  lede:'上涨一段后回落，高点与低点都逐级下移，形成下飘旗形。这是多方的中继整理：突破前高才算成立。',
+  points:['<strong>算法</strong>：先量一段——20 涨到 35，涨了 15。回落到 30 之后，从 30 往上再走同样一段 → <strong>45</strong>。涨一段、歇一下、再涨一段。','<strong>信号</strong>：突破前高 35 才能确认 30 是低点，也才能计算涨幅满足。','<strong>操作</strong>：突破 35 进场做多，止损设 30 之下；到 45 减仓。','<strong>失效</strong>：跌回 30 之下，或突破 35 后立刻回落（假突破）→ 离场。']},
+ {id:'t03',g:'shi',...P(RING(2,12),ORB.shi),r:26,name:'矩形假突破',tag:'80/70 · 假突破 86',badge:'十二图',role:'骗线 · 反向诱多',
+  fig:'f03',
+  lede:'矩形整理的上颈线 80、下颈线 70。价格向上冲到 86 却站不住，重新跌回 80 之下——这是假突破：诱多之后反向。',
+  points:['<strong>算法</strong>：步长＝箱体高度 80−70＝10。假突破冲到 86 掉头，从 86 往下走 10 → <strong>76</strong>；跌破箱底 70 再走 10 → <strong>60</strong>。箱体多高，跌下来就再跌多高。','<strong>信号</strong>：必须先跌破颈线 80 之下，假突破才「确立」——突破当根不成立。','<strong>操作</strong>：跌破 80 做空，止损 86 之上。','<strong>量能</strong>：假突破的典型特征是缩量过线。','<strong>失效</strong>：重新站回 86 之上 → 真突破，反手。']},
+ {id:'t04',g:'shi',...P(RING(3,12),ORB.shi),r:26,name:'头肩顶假突破',tag:'假突破 95 · 颈线 70',badge:'十二图',role:'骗线 · 卖讯确立',
+  fig:'f04',
+  lede:'头肩顶的右肩处向上冲出颈线压到 95，随即跌回颈线之下——这是头肩顶的假突破，卖出讯号确立。',
+  points:['<strong>算法</strong>：步长＝头到颈线 95−70＝25。跌回颈线 70 之下后，从颈线往下走 25 → <strong>45</strong>。头有多高，跌破颈线就还能跌多深。','<strong>信号</strong>：跌落颈线之下，假突破确立＝卖出讯号；跌破颈线 72 为空单加码讯号。','<strong>操作</strong>：颈线之下做空，止损 95 之上；45 为满足区。','<strong>失效</strong>：重回颈线之上并站稳 → 视为真突破。']},
+ {id:'t05',g:'shi',...P(RING(4,12),ORB.shi),r:26,name:'破底翻',tag:'破 20 到 18.5 · 站回 22',badge:'十二图',role:'骗线 · 反向诱空',
+  fig:'f05',
+  lede:'先破前低 20 到 18.5，再迅速站回颈线 22 之上——这叫破底翻：破底是清洗，翻上来才是真信号。',
+  points:['<strong>算法</strong>：这张图不算等幅。破了前低 20 又站回颈线 22 之上就是买点，目标看回前波起跌处。破了又站回来，就买。','<strong>信号</strong>：必须「站回颈线之上」才成立，破底当天不算。','<strong>操作</strong>：站回 22 进场，止损 18.5 之下。','<strong>量能</strong>：破底当日换手需放大，说明筹码在换手。','<strong>失效</strong>：站回后再破 18.5 → 破底翻失败，立即离场。']},
+ {id:'t06',g:'shi',...P(RING(5,12),ORB.shi),r:26,name:'破底翻 · W底',tag:'破 30 到 28.5 · 颈线 45',badge:'十二图',role:'骗线 + 反转 · 买点确立',
+  fig:'f06',
+  lede:'W底与破底翻的组合：右底再破前低 30 到 28.5，然后站回 32 之上确立买点，突破颈线 45 加码。',
+  points:['<strong>算法</strong>：步长＝前低到颈线 45−30＝15。站回右底、突破颈线 45 之后，从 45 往上走 15 → <strong>60</strong>。底到颈线多高，突破后就再涨多高。','<strong>信号</strong>：破底翻正站稳（站回 32 之上）确立买点；突破颈线 45＝加码讯号。','<strong>操作</strong>：32 之上试仓，45 突破加码，止损 28.5 之下。','<strong>失效</strong>：跌破 28.5 → 形态破坏。']},
+ {id:'t07',g:'shi',...P(RING(6,12),ORB.shi),r:26,name:'三角形头部 · 跌幅满足',tag:'80/60 · 满足 45→25',badge:'十二图',role:'反转 · 收敛破位',
+  fig:'f07',
+  lede:'收敛三角形的头部：上缘下倾、下缘上倾，价格在三角形内反复收窄。跌破的位置决定这次破位是否有效。',
+  points:['<strong>算法</strong>：步长＝三角形高度 80−60＝20。从破线位 65 往下走 20 → <strong>45</strong>，再走 20 → <strong>25</strong>。三角形多高，破位就还能跌多深——可以量两段。','<strong>信号</strong>：三角形需在横向长度的 1/2 至 3/4 处跌破，才算有效跌破——太早或已到尖端都不算。','<strong>操作</strong>：破线做空，止损回三角形之内；45 减仓、25 止盈。','<strong>失效</strong>：跌回三角形内并向上突破上缘。']},
+ {id:'t08',g:'shi',...P(RING(7,12),ORB.shi),r:26,name:'收敛三角 · 涨幅满足',tag:'40/55 · 满足 65→80',badge:'十二图',role:'反转 · 收敛突破',
+  fig:'f08',
+  lede:'收敛三角形的底部：突破上缘才是买点，同样要求突破发生在三角形 1/2 至 3/4 处。',
+  points:['<strong>算法</strong>：步长＝三角形高度 55−40＝15。从突破位 50 往上走 15 → <strong>65</strong>，再走 15 → <strong>80</strong>。同上，只是往上量。','<strong>信号</strong>：1/2 至 3/4 处突破才算有效突破，且需放量。','<strong>操作</strong>：突破 50 进场，止损回三角形内；65 减仓、80 止盈。','<strong>失效</strong>：假突破后跌回三角形内。']},
+ {id:'t09',g:'shi',...P(RING(8,12),ORB.shi),r:26,name:'头肩底 · 涨幅满足',tag:'颈线 80→74 · 满足 92→110',badge:'十二图',role:'反转 · 底部确认',
+  fig:'f09',
+  lede:'头肩底：左肩、头 60、右肩，颈线由 80 下倾至 74。突破颈线才成立。',
+  points:['<strong>算法</strong>：步长＝头到颈线 78−60＝18。突破颈线 74 之后，从 74 往上走 18 → <strong>92</strong>，再走 18 → <strong>110</strong>。头有多深，突破颈线就还能涨多高。','<strong>信号</strong>：放量突破颈线为买点；颈线倾斜时以突破处的颈线值为准。','<strong>操作</strong>：突破 74 进场，止损 60 之下；92 减仓、110 止盈。','<strong>失效</strong>：突破后跌回颈线之下。']},
+ {id:'t10',g:'shi',...P(RING(9,12),ORB.shi),r:26,name:'头肩顶 · 跌幅满足',tag:'头 90 · 颈线 70 · 50→30',badge:'十二图',role:'反转 · 顶部确认',
+  fig:'f10',
+  lede:'头肩顶：左肩、头 90、右肩，颈线 70。跌破颈线才成立。',
+  points:['<strong>算法</strong>：步长＝头到颈线 90−70＝20。跌破颈线 70 之后，从 70 往下走 20 → <strong>50</strong>，再走 20 → <strong>30</strong>。','<strong>信号</strong>：跌破颈线 70 为卖讯；反抽颈线不过为空单加码点。','<strong>操作</strong>：破 70 做空，止损 90 之上。','<strong>失效</strong>：站回颈线之上。']},
+ {id:'t11',g:'shi',...P(RING(10,12),ORB.shi),r:26,name:'M头 · 跌幅满足',tag:'双头 105/110 · 颈线 80',badge:'十二图',role:'反转 · 顶部确认',
+  fig:'f11',
+  lede:'M头：两个高点 105 与 110，中间低点 80 为颈线。跌破颈线才成立。',
+  points:['<strong>算法</strong>：两个头不必等高，<strong>拿左边那个</strong>量——105 到颈线 80＝25。跌破颈线 80 之后，从 80 往下走 25 → <strong>55</strong>，再走 25 → <strong>30</strong>。','<strong>信号</strong>：跌破颈线 80 为卖讯；反抽不过加码。','<strong>操作</strong>：破 80 做空，止损 110 之上。','<strong>失效</strong>：站回 80 之上。']},
+ {id:'t12',g:'shi',...P(RING(11,12),ORB.shi),r:26,name:'W底 · 涨幅满足',tag:'双底 15/13 · 满足 23→28',badge:'十二图',role:'反转 · 底部确认',
+  fig:'f12',
+  lede:'W底：双底 15 与 13，颈线由 20 下倾至 19。突破颈线才成立。',
+  points:['<strong>算法</strong>：步长＝最低底到突破位 18−13＝5。突破 18 之后，从 18 往上走 5 → <strong>23</strong>，再走 5 → <strong>28</strong>。','<strong>信号</strong>：突破颈线 18 为买点，放量更佳。','<strong>操作</strong>：突破进场，止损 13 之下。','<strong>失效</strong>：跌回颈线之下。']}
+];
+const EDGES=[
+ {s:'k_xing',t:'k_liang',k:'cycle'},{s:'k_liang',t:'k_huan',k:'cycle'},{s:'k_huan',t:'k_cha',k:'cycle'},
+ {s:'k_cha',t:'k_dai',k:'cycle'},{s:'k_dai',t:'k_chou',k:'cycle'},{s:'k_chou',t:'k_xing',k:'cycle'},
+ {s:'core',t:'b_xing',k:'def'},{s:'core',t:'b_liang',k:'def'},{s:'core',t:'b_qingxu',k:'def'},
+ {s:'b_xing',t:'k_xing',k:'chapter'},{s:'b_xing',t:'k_dai',k:'chapter'},
+ {s:'b_liang',t:'k_liang',k:'chapter'},{s:'b_liang',t:'k_huan',k:'chapter'},
+ {s:'b_qingxu',t:'k_cha',k:'chapter'},{s:'b_liang',t:'k_chou',k:'chapter'},
+ {s:'t01',t:'k_liang',k:'map'},{s:'t01',t:'k_xing',k:'map'},
+ {s:'t02',t:'k_liang',k:'map'},{s:'t02',t:'k_xing',k:'map'},
+ {s:'t03',t:'k_liang',k:'map'},{s:'t03',t:'k_dai',k:'map'},
+ {s:'t04',t:'k_liang',k:'map'},{s:'t04',t:'k_cha',k:'map'},
+ {s:'t05',t:'k_huan',k:'map'},{s:'t05',t:'k_liang',k:'map'},
+ {s:'t06',t:'k_huan',k:'map'},{s:'t06',t:'k_liang',k:'map'},
+ {s:'t07',t:'k_chou',k:'map'},{s:'t07',t:'k_dai',k:'map'},
+ {s:'t08',t:'k_chou',k:'map'},{s:'t08',t:'k_dai',k:'map'},
+ {s:'t09',t:'k_liang',k:'map'},{s:'t09',t:'k_chou',k:'map'},
+ {s:'t10',t:'k_cha',k:'map'},{s:'t10',t:'k_chou',k:'map'},
+ {s:'t11',t:'k_cha',k:'map'},{s:'t11',t:'k_chou',k:'map'},
+ {s:'t12',t:'k_huan',k:'map'},{s:'t12',t:'k_dai',k:'map'}
+];
+const EDGE_LAYER={cycle:'fan',def:'core',chapter:'bian',map:'shi',groot:'core',gsub:'shi',gmap:'shi',gact:'fan'};
+const STEPS=[
+ {k:'宗',t:'宗 · 象数势（价格包容一切）',tv:[],n:['core'],cap:'宗：形态为象、指标为数、情绪为势。形态给方向与目标位，指标验真假，情绪定幅度。先算满足点，再等确认。'},
+ {k:'三变',t:'三变总览 · 形态／量能／情绪',tv:[],n:['b_xing','b_liang','b_qingxu'],cap:'三变：形态之变（形态十二图，方向与目标位）、成交量之变（形态真伪）、市场情绪之变（幅度调节）。三者不同步时，按此顺序各司其职。'},
+ {k:'形态',t:'形态之变 ⟶ 形 · 带',tv:[['b_xing','k_xing'],['b_xing','k_dai']],n:['b_xing'],cap:'形态之变分解为两个观察点：K线形态（单根与组合）与布林通道（位置与波动状态）。收敛三角形对应布林收口，突破点就是开口起点。'},
+ {k:'量能',t:'成交量之变 ⟶ 量 · 换 · 筹',tv:[['b_liang','k_liang'],['b_liang','k_huan'],['b_liang','k_chou']],n:['b_liang'],cap:'成交量之变分解为三个观察点：成交量（过线的硬门槛）、换手率（看位置不看大小）、筹码分布（量是流量、筹码是存量）。前两者是「今天发生了什么」，筹码是「累积下来谁还在」。'},
+ {k:'情绪',t:'市场情绪之变 ⟶ 叉',tv:[['b_qingxu','k_cha']],n:['b_qingxu'],cap:'市场情绪之变目前只分解出一个可做实观察点：MACD（动能与背离）。背离优先于交叉——交叉滞后，背离领先。'},
+ {k:'十二图',t:'形态十二图 · 总览',tv:[],n:['t01','t02','t03','t04','t05','t06','t07','t08','t09','t10','t11','t12'],cap:'形态十二图：中继 2 图（上飘／下飘旗形）、骗线 4 图（矩形假突破、头肩顶假突破、破底翻、破底翻W底）、反转 6 图（三角形头部、收敛三角底部、头肩底、头肩顶、M头、W底）。每张图都可点击查看原图与满足计算。'},
+ {k:'中继',t:'中继 · 上飘／下飘旗形',tv:[['t01','k_liang'],['t02','k_liang']],n:['t01','t02'],cap:'中继两图：上飘旗形跌破前低 70 才成立，跌幅满足 75−20＝55；下飘旗形突破前高 35 才成立，涨幅满足 30＋15＝45。共同点——不破不立，量能是门槛。'},
+ {k:'骗线',t:'骗线 · 假突破与破底翻',tv:[['t03','k_liang'],['t04','k_liang'],['t05','k_huan'],['t06','k_huan']],n:['t03','t04','t05','t06'],cap:'骗线四图是最容易亏钱、也最容易赚钱的一类：假突破（矩形、头肩顶）以缩量过线为特征，跌破颈线才确立；破底翻（含W底）必须站回颈线之上才成立，破底当日换手需放大。'},
+ {k:'反转',t:'反转 · 三角形／头肩／M头／W底',tv:[['t07','k_chou'],['t08','k_chou'],['t09','k_chou'],['t10','k_cha'],['t11','k_cha'],['t12','k_dai']],n:['t07','t08','t09','t10','t11','t12'],cap:'反转六图共用一套算法：满足＝形态高度等幅移动。三角形需在横向 1/2 至 3/4 处破立才有效；头肩与M头取「头（或前一头）减颈线」；W底取「突破位减最低底」。所有满足点都要过筹码校验：箱体高度须 ≥ 0.5×90% 成本区间宽度，否则满足位是噪音。'},
+ {k:'六反',t:'六反环 · 形→量→换→叉→带→筹',tv:[['k_xing','k_liang'],['k_liang','k_huan'],['k_huan','k_cha'],['k_cha','k_dai'],['k_dai','k_chou'],['k_chou','k_xing']],n:['k_xing','k_liang','k_huan','k_cha','k_dai','k_chou'],cap:'六反指标观察环：先看 K 线形态定位置，再看成交量验真假，再看换手率辨交换，再看 MACD 找背离，再看布林通道判收放，最后用筹码分布定止损与目标——然后回到形态。环环相扣，缺一环都不动手。'},
+ {k:'确认',t:'确认链 · 形态 → 量能 → 筹码',tv:[],n:['k_xing','k_liang','k_chou'],cap:'确认链：形态（K线＋十二图）→ 量能（成交量＋换手率）→ 筹码（获利盘与密集峰）。三者齐备才叫「信号齐」。'},
+ {k:'操作',t:'操作律 · 破立才动手',tv:[],n:['b_xing','k_chou','k_liang'],cap:'操作律三条：一、颈线未破立前，一切目标位都只是假设；二、止损放在最近下方筹码峰之下，不由心情决定；三、满足点到了就走，不贪第二目标。'},
+ {k:'结语',t:'结语 · 先算满足，再等确认',tv:[],n:['core'],cap:'结语：形态给方向，量能给真假，筹码给价位。先算满足、再等确认；先设失效、后谈目标。（市场有风险，投资需谨慎。）'}
+];
+/* ============ 1b. 三变子图 ============ */
+const SUB_C={x:240,y:400}, SUB_R=150;
+const FORM_NODES=[
+ {id:'fm_root',g:'groot',x:SUB_C.x,y:SUB_C.y,r:40,name:'形态之变',tag:'三变 · 第一变',badge:'三变',role:'形态总纲 · 方向与目标位',
+  lede:'形态之变是三层中最慢也最可靠的一层：它由多空反复博弈留下，给出方向与目标位。十二图按功能分为中继、反转、骗线三类。',points:['<strong>中继</strong>：沿原方向续走（旗形）。','<strong>反转</strong>：方向改变（头肩／M头／W底／三角形）。','<strong>骗线</strong>：反向诱杀（假突破／破底翻）。']},
+ {id:'fm_mid',g:'gsub',x:560,y:120,r:26,name:'中继 · 旗形',tag:'上飘／下飘',badge:'形态',role:'趋势中途的整理',lede:'旗形是趋势中途的整理：上飘旗形（做空）与下飘旗形（做多）。方向与原趋势一致，破前低／前高才成立。',points:['<strong>上飘旗形</strong>：破前低才成立，满足＝反弹高点−前段跌幅。','<strong>下飘旗形</strong>：破前高才成立，满足＝回落低点＋前段涨幅。']},
+ {id:'fm_rev',g:'gsub',x:560,y:255,r:26,name:'反转 · 头肩与 MW',tag:'头肩顶底 · M头 W底',badge:'形态',role:'方向改变的形态',lede:'头肩顶／头肩底、M头／W底，是四类方向改变形态；收敛三角形既可中继也可反转，以破立方向为准。',points:['<strong>头肩顶／M头</strong>：取「头（或前一头）−颈线」为幅度。','<strong>头肩底／W底</strong>：取「颈线−底」为幅度。']},
+ {id:'fm_trap',g:'gsub',x:560,y:390,r:26,name:'骗线 · 假突破与破底翻',tag:'缩量过线 · 站回颈线',badge:'形态',role:'反向诱杀',lede:'假突破与破底翻都是「先骗后真」：假突破以缩量过线为特征，破底翻以站回颈线为成立条件。',points:['<strong>假突破</strong>：过线不站、跌回颈线之下才确立。','<strong>破底翻</strong>：破底后站回颈线之上才成立，破底需换手放大。']},
+ {id:'fm_neck',g:'gsub',x:560,y:525,r:26,name:'颈线 · 唯一分界',tag:'破立即信号',badge:'形态',role:'所有形态的共同起点',lede:'无论哪种形态，颈线都是唯一的分界：线上为多、线下为空。没有颈线的破立，就没有形态的成立。',points:['<strong>作用</strong>：确立信号 + 设定止损位。','<strong>倾斜颈线</strong>：以突破／跌破处的颈线值为准。']},
+ {id:'fm_meas',g:'gsub',x:900,y:120,r:26,name:'满足计算 · 等幅移动',tag:'形态高度＝目标距离',badge:'算法',role:'把形态翻译成数字',lede:'满足计算把形态翻译成可执行的数字：形态高度等幅移动到破立位之外，即为第一满足点；再等幅一次为第二满足点。',points:['<strong>公式</strong>：第一满足＝破立位 ± 形态高度；第二满足＝第一满足 ± 形态高度。','<strong>校验</strong>：距离小于 1×ATR 的满足点只是噪音，不做目标。']},
+ {id:'fm_act',g:'gact',x:900,y:390,r:28,name:'操作律 · 破立才动手',tag:'不破不立 · 破了才动',badge:'操盘',role:'形态之变的操作律',lede:'形态之变的操作律：不破不立、破了才动。颈线未破立之前，一切目标位都只是假设；破立之后，止损位与目标位同时明确。',points:['<strong>进场</strong>：颈线破立 + 量能过关。','<strong>止损</strong>：形态另一侧的颈线之外。']},
+ {id:'fm_list',g:'gact',x:900,y:600,r:28,name:'自检 · 形态四问',tag:'四问齐备才算信号',badge:'清单',role:'下单前的四个问题',lede:'下单前问四句，任何一句答不上来就不动手。',points:['① 颈线在哪？破立了吗？','② 形态高度多少？满足点在哪？','③ 量能过关吗？（量比≥1.5）','④ 止损放哪？亏多少？']}
+];
+const FORM_EDGES=[
+ {s:'fm_root',t:'fm_mid',k:'groot'},{s:'fm_root',t:'fm_rev',k:'groot'},{s:'fm_root',t:'fm_trap',k:'groot'},{s:'fm_root',t:'fm_neck',k:'groot'},
+ {s:'fm_neck',t:'fm_meas',k:'gsub'},{s:'fm_rev',t:'fm_meas',k:'gsub'},
+ {s:'fm_mid',t:'fm_act',k:'gmap'},{s:'fm_rev',t:'fm_act',k:'gmap'},{s:'fm_trap',t:'fm_act',k:'gmap'},{s:'fm_meas',t:'fm_act',k:'gmap'},
+ {s:'fm_trap',t:'fm_list',k:'gact'},{s:'fm_act',t:'fm_list',k:'gact'}
+];
+const FORM_STEPS=[
+ {k:'总览',t:'形态之变 · 总览',tv:[],n:['fm_root'],cap:'形态之变：给出方向与目标位，分中继、反转、骗线三类；一切以颈线破立为分界。'},
+ {k:'中继',t:'中继 ⟶ 旗形',tv:[['fm_root','fm_mid']],n:['fm_mid'],cap:'中继旗形：上飘破前低、下飘破前高才成立，满足＝前段波段幅度等幅移动。'},
+ {k:'反转',t:'反转 ⟶ 头肩与 MW',tv:[['fm_root','fm_rev']],n:['fm_rev'],cap:'反转形态：头肩顶底、M头W底；幅度取「头（或前一头）与颈线之差」。'},
+ {k:'骗线',t:'骗线 ⟶ 假突破与破底翻',tv:[['fm_root','fm_trap']],n:['fm_trap'],cap:'骗线：假突破缩量过线、跌回颈线才确立；破底翻必须站回颈线之上。'},
+ {k:'颈线',t:'颈线 ⟶ 唯一分界',tv:[['fm_root','fm_neck']],n:['fm_neck'],cap:'颈线是唯一分界：线上为多、线下为空；没有破立就没有形态成立。'},
+ {k:'满足',t:'颈线 ⟶ 满足计算',tv:[['fm_neck','fm_meas'],['fm_rev','fm_meas']],n:['fm_meas'],cap:'满足计算：形态高度等幅移动；第一满足、第二满足；距离小于 1×ATR 的是噪音。'},
+ {k:'操作',t:'形态 ⟶ 操作律（破立才动手）',tv:[['fm_mid','fm_act'],['fm_rev','fm_act'],['fm_trap','fm_act'],['fm_meas','fm_act']],n:['fm_act'],cap:'操作律：颈线破立＋量能过关才进场；止损设在形态另一侧颈线之外。'},
+ {k:'自检',t:'骗线 + 操作 ⟶ 形态四问',tv:[['fm_trap','fm_list'],['fm_act','fm_list']],n:['fm_list'],cap:'形态四问：颈线在哪、满足点在哪、量能过关吗、止损放哪——四问答不上就不动手。'},
+ {k:'结语',t:'形态结语 · 不破不立',tv:[],n:['fm_root'],cap:'形态结语：不破不立、破了才动；先算满足、再等确认。（市场有风险，投资需谨慎。）'}
+];
+const VOL_NODES=[
+ {id:'vo_root',g:'groot',x:SUB_C.x,y:SUB_C.y,r:40,name:'成交量之变',tag:'三变 · 第二变',badge:'三变',role:'量能总纲 · 形态真伪',
+  lede:'成交量之变回答「这个形态是真的吗」：量能是形态的验钞机，也是筹码交换的现场记录。量在价先。',points:['<strong>硬门槛</strong>：突破与破位当日的量能不可替代。','<strong>三种关系</strong>：价涨量增（健康）／价涨量缩（背离）／价跌量增（看位置）。']},
+ {id:'vo_break',g:'gsub',x:560,y:120,r:26,name:'突破门槛 · 量比≥1.5',tag:'过线必须放量',badge:'量能',role:'真假的第一道关',lede:'突破日成交量相对 5 日与 20 日均量的倍数，是判断真假的第一道关：量比 ≥ 1.5 才算有效放量。',points:['<strong>有效</strong>：放量过线 + 收盘站住。','<strong>无效</strong>：缩量过线，多为假突破。']},
+ {id:'vo_div',g:'gsub',x:560,y:255,r:26,name:'价涨量缩 · 背离',tag:'最该警惕的一种',badge:'量能',role:'上涨的疲劳信号',lede:'价格继续上行而成交量持续萎缩，是最该警惕的背离：说明推动力量在衰竭，靠惯性在走。',points:['<strong>观察</strong>：连续 3 日价升量减。','<strong>含义</strong>：不加仓，并上移止损。']},
+ {id:'vo_down',g:'gsub',x:560,y:390,r:26,name:'价跌量增 · 看位置',tag:'低位换手／高位派发',badge:'量能',role:'同一个现象两种含义',lede:'价跌量增在低位是换手（有人接），在高位是派发（有人跑）。位置决定含义，这是最容易被误读的一格。',points:['<strong>低位</strong>：恐慌盘出清，配合破底翻就是买点。','<strong>高位</strong>：放量下跌，优先减仓。']},
+ {id:'vo_chip',g:'gsub',x:560,y:525,r:26,name:'筹码分布 · 获利盘与峰',tag:'谁在什么价位拿着',badge:'量能',role:'筹码存量（反六·筹）',
+  lede:'成交量是流量，筹码是存量：把每根 K 线的成交量按三角形铺在当日高低之间、旧筹码按换手率衰减，就得到成本分布。它给出三个真实价位——下方谁在托、上方谁被套、空间够不够。',points:['<strong>读数</strong>：获利盘比例、平均成本、90% 成本区间、集中度、筹码峰。','<strong>用途</strong>：止损放下方筹码峰之下，目标看上方筹码峰；区间宽度决定满足位是否成立。']},
+ {id:'vo_turn',g:'gsub',x:900,y:525,r:26,name:'换手率 · 筹码与拥挤',tag:'高位高换手＝拥挤',badge:'量能',role:'筹码交换的强度',lede:'换手率衡量筹码交换强度：低位放量换手是换手，高位放量换手是派发。同一个数字，位置不同含义相反。',points:['<strong>观察</strong>：换手率 ÷ 自身20日均值。','<strong>六反</strong>：高位高换手不是活跃，是拥挤。']},
+ {id:'vo_floor',g:'gsub',x:900,y:120,r:26,name:'地量地价 · 底部特征',tag:'量能枯竭',badge:'量能',role:'底部的常见前兆',lede:'成交量萎缩到极致（地量）常出现在底部区域：卖压出清、无人问津。但地量只是前兆，不是买点。',points:['<strong>前兆</strong>：地量出现，可纳入观察池。','<strong>买点</strong>：仍需等破底翻站回颈线或放量突破。']},
+ {id:'vo_act',g:'gact',x:900,y:390,r:28,name:'操作律 · 量不配合不动',tag:'缩量过线一律不算',badge:'操盘',role:'量能之变的操作律',lede:'量能之变的操作律只有一条：量不配合就不动。任何形态的突破与破位，都必须有过线的量能，否则视为噪音。',points:['<strong>进场</strong>：量比≥1.5 的过线。','<strong>减仓</strong>：高位价涨量缩。']},
+ {id:'vo_list',g:'gact',x:900,y:600,r:28,name:'自检 · 量价四问',tag:'四问齐备才算信号',badge:'清单',role:'下单前的四个问题',lede:'下单前问四句：量能是不是在关键位置放的？量比够不够？换手在什么位置？有没有背离？',points:['① 关键位置放量了吗？','② 量比 ≥ 1.5 吗？','③ 换手在高位还是低位？','④ 有没有价量背离？']}
+];
+const VOL_EDGES=[
+ {s:'vo_root',t:'vo_break',k:'groot'},{s:'vo_root',t:'vo_div',k:'groot'},{s:'vo_root',t:'vo_down',k:'groot'},{s:'vo_root',t:'vo_chip',k:'groot'},
+ {s:'vo_div',t:'vo_floor',k:'gsub'},{s:'vo_down',t:'vo_floor',k:'gsub'},
+ {s:'vo_break',t:'vo_act',k:'gmap'},{s:'vo_down',t:'vo_act',k:'gmap'},{s:'vo_chip',t:'vo_act',k:'gmap'},
+ {s:'vo_turn',t:'vo_list',k:'gact'},{s:'vo_act',t:'vo_list',k:'gact'}
+];
+const VOL_STEPS=[
+ {k:'总览',t:'成交量之变 · 总览',tv:[],n:['vo_root'],cap:'成交量之变：量能是形态的验钞机。量在价先，过线的量能不可替代。'},
+ {k:'门槛',t:'突破 ⟶ 量能门槛',tv:[['vo_root','vo_break']],n:['vo_break'],cap:'突破门槛：量比≥1.5 才算有效放量；缩量过线多为假突破。'},
+ {k:'背离',t:'价涨量缩 ⟶ 背离',tv:[['vo_root','vo_div']],n:['vo_div'],cap:'价涨量缩＝推动力衰竭；不加仓，上移止损。'},
+ {k:'跌量',t:'价跌量增 ⟶ 看位置',tv:[['vo_root','vo_down']],n:['vo_down'],cap:'价跌量增：低位是换手、高位是派发；位置决定含义。'},
+ {k:'筹码',t:'成交累积 ⟶ 筹码分布',tv:[['vo_root','vo_chip']],n:['vo_chip'],cap:'筹码分布（反六·筹）：量是流量、筹码是存量。止损放下方筹码峰、目标看上方筹码峰；90% 成本区间宽度决定满足位是不是噪音。'},
+ {k:'地量',t:'背离+跌量 ⟶ 地量地价',tv:[['vo_div','vo_floor'],['vo_down','vo_floor']],n:['vo_floor'],cap:'地量地价只是底部前兆，不是买点；买点仍需破底翻或放量突破。'},
+ {k:'操作',t:'量价+筹码 ⟶ 操作律（量不配合不动）',tv:[['vo_break','vo_act'],['vo_down','vo_act'],['vo_chip','vo_act']],n:['vo_act'],cap:'操作律：量不配合就不动；进场靠放量过线，减仓靠价涨量缩，止损靠筹码峰。'},
+ {k:'自检',t:'筹码 + 操作 ⟶ 量价筹码四问',tv:[['vo_chip','vo_list'],['vo_act','vo_list']],n:['vo_list'],cap:'四问：关键位置放量了吗、量比够不够、获利盘多少、上方压着几个筹码峰。'},
+ {k:'结语',t:'量能结语 · 量在价先',tv:[],n:['vo_root'],cap:'量能结语：量在价先、量为价证；缩量过线一律不算信号。（市场有风险，投资需谨慎。）'}
+];
+const MOOD_NODES=[
+ {id:'mo_root',g:'groot',x:SUB_C.x,y:SUB_C.y,r:40,name:'市场情绪之变',tag:'三变 · 第三变',badge:'三变',role:'情绪总纲 · 幅度调节',
+  lede:'市场情绪之变是最快、也最快失效的一层：它不决定方向，只决定幅度——现在该逆着谁、该加还是该减。',points:['<strong>三个读数</strong>：动能（MACD）、波幅（ATR）、拥挤（换手与涨跌停）。','<strong>六反法则</strong>：情绪极端处反向用，情绪平稳处顺势用。']},
+ {id:'mo_mom',g:'gsub',x:560,y:120,r:26,name:'动能 · MACD 背离',tag:'背离优先于交叉',badge:'情绪',role:'领先的警告',lede:'MACD 的交叉是滞后的确认，背离是领先的警告：价格创新高而动能不创新高，说明追价意愿在衰减。',points:['<strong>顶背离</strong>：M头、头肩顶的右头常见。','<strong>底背离</strong>：破底翻前的常见前兆。']},
+ {id:'mo_crowd',g:'gsub',x:560,y:390,r:26,name:'拥挤 · 换手与涨跌停',tag:'极值处反向',badge:'情绪',role:'拥挤度的度量',lede:'换手率极值与涨跌停家数是拥挤度的直接度量：拥挤到极致处，反向的概率上升。',points:['<strong>读数</strong>：涨停家数、连板高度、换手极值。','<strong>动作</strong>：极端处只做减仓，不做追高。']},
+ {id:'mo_reso',g:'gsub',x:560,y:525,r:26,name:'共振与背离 · 形态×情绪',tag:'同步＝可信，背离＝警惕',badge:'情绪',role:'两层交叉验证',lede:'情绪与形态同步（形态破位＋情绪转弱）信号最可信；两者背离时，优先相信形态。',points:['<strong>共振</strong>：形态破立与情绪转向同时发生 → 可加仓。','<strong>背离</strong>：形态破立而情绪未跟 → 减半仓。']},
+ {id:'mo_ext',g:'gsub',x:900,y:120,r:26,name:'极端情绪 · 反向用的时刻',tag:'恐慌与狂热',badge:'情绪',role:'六反的用武之地',lede:'情绪指标的价值不在平时，而在极端处：恐慌与狂热是六反唯一明确「反向」的时刻。',points:['<strong>恐慌</strong>：配合破底翻站回颈线 → 反向做多。','<strong>狂热</strong>：配合头肩顶／M头破颈线 → 反向做空。']},
+ {id:'mo_act',g:'gact',x:900,y:390,r:28,name:'操作律 · 只调幅度不调方向',tag:'情绪不定方向',badge:'操盘',role:'情绪之变的操作律',lede:'情绪之变的操作律：只调幅度，不调方向。方向由形态给，情绪只决定这一笔下多重。',points:['<strong>升温</strong>：缩小仓位、放宽止损（按 ATR）。','<strong>极端</strong>：反向但要等形态确认。']},
+ {id:'mo_list',g:'gact',x:900,y:600,r:28,name:'自检 · 情绪三读数',tag:'三读数齐备才算信号',badge:'清单',role:'下单前的三个读数',lede:'下单前读三个数：动能有没有背离、波幅在什么分位、拥挤到什么程度。',points:['① MACD 有背离吗？','② ATR 分位多高？','③ 换手／涨跌停到极值了吗？']}
+];
+const MOOD_EDGES=[
+ {s:'mo_root',t:'mo_mom',k:'groot'},{s:'mo_root',t:'mo_crowd',k:'groot'},{s:'mo_root',t:'mo_reso',k:'groot'},
+ {s:'mo_mom',t:'mo_ext',k:'gsub'},{s:'mo_crowd',t:'mo_ext',k:'gsub'},
+ {s:'mo_mom',t:'mo_act',k:'gmap'},{s:'mo_crowd',t:'mo_act',k:'gmap'},{s:'mo_reso',t:'mo_act',k:'gmap'},
+ {s:'mo_ext',t:'mo_list',k:'gact'},{s:'mo_act',t:'mo_list',k:'gact'}
+];
+const MOOD_STEPS=[
+ {k:'总览',t:'市场情绪之变 · 总览',tv:[],n:['mo_root'],cap:'市场情绪之变：不决定方向，只决定幅度；情绪极端处反向用，平稳处顺势用。'},
+ {k:'动能',t:'动能 ⟶ MACD 背离',tv:[['mo_root','mo_mom']],n:['mo_mom'],cap:'MACD 背离：交叉滞后、背离领先；顶背离常见于M头与头肩顶右头。'},
+ {k:'拥挤',t:'拥挤 ⟶ 换手与涨跌停',tv:[['mo_root','mo_crowd']],n:['mo_crowd'],cap:'拥挤度：涨停家数、连板高度、换手极值；极端处只做减仓，不做追高。'},
+ {k:'共振',t:'形态 × 情绪 ⟶ 共振与背离',tv:[['mo_root','mo_reso']],n:['mo_reso'],cap:'共振则信号可信、可加仓；背离则优先相信形态、减半仓。'},
+ {k:'极端',t:'动能+拥挤 ⟶ 极端情绪',tv:[['mo_mom','mo_ext'],['mo_crowd','mo_ext']],n:['mo_ext'],cap:'极端情绪是六反唯一明确反向的时刻：恐慌配破底翻、狂热配破颈线。'},
+ {k:'操作',t:'情绪 ⟶ 操作律（只调幅度）',tv:[['mo_mom','mo_act'],['mo_crowd','mo_act'],['mo_reso','mo_act']],n:['mo_act'],cap:'操作律：情绪只调幅度不调方向；升温缩仓，极端反向须等形态确认。'},
+ {k:'自检',t:'极端 + 操作 ⟶ 情绪三读数',tv:[['mo_ext','mo_list'],['mo_act','mo_list']],n:['mo_list'],cap:'情绪三读数：MACD 有背离吗、ATR 分位多高、换手与涨跌停到极值了吗。'},
+ {k:'结语',t:'情绪结语 · 逆众不逆势',tv:[],n:['mo_root'],cap:'情绪结语：逆众而不逆势——情绪极端处反向，情绪平稳处顺势。（市场有风险，投资需谨慎。）'}
+];
+const SUBS={
+ form:{root:'fm_root',C:SUB_C,R:SUB_R,label:'形态之变子图',short:'形态 · 分类与操盘',nodes:FORM_NODES,edges:FORM_EDGES,steps:FORM_STEPS},
+ vol:{root:'vo_root',C:SUB_C,R:SUB_R,label:'成交量之变子图',short:'量能 · 真假与操盘',nodes:VOL_NODES,edges:VOL_EDGES,steps:VOL_STEPS},
+ mood:{root:'mo_root',C:SUB_C,R:SUB_R,label:'市场情绪之变子图',short:'情绪 · 读数与操盘',nodes:MOOD_NODES,edges:MOOD_EDGES,steps:MOOD_STEPS}
+};
+const SUBROOT={b_xing:'form',b_liang:'vol',b_qingxu:'mood'};
+/* ============ 1c. 自绘示意图引擎（矢量，无外部图片） ============ */
+const FIG_W=360, FIG_H=230, FIG_L=52, FIG_R=352, FIG_T=16, FIG_B=198;
+const FIGSPEC={
+ f01:{name:'上飘旗形 · 跌幅满足',min:50,max:96,nx:12,
+  pts:[[0,63],[0.7,72],[1.4,66],[2.1,86],[2.8,79],[3.5,90],[4.3,78],[5.0,70],[5.7,75],[6.4,70],[7.1,74],[7.8,70.4],[8.5,73],[9.2,70.8],[9.9,72],[10.6,71],[11.3,64],[12,55]],
+  hl:[{p:90},{p:75},{p:70,k:'neck'},{p:55,k:'target'}],
+  vm:[{x:3.5,a:90,b:70,t:'20'},{x:6.4,a:75,b:55,t:'20'}],
+  an:[{x:8.8,p:70,t:'跌破前低才成立',dx:0,dy:36}]},
+ f02:{name:'下飘旗形 · 涨幅满足',min:16,max:54,nx:12,
+  pts:[[0,20],[0.6,27],[1.2,23],[1.9,35],[2.6,29],[3.3,35],[4.0,30],[4.7,34],[5.4,30.5],[6.1,33.5],[6.8,31],[7.5,33],[8.2,31.5],[8.9,33],[9.6,32],[10.3,36],[10.8,34],[11.4,40],[11.8,38],[12,45]],
+  hl:[{p:35,k:'neck'},{p:30},{p:20},{p:45,k:'target'}],
+  vm:[{x:1.9,a:35,b:20,t:'15'},{x:5.7,a:30,b:45,t:'15'}],
+  an:[{x:3.4,p:35,t:'突破前高才成立',dx:0,dy:-28}]},
+ f03:{name:'矩形假突破',min:50,max:92,nx:14,
+  pts:[[0,72],[1,78],[2,71],[3,79],[4,70],[5,79],[6,71],[7,78],[8,72],[9,86],[10,79],[11,74],[12,70],[13,64],[14,55]],
+  hl:[{p:86},{p:80,k:'neck'},{p:70,k:'neck'},{p:60,k:'target'}],
+  vm:[{x:0.5,a:80,b:70,t:'10'}],
+  an:[{x:9,p:86,t:'假突破 86',dx:0,dy:-16},{x:10.9,p:70,t:'跌破才确立',dx:0,dy:32}]},
+ f04:{name:'头肩顶假突破',min:40,max:102,nx:14,
+  pts:[[0,72],[1,86],[2,74],[3,92],[4,73],[5,84],[6,72],[7,95],[8,80],[9,73],[10,77],[11,70],[12,62],[13,53],[14,45]],
+  hl:[{p:95},{p:90},{p:70,k:'neck'},{p:45,k:'target'}],
+  vm:[{x:7,a:95,b:70,t:'25'}],
+  an:[{x:7.4,p:95,t:'假突破 95',dx:0,dy:-16},{x:11,p:70,t:'跌破颈线→卖讯',dx:0,dy:34}]},
+ f05:{name:'破底翻',min:16,max:26,nx:9,
+  pts:[[0,24.6],[1,20],[2,22.2],[3,20],[4,21.6],[5,20],[6,18.5],[7,20.6],[8,22.7],[9,24.4]],
+  hl:[{p:22,k:'neck'},{p:20},{p:18.5}],
+  vm:[],
+  an:[{x:6,p:18.5,t:'破底 18.5',dx:0,dy:26},{x:8.2,p:22.7,t:'站回 22',dx:0,dy:-20}]},
+ f06:{name:'破底翻 · W底',min:26,max:62,nx:12,
+  pts:[[0,38],[1,32],[2,40],[3,33],[4,30],[5,28.5],[6,32.5],[7,36],[8,33.5],[9,41],[10,38],[11,50],[12,58]],
+  hl:[{p:45,k:'neck'},{p:30},{p:60,k:'target'}],
+  vm:[{x:11.4,a:45,b:30,t:'15'}],
+  an:[{x:5,p:28.5,t:'破底 28.5',dx:0,dy:26},{x:6.4,p:32.5,t:'站回 32 买点',dx:0,dy:-22}]},
+ f07:{name:'三角形头部 · 跌幅满足',min:20,max:86,nx:15,
+  pts:[[0,52],[1,70],[2,80],[3,71],[4,77],[5,70],[6,75],[7,69],[8,73],[9,66],[10,62],[11,55],[12,45],[13,51],[14,36],[15,25]],
+  hl:[{p:80},{p:60},{p:45,k:'target'},{p:25,k:'target'}],
+  ln:[{x0:2,p0:80,x1:9.6,p1:66.4},{x0:3,p0:60,x1:9.6,p1:66.4}],
+  vm:[{x:2,a:80,b:60,t:'20'}],
+  an:[{x:9.8,p:65,t:'1/2~3/4 处破位',dx:0,dy:-18}]},
+ f08:{name:'收敛三角 · 涨幅满足',min:32,max:86,nx:15,
+  pts:[[0,60],[1,42],[2,55],[3,44],[4,53],[5,45],[6,51],[7,46],[8,50],[9,47],[10,56],[11,52],[12,65],[13,60],[14,72],[15,82]],
+  hl:[{p:55},{p:40},{p:65,k:'target'},{p:80,k:'target'}],
+  ln:[{x0:2,p0:55,x1:9.6,p1:48.6},{x0:0.6,p0:40,x1:9.6,p1:48.6}],
+  vm:[{x:1,a:55,b:40,t:'15'}],
+  an:[{x:9.6,p:48,t:'1/2~3/4 处突破',dx:0,dy:-40}]},
+ f09:{name:'头肩底 · 涨幅满足',min:50,max:116,nx:16,
+  pts:[[0,78],[1,68],[2,80],[3,60],[4,76],[5,68],[6,74],[7,70],[8,78],[9,74],[10,82],[11,78],[12,92],[13,86],[14,100],[15,93],[16,110]],
+  hl:[{p:80},{p:60},{p:92,k:'target'},{p:110,k:'target'}],
+  ln:[{x0:2,p0:80,x1:9.2,p1:74}],
+  vm:[{x:3,a:78,b:60,t:'18'}],
+  an:[{x:9.4,p:74,t:'突破颈线 74',dx:0,dy:-30}]},
+ f10:{name:'头肩顶 · 跌幅满足',min:24,max:96,nx:14,
+  pts:[[0,72],[1,80],[2,70],[3,90],[4,72],[5,82],[6,70],[7,76],[8,67],[9,72],[10,62],[11,66],[12,50],[13,56],[14,30]],
+  hl:[{p:90},{p:70,k:'neck'},{p:50,k:'target'},{p:30,k:'target'}],
+  vm:[{x:3,a:90,b:70,t:'20'}],
+  an:[{x:8.6,p:70,t:'跌破颈线 70',dx:0,dy:34}]},
+ f11:{name:'M头 · 跌幅满足',min:24,max:116,nx:14,
+  pts:[[0,88],[1,105],[2,80],[3,110],[4,82],[5,95],[6,78],[7,86],[8,75],[9,82],[10,68],[11,74],[12,55],[13,62],[14,30]],
+  hl:[{p:110},{p:80,k:'neck'},{p:55,k:'target'},{p:30,k:'target'}],
+  vm:[{x:1,a:105,b:80,t:'25'}],
+  an:[{x:1.2,p:105,t:'左头 105',dx:0,dy:-16},{x:8.4,p:80,t:'跌破颈线 80',dx:0,dy:34}]},
+ f12:{name:'W底 · 涨幅满足',min:8,max:30,nx:14,
+  pts:[[0,21],[1,15],[2,19.4],[3,13],[4,16],[5,14],[6,17],[7,15.5],[8,17.6],[9,17],[10,19.6],[11,18.4],[12,23],[13,21],[14,28]],
+  hl:[{p:20},{p:13},{p:23,k:'target'},{p:28,k:'target'}],
+  ln:[{x0:0,p0:20.4,x1:10,p1:17.4}],
+  vm:[{x:11.2,a:18,b:13,t:'5'}],
+  an:[{x:5,p:13.6,t:'双底 15/13',dx:0,dy:26}]}
+};
+function figTxtW(t){ return Array.from(t).reduce((w,ch)=>w+(/[\u4e00-\u9fff\uff00-\uffef]/.test(ch)?10.2:5.6),0); }
+function figSVG(k){
+  const f=FIGSPEC[k]; if(!f) return '';
+  const X=x=>FIG_L+(x/f.nx)*(FIG_R-FIG_L);
+  const Y=p=>FIG_B-((p-f.min)/(f.max-f.min))*(FIG_B-FIG_T);
+  let o='';
+  (f.hl||[]).forEach(h=>{ const y=Y(h.p).toFixed(1);
+    o+='<line class="'+(h.k==='neck'?'fl-neck':(h.k==='target'?'fl-target':'fl-plain'))+'" x1="'+FIG_L+'" y1="'+y+'" x2="'+FIG_R+'" y2="'+y+'"/>';
+    o+='<text class="lv-'+(h.k||'plain')+'" x="'+(FIG_L-4)+'" y="'+(Y(h.p)+4).toFixed(1)+'" text-anchor="end">'+h.p+'</text>';
+    if(h.k==='target') o+='<text class="lv-target" x="2" y="'+(Y(h.p)+4).toFixed(1)+'" text-anchor="start">满足</text>';
+  });
+  (f.ln||[]).forEach(l=>{ o+='<line class="fl-neck" x1="'+X(l.x0).toFixed(1)+'" y1="'+Y(l.p0).toFixed(1)+'" x2="'+X(l.x1).toFixed(1)+'" y2="'+Y(l.p1).toFixed(1)+'"/>'; });
+  o+='<path class="fp" d="'+f.pts.map((q,i)=>(i?'L':'M')+X(q[0]).toFixed(1)+' '+Y(q[1]).toFixed(1)).join(' ')+'"/>';
+  (f.vm||[]).forEach(v=>{ const x=X(v.x), xa=(x-4).toFixed(1), xb=(x+4).toFixed(1), ya=Y(v.a).toFixed(1), yb=Y(v.b).toFixed(1);
+    o+='<line class="vm-line" x1="'+x.toFixed(1)+'" y1="'+ya+'" x2="'+x.toFixed(1)+'" y2="'+yb+'"/>';
+    o+='<line class="vm-tick" x1="'+xa+'" y1="'+ya+'" x2="'+xb+'" y2="'+ya+'"/>';
+    o+='<line class="vm-tick" x1="'+xa+'" y1="'+yb+'" x2="'+xb+'" y2="'+yb+'"/>';
+    o+='<text class="vm-t" x="'+(x+6).toFixed(1)+'" y="'+(((Y(v.a)+Y(v.b))/2)+4).toFixed(1)+'">'+v.t+'</text>';
+  });
+  (f.an||[]).forEach(a=>{ const x=X(a.x), y=Y(a.p), tx=x+(a.dx||0), ty=y+(a.dy||0), w=figTxtW(a.t);
+    let anc=a.dx>0?'start':(a.dx<0?'end':'middle'), lx=tx+(anc==='start'?3:anc==='end'?-3:0);
+    if(anc==='middle'){ if(lx-w/2<4){ anc='start'; lx=4; } else if(lx+w/2>FIG_W-4){ anc='end'; lx=FIG_W-4; } }
+    o+='<line class="an-line" x1="'+x.toFixed(1)+'" y1="'+y.toFixed(1)+'" x2="'+tx.toFixed(1)+'" y2="'+ty.toFixed(1)+'"/>';
+    o+='<circle class="an-dot" cx="'+x.toFixed(1)+'" cy="'+y.toFixed(1)+'" r="2.2"/>';
+    o+='<text class="an" x="'+lx.toFixed(1)+'" y="'+(ty-3).toFixed(1)+'" text-anchor="'+anc+'">'+a.t+'</text>';
+  });
+  return '<svg class="figsvg" viewBox="0 0 '+FIG_W+' '+FIG_H+'" role="img" aria-label="'+f.name+'"><rect class="fig-bg" width="'+FIG_W+'" height="'+FIG_H+'"/><g>'+o+'</g></svg>';
+}
+/* ============ 2. SVG 渲染 ============ */
+const SVGNS='http://www.w3.org/2000/svg';
+const svg=document.getElementById('graph');
+const el=(t,a)=>{const e=document.createElementNS(SVGNS,t);for(const k in a)e.setAttribute(k,a[k]);return e;};
+const nodeById={}; NODES.forEach(n=>nodeById[n.id]=n); Object.values(SUBS).forEach(s=>s.nodes.forEach(n=>nodeById[n.id]=n));
+const reduceMotion=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const defs=el('defs',{});
+defs.innerHTML=`
+<marker id="ar-cycle" markerWidth="9" markerHeight="9" refX="7" refY="3.2" orient="auto" markerUnits="userSpaceOnUse"><path d="M0,0 L7,3.2 L0,6.4" fill="none" stroke="var(--accent)" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></marker>
+<marker id="ar-chapter" markerWidth="9" markerHeight="9" refX="7" refY="3.2" orient="auto" markerUnits="userSpaceOnUse"><path d="M0,0 L7,3.2 L0,6.4" fill="none" stroke="var(--gold)" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></marker>
+<marker id="ar-map" markerWidth="9" markerHeight="9" refX="7" refY="3.2" orient="auto" markerUnits="userSpaceOnUse"><path d="M0,0 L7,3.2 L0,6.4" fill="none" stroke="var(--neutral)" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></marker>
+<filter id="nodeShadow" x="-45%" y="-45%" width="190%" height="190%"><feDropShadow dx="0" dy="1.6" stdDeviation="2.4" flood-color="var(--seed-fg)" flood-opacity="0.17"/></filter>`;
+svg.appendChild(defs);
+const viewport=el('g',{id:'viewport'}); svg.appendChild(viewport);
+const bg=el('g',{class:'g-bg','aria-hidden':'true'}); viewport.appendChild(bg);
+function drawBg(v){ bg.innerHTML='';
+  const sub=SUBS[v];
+  if(sub){ const cc=sub.C, rr=sub.R;
+    bg.appendChild(el('circle',{cx:cc.x,cy:cc.y,r:rr,stroke:'var(--line)','stroke-width':1,'stroke-dasharray':'2 7',opacity:.6}));
+    bg.appendChild(el('circle',{cx:cc.x,cy:cc.y,r:rr+52,stroke:'var(--line)','stroke-width':.8,opacity:.5}));
+    bg.appendChild(el('circle',{class:'core-spin',cx:cc.x,cy:cc.y,r:rr+26}));
+  } else {
+    [ORB.fan,ORB.bian,ORB.shi].forEach((rr,i)=>{ bg.appendChild(el('circle',{cx:C.x,cy:C.y,r:rr,stroke:'var(--line)','stroke-width':i===2?.8:1,'stroke-dasharray':i===0?'':'2 7',opacity:i===0?.5:.6})); });
+    for(let d=0;d<360;d+=30){ const a=d*Math.PI/180; const r1=ORB.shi, r2=ORB.shi+9;
+      bg.appendChild(el('line',{x1:C.x+r1*Math.cos(a),y1:C.y+r1*Math.sin(a),x2:C.x+r2*Math.cos(a),y2:C.y+r2*Math.sin(a),stroke:'var(--line)','stroke-width':.8})); }
+    bg.appendChild(el('circle',{class:'core-spin',cx:C.x,cy:C.y,r:76}));
+  }
+}
+function hexBars(g,cx,cy,scale){
+  const lines=[1,1,0,1,0,0]; const bw=46*scale,bh=5*scale,gap=4*scale;
+  const total=lines.length*(bh+gap)-gap; let y=cy-total/2+bh/2;
+  lines.forEach(v=>{ if(v){ g.appendChild(el('rect',{class:'hexbar',x:cx-bw/2,y:y-bh/2,width:bw,height:bh,rx:1})); }
+    else { const w=(bw-9*scale)/2; g.appendChild(el('rect',{class:'hexbar',x:cx-bw/2,y:y-bh/2,width:w,height:bh,rx:1})); g.appendChild(el('rect',{class:'hexbar',x:cx+bw/2-w,y:y-bh/2,width:w,height:bh,rx:1})); }
+    y+=bh+gap; });
+}
+const edgeLayer=el('g',{class:'edges'}); viewport.appendChild(edgeLayer);
+const edgeEls=[];
+function ringArc(a,b,r){ const gap=14; const aA=Math.atan2(a.y-C.y,a.x-C.x)*180/Math.PI, aB=Math.atan2(b.y-C.y,b.x-C.x)*180/Math.PI;
+  const s=P(aA+gap,r), e=P(aB-gap,r); return `M ${s.x.toFixed(1)} ${s.y.toFixed(1)} A ${r} ${r} 0 0 1 ${e.x.toFixed(1)} ${e.y.toFixed(1)}`; }
+function curve(a,b,bend){ const mx=(a.x+b.x)/2,my=(a.y+b.y)/2,dx=b.x-a.x,dy=b.y-a.y; const cx=mx-dy*bend, cy=my+dx*bend;
+  return `M ${a.x.toFixed(1)} ${a.y.toFixed(1)} Q ${cx.toFixed(1)} ${cy.toFixed(1)} ${b.x.toFixed(1)} ${b.y.toFixed(1)}`; }
+function trimEnd(a,b,pad){ const dx=b.x-a.x,dy=b.y-a.y,L=Math.hypot(dx,dy)||1; return {x:b.x-dx/L*pad,y:b.y-dy/L*pad}; }
+function drawEdges(data){ edgeLayer.innerHTML=''; edgeEls.length=0;
+ data.edges.forEach(e=>{
+  const a=nodeById[e.s], b=nodeById[e.t]; let d, marker='';
+  const cls={cycle:'cycle',def:'def',chapter:'chapter',map:'map',groot:'cycle',gsub:'def',gmap:'map',gact:'chapter'}[e.k]||'cycle';
+  if(e.k==='cycle'){ d=ringArc(a,b,ORB.fan); marker='url(#ar-cycle)'; }
+  else { const bend = e.k==='def'?0.0 : ((e.k==='map'||e.k==='gmap')?0.10:0.08); const end=trimEnd(a,b,(b.r||24)+7);
+    d = e.k==='def'? `M ${a.x} ${a.y} L ${end.x.toFixed(1)} ${end.y.toFixed(1)}` : curve(a,end,bend);
+    marker = {chapter:'url(#ar-chapter)',gact:'url(#ar-chapter)',map:'url(#ar-map)',gmap:'url(#ar-map)',groot:'url(#ar-cycle)'}[e.k]||''; }
+  const path=el('path',{d,class:'edge '+cls,'marker-end':marker,'data-s':e.s,'data-t':e.t});
+  path.classList.add('e-'+(EDGE_LAYER[e.k]||'core')); edgeLayer.appendChild(path); edgeEls.push({e,path});
+  if(e.label){ const mx=(a.x+b.x)/2,my=(a.y+b.y)/2; const t=el('text',{x:mx,y:my-6,class:'edge-label e-'+(EDGE_LAYER[e.k]||'core'),'text-anchor':'middle'}); t.textContent=e.label; edgeLayer.appendChild(t); }
+ });
+}
+const nodeLayer=el('g',{class:'nodes'}); viewport.appendChild(nodeLayer);
+const nodeEls={};
+function drawNodes(data){ nodeLayer.innerHTML=''; for(const k in nodeEls) delete nodeEls[k];
+ data.nodes.forEach(n=>{
+  const g=el('g',{class:'node g-'+n.g,'data-id':n.id,tabindex:'0',role:'button','aria-label':n.name+' — '+n.role});
+  g.appendChild(el('circle',{class:'halo',cx:n.x,cy:n.y,r:(n.r||24)+8}));
+  g.appendChild(el('circle',{class:'disc',cx:n.x,cy:n.y,r:n.r||24}));
+  g.appendChild(el('circle',{class:'inner',cx:n.x,cy:n.y,r:Math.max(6,(n.r||24)-4)}));
+  if(n.hex){ hexBars(g,n.x,n.y-6,1); }
+  else if(n.num){ const t=el('text',{class:'glyph',x:n.x,y:n.y,'font-size':'19','font-weight':'500'}); t.textContent=n.num; g.appendChild(t); }
+  else { g.appendChild(el('circle',{cx:n.x,cy:n.y,r:3.2,fill:'currentColor',opacity:.85})); }
+  const ly=n.y+(n.r||24)+16;
+  const nm=el('text',{class:'name',x:n.x,y:ly,'font-size':(n.g==='shi'||n.g==='gsub'||n.g==='gact')?'12.5':'13.5','text-anchor':'middle','font-weight':'500'});
+  nm.textContent=n.name; g.appendChild(nm);
+  if(n.tag){ const tg=el('text',{class:'tag',x:n.x,y:ly+13,'text-anchor':'middle'}); tg.textContent=n.tag; g.appendChild(tg); }
+  nodeLayer.appendChild(g); nodeEls[n.id]=g;
+  g.addEventListener('click',ev=>{ev.stopPropagation();select(n.id,true);});
+  g.addEventListener('dblclick',ev=>{ const sk=SUBROOT[n.id]; if(sk){ ev.stopPropagation(); enterSub(sk); } });
+  g.addEventListener('keydown',ev=>{ if(ev.key==='Enter'||ev.key===' '){ev.preventDefault();select(n.id,true);} });
+  g.addEventListener('mouseenter',()=>hover(n.id)); g.addEventListener('mouseleave',()=>hover(null));
+ });
+}
+const cometLayer=el('g',{class:'comets','aria-hidden':'true'}); viewport.appendChild(cometLayer);
+
+/* ============ 3. 视图机制 ============ */
+let view='main';
+const MAIN_D={nodes:NODES,edges:EDGES,steps:STEPS};
+function currentData(){ if(view==='matrix') return {nodes:[],edges:[]}; return view==='main'?MAIN_D:SUBS[view]; }
+function currentSteps(){ if(view==='matrix') return MATRIX_STEPS; return currentData().steps; }
+function focusGroup(){ return view==='main'?'fan':'gsub'; }
+const sgBack=document.getElementById('sg-back');
+function setFiltersEnabled(on){ document.querySelectorAll('.filter input').forEach(i=>{ i.disabled=!on; }); const f=document.querySelector('.filters'); if(f) f.style.opacity=on?'1':'.45'; }
+function buildGraph(v){ if(v==='matrix'){ showMatrixView(); return; } view=v; svg.style.display=''; mxWrap.hidden=true;
+  document.querySelector('.stage-tools').style.display=''; document.querySelector('.stage-hint').style.display='';
+  document.getElementById('btn-matrix').classList.remove('on');
+  const sub=SUBS[v]||null; drawBg(v); drawEdges(currentData()); drawNodes(currentData()); cometLayer.innerHTML='';
+  graphSvg.classList.remove('hide-core','hide-fan','hide-bian','hide-shi');
+  buildStageList(v); buildTrack(v); setFiltersEnabled(v==='main'); sgBack.style.display=(sub)?'inline-flex':'none';
+  capEl.innerHTML = sub
+    ? `<div class="cap-move"><span class="cap-idx">推演</span><span class="cap-t">${sub.label} · 点击「播放推演」逐步演绎</span></div><div class="cap-text">从总览到各分支与放大器，再到操作律与自检清单。左上「返回总图」或 Esc 回到主图谱。</div>`
+    : '<div class="cap-move"><span class="cap-idx">推演</span><span class="cap-t">点击「播放推演」，从宗到三变到十二图逐步演绎</span></div><div class="cap-text">每一步点亮对应节点、以彗星标出方向，并在下方累积路径；点击节点查看算法、信号与失效线，双击三变节点可进入子图。</div>';
+  selected=null; clearHighlight(); stopPlay(); cur=-1; fit(); }
+function enterSub(key){ if(!SUBS[key])return; buildGraph(key); renderPanel(SUBS[key].root); }
+function exitSub(){ buildGraph('main'); renderIntro(); }
+sgBack.addEventListener('click',exitSub);
+
+/* ============ 4. 交互 ============ */
+const graphSvg=svg; let selected=null;
+function relatedSet(id){ const rel=new Set([id]); const edges=[]; currentData().edges.forEach((e,i)=>{ if(e.s===id||e.t===id){rel.add(e.s);rel.add(e.t);edges.push(i);} }); return {rel,edges}; }
+function applyHighlight(rel,edges){ graphSvg.classList.add('has-sel');
+  currentData().nodes.forEach(n=>{ const g=nodeEls[n.id]; g.classList.toggle('rel',rel.has(n.id)&&n.id!==selected); g.classList.toggle('sel',n.id===selected); });
+  edgeEls.forEach((o,i)=>o.path.classList.toggle('rel',edges.includes(i))); }
+function clearHighlight(){ graphSvg.classList.remove('has-sel'); currentData().nodes.forEach(n=>nodeEls[n.id].classList.remove('rel','sel')); edgeEls.forEach(o=>o.path.classList.remove('rel')); }
+function hover(id){ if(selected)return; if(!id){clearHighlight();return;} const {rel,edges}=relatedSet(id); applyHighlight(rel,edges); }
+function clearPlayMode(){ graphSvg.classList.remove('play-mode'); cometLayer.innerHTML=''; currentData().nodes.forEach(n=>nodeEls[n.id].classList.remove('traced','active')); edgeEls.forEach(o=>o.path.classList.remove('traced','active')); }
+function select(id,openPanel){ stopPlay(); clearPlayMode(); selected=id; const {rel,edges}=relatedSet(id); applyHighlight(rel,edges); nodeEls[id].classList.add('sel'); renderPanel(id); syncStageList(id); if(openPanel&&window.innerWidth<=1180) document.body.classList.add('panel-open'); }
+svg.addEventListener('click',()=>{ selected=null; clearPlayMode(); clearHighlight(); renderIntro(); syncStageList(null); });
+const panel=document.getElementById('panel');
+const badgeClass={core:'b-core',fan:'b-fan',bian:'b-bian',shi:'b-shi',groot:'b-groot',gsub:'b-gsub',gact:'b-gact'};
+function linksFor(id){ const out=[]; currentData().edges.forEach(e=>{ if(e.s===id&&e.t!==id)out.push(e.t); if(e.t===id&&e.s!==id)out.push(e.s); }); return [...new Set(out)]; }
+function chipColor(g){ return g==='fan'||g==='groot'||g==='core'?'var(--primary)':(g==='bian'||g==='gact'?'var(--gold)':(g==='gsub'?'var(--neutral)':'var(--accent)')); }
+function renderPanel(id){ const n=nodeById[id]; const links=linksFor(id);
+  panel.innerHTML=`<div><span class="panel-badge ${badgeClass[n.g]}">${n.badge}</span><h3>${n.name}</h3><p class="role">${n.role}</p></div>
+  <p class="lede">${n.lede}</p>${n.quote?`<div class="quote">${n.quote}</div>`:''}
+  ${n.fig?`<figure class="fig-wrap" title="点击放大"><span class="fig-tag">${n.tag}</span>${figSVG(n.fig)}<figcaption>自绘示意图 · 形态高度等幅移动算法 · 点击放大</figcaption></figure>`:''}
+  <h4>算法 · 信号 · 失效</h4><ul class="points">${n.points.map(p=>`<li>${p}</li>`).join('')}</ul>
+  ${SUBROOT[id]?`<h4>下钻</h4><button class="drill-btn" data-expand="${SUBROOT[id]}"><span class="ar">⤢</span>展开${nodeById[id].name.split(' · ')[0]}子图</button>`:''}
+  ${links.length?`<h4>关联节点</h4><div class="chips">${links.map(l=>{const t=nodeById[l];return `<button class="chip" data-goto="${l}"><span class="dot" style="background:${chipColor(t.g)}"></span>${t.name}</button>`;}).join('')}</div>`:''}`;
+  panel.querySelectorAll('[data-goto]').forEach(b=>b.addEventListener('click',()=>select(b.dataset.goto,true)));
+  panel.querySelectorAll('[data-expand]').forEach(b=>b.addEventListener('click',()=>enterSub(b.dataset.expand)));
+  panel.scrollTop=0; }
+function renderIntro(){
+  panel.innerHTML=`<span class="panel-badge">导读 · 看盘框架</span>
+  <div class="intro-hero"><div class="big"><span class="gd">三变</span>定其形<br><em>六反</em>验其真<br><span class="ac">颈线</span>定破立</div>
+  <p class="lede">本图谱把看盘拆成三层：<strong>形态之变</strong>（形态十二图）给出方向与目标位，<strong>成交量之变</strong>验证形态真假，<strong>市场情绪之变</strong>决定加减幅度；再由<strong>六个指标</strong>——K线形态、成交量、换手率、MACD、布林通道、筹码——反向校验。先算满足，再等确认。</p></div>
+  <h4>框架五层</h4><div class="intro-steps">
+    <div>宗 · 象数势：价格包容一切；形态为象、指标为数、情绪为势。</div>
+    <div>三变：形态之变（十二图）、成交量之变（量价配合）、市场情绪之变（动能与波幅）。</div>
+    <div>六反 · 指标观察：形 → 量 → 换 → 叉 → 带 → 筹，环环相扣。</div>
+    <div>十二图：中继 2 图、骗线 4 图、反转 6 图；每图给出满足计算、信号与失效线。</div>
+    <div>子图 · 下钻：双击任一「三变」节点（或面板按钮）进入该变的子图。</div></div>
+  <h4>核心命题</h4><div class="quote">“先算满足点，再等确认；颈线未破立之前，一切目标位都只是假设。”</div>
+  <h4>说明</h4><ul class="points">
+    <li>十二张形态图为<strong>自绘矢量示意图</strong>（非原作图片），算法取自「形态高度等幅移动」满足计算，数字均可逐项复核，可自由使用。</li>
+    <li>满足计算采用「形态高度等幅移动」的标准算法，数字取自各图标注，可逐项复核。</li>
+    <li>不构成任何投资建议。<strong>市场有风险，投资需谨慎。</strong></li></ul>`; }
+renderIntro();
+const stageList=document.getElementById('stage-list');
+function buildStageList(v){ stageList.innerHTML='';
+  if(v==='matrix'){ NODES.filter(n=>n.g==='fan').forEach(n=>{ const b=document.createElement('button'); b.className='stage-item'; b.dataset.id=n.id;
+      b.innerHTML=`<span class="num">${n.num}</span><span class="sl-txt"><span class="sl-name">${n.name}</span><br><span class="sl-role">点我高亮对应格</span></span>`;
+      b.addEventListener('click',()=>{ mxHighlightCol(MX_FANCOL[n.num]||n.num); syncStageList(n.id); }); stageList.appendChild(b); });
+    const hh=document.querySelector('.rail-sec h2'); if(hh) hh.textContent='六反 · 对应矩阵列'; return; }
+  const list=(SUBS[v])? SUBS[v].nodes.filter(n=>n.g==='gsub'||n.g==='gact') : NODES.filter(n=>n.g==='fan');
+  list.forEach(n=>{ const b=document.createElement('button'); b.className='stage-item'; b.dataset.id=n.id;
+    const badge=n.num? n.num : (n.g==='gact'?'策':'·');
+    b.innerHTML=`<span class="num">${badge}</span><span class="sl-txt"><span class="sl-name">${n.name}</span><br><span class="sl-role">${n.tag||n.role}</span></span>`;
+    b.addEventListener('click',()=>select(n.id,true)); stageList.appendChild(b); });
+  const h=document.querySelector('.rail-sec h2'); if(h) h.textContent=(SUBS[v]?SUBS[v].short:'六反 · 指标观察');
+}
+function syncStageList(id){ stageList.querySelectorAll('.stage-item').forEach(b=>b.setAttribute('aria-current',String(b.dataset.id===id))); }
+document.querySelectorAll('.filter input').forEach(inp=>inp.addEventListener('change',()=>graphSvg.classList.toggle('hide-'+inp.dataset.layer,!inp.checked)));
+
+/* ============ 5. 推演时间线 ============ */
+const capEl=document.getElementById('tl-caption'), trackEl=document.getElementById('tl-track');
+const playBtn=document.getElementById('btn-play'), playIcon=document.getElementById('play-icon'), playLabel=document.getElementById('play-label');
+let cur=-1, timer=null, playing=false; let dots=[];
+function buildTrack(v){ trackEl.innerHTML=''; const S=(v==='matrix')?MATRIX_STEPS:(SUBS[v]?SUBS[v].steps:STEPS);
+  S.forEach((s,i)=>{ const d=document.createElement('button'); d.type='button'; d.className='tl-pill'; d.title='第'+(i+1)+'步 · '+s.t; d.textContent=s.k;
+    d.addEventListener('click',()=>{stopPlay();gotoStep(i);}); trackEl.appendChild(d); });
+  dots=[...trackEl.children]; }
+function stepDur(){ return Math.max(1400,2600*parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--seed-motion')||1)); }
+function animateComet(path,dur){ if(reduceMotion||!path)return; let L; try{L=path.getTotalLength();}catch(_){return;} if(!L)return;
+  const p0=path.getPointAtLength(0); const c=el('circle',{class:'comet',r:3.8,cx:p0.x,cy:p0.y,opacity:0}); cometLayer.appendChild(c);
+  const t0=performance.now(); (function frame(now){ if(!c.isConnected)return; let p=(now-t0)/dur; if(p>1)p=1; const pt=path.getPointAtLength(L*p);
+    c.setAttribute('cx',pt.x.toFixed(1)); c.setAttribute('cy',pt.y.toFixed(1));
+    c.setAttribute('opacity',(Math.sin(Math.PI*p)*0.85+0.15).toFixed(2));
+    if(p<1)requestAnimationFrame(frame); else c.remove(); })(t0); }
+function gotoStep(i){ if(view==='matrix'){ const S=MATRIX_STEPS; cur=(i+S.length)%S.length; const st=S[cur]; mxClear(); if(st.col) mxHighlightCol(st.col);
+    capEl.innerHTML=`<div class="cap-move"><span class="cap-idx">${String(cur+1).padStart(2,'0')} / ${S.length}</span><span class="cap-t">${st.t.replace(/⟶/g,'<span class="arw">⟶</span>')}</span></div><div class="cap-text">${st.cap}</div>`;
+    dots.forEach((d,k)=>{ d.classList.toggle('cur',k===cur); d.classList.toggle('done',k<cur); }); return; }
+  const S=currentSteps(); cur=(i+S.length)%S.length; const st=S[cur]; selected=null; clearHighlight(); cometLayer.innerHTML='';
+  const visN=new Set(), visE=new Set();
+  for(let k=0;k<=cur;k++){ (S[k].n||[]).forEach(id=>visN.add(id)); (S[k].tv||[]).forEach(pr=>visE.add(pr[0]+'>'+pr[1])); }
+  const curN=new Set(st.n||[]), curE=new Set((st.tv||[]).map(pr=>pr[0]+'>'+pr[1]));
+  graphSvg.classList.add('play-mode');
+  currentData().nodes.forEach(n=>{ const g=nodeEls[n.id]; g.classList.toggle('active',curN.has(n.id)); g.classList.toggle('traced',visN.has(n.id)&&!curN.has(n.id)); g.classList.toggle('rel',false); g.classList.toggle('sel',false); });
+  edgeEls.forEach(o=>{ const key=o.e.s+'>'+o.e.t; const isCur=curE.has(key)||(curN.has(o.e.s)&&curN.has(o.e.t));
+    o.path.classList.toggle('active',isCur); o.path.classList.toggle('traced',visE.has(key)&&!isCur); o.path.classList.toggle('rel',false); });
+  const cdur=Math.min(1000,stepDur()*0.55);
+  (st.tv||[]).forEach(pr=>{ const o=edgeEls.find(x=>x.e.s===pr[0]&&x.e.t===pr[1]); if(o)animateComet(o.path,cdur); });
+  capEl.innerHTML=`<div class="cap-move"><span class="cap-idx">${String(cur+1).padStart(2,'0')} / ${S.length}</span><span class="cap-t">${st.t.replace(/⟶/g,'<span class="arw">⟶</span>')}</span></div><div class="cap-text">${st.cap}</div>`;
+  dots.forEach((d,k)=>{ d.classList.toggle('cur',k===cur); d.classList.toggle('done',k<cur); });
+  syncStageList((st.n||[]).find(x=>nodeById[x]&&nodeById[x].g===focusGroup())||null); }
+function nextStep(){ gotoStep(cur+1); }
+function startPlay(){ playing=true; playIcon.innerHTML='<path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z"/>'; playLabel.textContent='暂停';
+  const L=currentSteps().length;
+  if(cur<0||cur>=L-1)gotoStep(0); else nextStep(); timer=setInterval(()=>{ if(cur>=currentSteps().length-1){stopPlay();return;} nextStep(); },stepDur()); }
+function stopPlay(){ playing=false; clearInterval(timer); timer=null; playIcon.innerHTML='<path d="M8 5.5v13l11-6.5-11-6.5Z"/>'; playLabel.textContent='播放推演'; }
+playBtn.addEventListener('click',()=>{ playing?stopPlay():startPlay(); });
+document.getElementById('btn-next').addEventListener('click',()=>{stopPlay();gotoStep(cur+1);});
+document.getElementById('btn-prev').addEventListener('click',()=>{stopPlay();gotoStep(cur-1<0?currentSteps().length-1:cur-1);});
+
+/* ============ 6. 平移/缩放 ============ */
+let vb={x:0,y:0,w:1180,h:800};
+function setVB(){ svg.setAttribute('viewBox',`${vb.x} ${vb.y} ${vb.w} ${vb.h}`); }
+function zoomAt(f,cx,cy){ const nw=Math.min(2600,Math.max(360,vb.w*f)); const nh=nw*(800/1180); const rx=(cx-vb.x)/vb.w, ry=(cy-vb.y)/vb.h; vb.x=cx-rx*nw; vb.y=cy-ry*nh; vb.w=nw; vb.h=nh; setVB(); }
+function toSvg(x,y){ const r=svg.getBoundingClientRect(); return {x:vb.x+(x-r.left)/r.width*vb.w, y:vb.y+(y-r.top)/r.height*vb.h}; }
+svg.addEventListener('wheel',e=>{e.preventDefault(); const p=toSvg(e.clientX,e.clientY); zoomAt(e.deltaY>0?1.12:0.89,p.x,p.y);},{passive:false});
+let drag=null;
+svg.addEventListener('pointerdown',e=>{ if(e.target.closest('.node'))return; drag={x:e.clientX,y:e.clientY,vbx:vb.x,vby:vb.y}; svg.classList.add('dragging'); svg.setPointerCapture(e.pointerId); });
+svg.addEventListener('pointermove',e=>{ if(!drag)return; const r=svg.getBoundingClientRect(); vb.x=drag.vbx-(e.clientX-drag.x)/r.width*vb.w; vb.y=drag.vby-(e.clientY-drag.y)/r.height*vb.h; setVB(); });
+['pointerup','pointercancel'].forEach(ev=>svg.addEventListener(ev,()=>{drag=null;svg.classList.remove('dragging');}));
+document.getElementById('zoom-in').addEventListener('click',()=>zoomAt(0.85,vb.x+vb.w/2,vb.y+vb.h/2));
+document.getElementById('zoom-out').addEventListener('click',()=>zoomAt(1.18,vb.x+vb.w/2,vb.y+vb.h/2));
+function fit(){ vb={x:0,y:0,w:1180,h:800}; setVB(); }
+document.getElementById('zoom-fit').addEventListener('click',fit);
+document.getElementById('btn-reset').addEventListener('click',()=>{ buildGraph('main'); stopPlay(); cur=-1; selected=null; clearPlayMode(); clearHighlight(); dots.forEach(d=>d.classList.remove('cur','done'));
+  capEl.innerHTML='<div class="cap-move"><span class="cap-idx">推演</span><span class="cap-t">点击「播放推演」，从宗到三变到十二图逐步演绎</span></div><div class="cap-text">每一步点亮对应节点、以彗星标出方向，并在下方累积路径；点击节点查看算法、信号与失效线，双击三变节点可进入子图。</div>';
+  renderIntro(); syncStageList(null); document.querySelectorAll('.filter input').forEach(i=>{i.checked=true;}); graphSvg.classList.remove('hide-core','hide-fan','hide-bian','hide-shi'); });
+const btnPanel=document.getElementById('btn-panel');
+function syncPanelBtn(){ btnPanel.style.display=window.innerWidth<=1180?'grid':'none'; }
+btnPanel.addEventListener('click',()=>document.body.classList.toggle('panel-open'));
+document.getElementById('panel-scrim').addEventListener('click',()=>document.body.classList.remove('panel-open'));
+window.addEventListener('resize',syncPanelBtn); syncPanelBtn();
+window.addEventListener('keydown',e=>{ if(e.key==='Escape'){ if(view!=='main') exitSub(); else document.body.classList.remove('panel-open'); }
+  if(e.key===' '&&e.target===document.body){e.preventDefault();playBtn.click();}
+  if(e.key==='ArrowRight'){stopPlay();gotoStep(cur+1);} if(e.key==='ArrowLeft'){stopPlay();gotoStep(cur-1<0?currentSteps().length-1:cur-1);} });
+
+/* ============ 7. 跨模块配置矩阵 ============ */
+const mxWrap=document.getElementById('mx-wrap'), mxGrid=document.getElementById('mx-grid');
+const MX_COLS=[{key:'h',name:'站住',sub:'form'},{key:'k',name:'K线形态',sub:'form'},{key:'v',name:'成交量',sub:'vol'},{key:'t',name:'换手率',sub:'vol'},{key:'c',name:'筹码',sub:'vol'},{key:'m',name:'MACD',sub:'mood'},{key:'b',name:'布林通道',sub:'form'}];
+const MX_STCLASS={'+':'st-plus','△':'st-hedge','−':'st-avoid','·':'st-neutral'};
+const MX_FANCOL={'形':'k','量':'v','换':'t','叉':'m','带':'b','筹':'c'};
+const MX_ROWS=[
+ {name:'① 上飘旗形 · 跌幅满足',cells:{h:['+','①③'],k:['+','破前低'],v:['+','破位放量'],t:['△','筹码'],m:['−','反抽'],b:['△',''],c:['△','上方峰']},cons:['+','量·形']},
+ {name:'② 下飘旗形 · 涨幅满足',cells:{h:['+','①③'],k:['+','破前高'],v:['+','突破放量'],t:['△',''],m:['−','回抽'],b:['△',''],c:['△','上方峰']},cons:['+','量·形']},
+ {name:'③ 矩形假突破',cells:{h:['+','四项全过'],k:['+','跌回颈线'],v:['−','缩量过线'],t:['−','高位换手'],m:['△',''],b:['△','收口'],c:['+','套牢峰']},cons:['+','量·形']},
+ {name:'④ 头肩顶假突破',cells:{h:['+','四项全过'],k:['+','跌回颈线'],v:['−','缩量'],t:['−','派发'],m:['+','顶背离'],b:['△',''],c:['+','套牢峰']},cons:['+','形·叉']},
+ {name:'⑤ 破底翻',cells:{h:['+','①②④'],k:['+','站回颈线'],v:['+','破底放量'],t:['+','换手放大'],m:['△','底背离'],b:['△',''],c:['+','下方峰']},cons:['+','量·换']},
+ {name:'⑥ 破底翻 · W底',cells:{h:['+','①②④'],k:['+','站回32'],v:['+','放量'],t:['+','换手放大'],m:['△','底背离'],b:['△',''],c:['+','下方峰']},cons:['+','量·换']},
+ {name:'⑦ 三角形头部 · 跌幅满足',cells:{h:['+','①②'],k:['+','1/2~3/4处'],v:['△',''],t:['·',''],m:['△',''],b:['+','收口'],c:['+','空间宽']},cons:['+','带·幅']},
+ {name:'⑧ 收敛三角 · 涨幅满足',cells:{h:['+','①②③'],k:['+','1/2~3/4处'],v:['+','突破放量'],t:['△',''],m:['△',''],b:['+','收口'],c:['+','空间宽']},cons:['+','带·幅']},
+ {name:'⑨ 头肩底 · 涨幅满足',cells:{h:['+','①②③'],k:['+','破颈线'],v:['+','放量'],t:['△',''],m:['△','底背离'],b:['△',''],c:['+','上方峰']},cons:['+','量·幅']},
+ {name:'⑩ 头肩顶 · 跌幅满足',cells:{h:['+','①③'],k:['+','破颈线'],v:['△',''],t:['·',''],m:['+','顶背离'],b:['△',''],c:['+','下方空']},cons:['+','叉·幅']},
+ {name:'⑪ M头 · 跌幅满足',cells:{h:['+','①③'],k:['+','破颈线'],v:['△',''],t:['·',''],m:['+','顶背离'],b:['△',''],c:['+','下方空']},cons:['+','叉·幅']},
+ {name:'⑫ W底 · 涨幅满足',cells:{h:['+','①②③'],k:['+','破颈线'],v:['+','放量'],t:['+','底部换手'],m:['△','底背离'],b:['△',''],c:['+','上方峰']},cons:['+','量·带']}
+];
+const MX_FOOT={h:'站住 k* 根',k:'颈线定破立',v:'过线须放量',t:'看位置不看大小',c:'峰定止损目标',m:'背离优先',b:'收口待变盘',cons:'先算满足 · 再等确认'};
+const MATRIX_STEPS=[
+ {k:'总览',t:'确认矩阵 · 总览',col:null,cap:'行＝形态十二图，列＝六个观察指标。格＝该形态下该指标的确认要点：＋主要依据／△辅助参考／−反向警示／·不适用。读法：先看主要依据，再用辅助指标交叉验证。'},
+ {k:'形态',t:'K线形态列 ⟶ 颈线定破立',col:'k',cap:'K线形态列：十二图的共同落点是颈线破立——所有满足计算都以破立位为起算点。'},
+ {k:'量能',t:'成交量列 ⟶ 过线须放量',col:'v',cap:'成交量列：突破与破位当日必须放量（量比≥1.5）；缩量过线判为假突破（图三、图四）。'},
+ {k:'换手',t:'换手率列 ⟶ 位置决定含义',col:'t',cap:'换手率列：破底翻系列（图五、图六）要求破底当日换手放大；其余形态中换手只作辅助。'},
+ {k:'动能',t:'MACD 列 ⟶ 背离优先',col:'m',cap:'MACD 列：顶部形态（头肩顶、M头）以顶背离为主要依据；旗形中的 MACD 作反向警示（反抽）。'},
+ {k:'通道',t:'布林通道列 ⟶ 收口待变盘',col:'b',cap:'布林通道列：收敛三角形（图七、图八）对应布林收口，突破点即开口起点；其余形态作辅助。'},
+ {k:'筹码',t:'筹码列 ⟶ 峰定止损与目标',col:'c',cap:'筹码列：这一格是「这只票的筹码结构对这个形态是有利还是不利」。止损放最近<strong>下方筹码峰</strong>之下，目标看最近<strong>上方筹码峰</strong>（套牢盘最密集处＝解套抛压最重处）；箱体高度若小于 0.5×90% 成本区间宽度，满足位就是噪音。'},
+ {k:'站住',t:'站住列 ⟶ 破立后连站 k* 根',col:'h',cap:'站住列：破立日之后<strong>连续收盘不跌回破立位</strong>的根数。k* 由该标的自身历史校准得出（见自校准工具），不是固定的 3。骗线族（③④⑤⑥）要求四项全过且取 k*+1——多等一根的代价远小于被骗一次。'},
+ {k:'共识',t:'共识列 ⟶ 先算满足 · 再等确认',col:'cons',cap:'共识列：每个形态的「主＋辅」组合。共同纪律——先算满足、再等确认；颈线未破立，一切目标位都只是假设。'}
+];
+function mkMx(cls,txt){ const d=document.createElement('div'); d.className=cls; d.textContent=txt; return d; }
+function mkMxCell(cell,col,ri){ const d=document.createElement('div'); d.className='mx-cell '+MX_STCLASS[cell[0]]; d.dataset.col=col; d.dataset.row=ri;
+  if(cell[1]) d.innerHTML=cell[0]+' <span class="mx-fan">'+cell[1]+'</span>'; else d.textContent=cell[0]; return d; }
+function renderMatrix(){ mxGrid.innerHTML='';
+  mxGrid.appendChild(mkMx('mx-h rowhead','十二图 ↓ · 指标 →'));
+  MX_COLS.forEach(c=>{ const h=mkMx('mx-h mx-col-'+c.key,c.name); h.dataset.col=c.key; h.title='进入'+c.name+'子图'; h.addEventListener('click',()=>enterSub(c.sub||c.key)); mxGrid.appendChild(h); });
+  mxGrid.appendChild(mkMx('mx-h cons','主辅组合'));
+  MX_ROWS.forEach((r,ri)=>{ mxGrid.appendChild(mkMx('mx-rh',r.name));
+    MX_COLS.forEach(c=>mxGrid.appendChild(mkMxCell(r.cells[c.key],c.key,ri)));
+    mxGrid.appendChild(mkMxCell(r.cons,'cons',ri)); });
+  mxGrid.appendChild(mkMx('mx-foot-cell','指标操作律 ↓'));
+  MX_COLS.forEach(c=>mxGrid.appendChild(mkMx('mx-foot-cell mx-col-'+c.key,MX_FOOT[c.key])));
+  mxGrid.appendChild(mkMx('mx-foot-cell cons',MX_FOOT.cons)); }
+function mxClear(){ mxGrid.querySelectorAll('.col-on,.fan-on').forEach(e=>e.classList.remove('col-on','fan-on')); }
+function mxHighlightCol(key){ mxClear(); mxGrid.querySelectorAll('[data-col="'+key+'"]').forEach(e=>e.classList.add('col-on')); }
+function mxHighlightFan(ch){ mxClear(); mxGrid.querySelectorAll('.mx-cell').forEach(e=>{ const f=e.querySelector('.mx-fan'); if(f&&f.textContent===ch) e.classList.add('fan-on'); }); }
+function showMatrixView(){ view='matrix'; svg.style.display='none'; mxWrap.hidden=false; renderMatrix(); mxClear();
+  document.getElementById('btn-matrix').classList.add('on');
+  document.querySelector('.stage-tools').style.display='none'; document.querySelector('.stage-hint').style.display='none';
+  buildStageList('matrix'); buildTrack('matrix'); setFiltersEnabled(false); sgBack.style.display='inline-flex';
+  capEl.innerHTML='<div class="cap-move"><span class="cap-idx">矩阵</span><span class="cap-t">十二图 × 六指标确认矩阵 · 点击「播放推演」逐列演绎</span></div><div class="cap-text">行=形态十二图，列=六个观察指标，格=该形态下该指标的确认要点。点击列头可进入对应子图；左栏点六反指标可高亮其所在列；Esc 或「返回总图」退出。</div>';
+  selected=null; stopPlay(); cur=-1; }
+document.getElementById('btn-matrix').addEventListener('click',()=>{ if(view==='matrix') exitSub(); else buildGraph('matrix'); });
+
+buildGraph('main');
+(function drawIn(){ edgeEls.forEach((o,i)=>{ try{ const L=o.path.getTotalLength(); o.path.style.setProperty('--len',L);
+  if(!reduceMotion){ o.path.style.strokeDasharray=(o.e.k==='map'||o.e.k==='def')?'':L; o.path.style.strokeDashoffset=L;
+    o.path.style.animation=`draw ${600+i*30}ms var(--ease) ${120+i*20}ms forwards`;
+    o.path.addEventListener('animationend',()=>{ o.path.style.strokeDasharray=(o.e.k==='map')?'5 5':(o.e.k==='def'?'1.5 4':''); o.path.style.strokeDashoffset=''; o.path.style.animation=''; },{once:true}); }
+ }catch(_){} }); })();
+/* ============ 8. 形态图放大 ============ */
+const figbox=document.getElementById("figbox");
+if(figbox){
+  panel.addEventListener("click",e=>{ const w=e.target.closest(".fig-wrap"); if(!w)return;
+    const sv=w.querySelector(".figsvg"); if(!sv)return; figbox.innerHTML=sv.outerHTML; figbox.hidden=false; });
+  figbox.addEventListener("click",()=>{ figbox.hidden=true; figbox.innerHTML=""; });
+}
+})();
+</script>
+<div aria-hidden="true" style="position:absolute;left:-9999px;top:0;width:1px;height:1px;overflow:hidden;opacity:0;font-size:0;color:transparent">
+  原创：王潇 2026 ·《三变·六反》技术指标分析 · 六反指标观察：成交量／换手率／MACD／布林通道／ATR／K线形态 · 指纹 WX-36TA-C-0913
+</div>
+</body>
+</html>

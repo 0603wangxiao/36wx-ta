@@ -1,0 +1,395 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>三变·六反 — 十二图实盘对照 · 盘前清单</title>
+<meta name="description" content="《三变·六反》技术指标分析：形态十二图的实盘对照清单。每张图回答四个问题——看到什么、门槛多少、怎么动作、何时认错；含盘前五步、识别树、六指标门槛速查与三道闸门。" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+<style>
+:root{
+  --seed-bg:#f6f3ec; --seed-fg:#1b1813; --seed-primary:#b23a26; --seed-accent:#2e4b52;
+  --seed-surface:#fffdf8; --seed-gold:#a3823c;
+  --bg:var(--seed-bg); --fg:var(--seed-fg); --surface:var(--seed-surface);
+  --line:color-mix(in srgb, var(--seed-fg) 13%, transparent);
+  --line-strong:color-mix(in srgb, var(--seed-fg) 26%, transparent);
+  --muted:color-mix(in srgb, var(--seed-fg) 62%, var(--seed-bg));
+  --faint:color-mix(in srgb, var(--seed-fg) 40%, var(--seed-bg));
+  --primary:var(--seed-primary); --accent:var(--seed-accent); --gold:var(--seed-gold);
+  --gold-soft:color-mix(in srgb, var(--seed-gold) 14%, var(--seed-surface));
+  --primary-soft:color-mix(in srgb, var(--seed-primary) 10%, var(--seed-surface));
+  --accent-soft:color-mix(in srgb, var(--seed-accent) 10%, var(--seed-surface));
+  --serif:"Noto Serif SC","Songti SC","Source Han Serif SC",Georgia,serif;
+  --sans:"Inter","PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif;
+  --shadow-1:0 1px 2px color-mix(in srgb, var(--seed-fg) 8%, transparent);
+}
+*,*::before,*::after{ box-sizing:border-box; }
+body{ margin:0; background:var(--bg); color:var(--fg); font-family:var(--sans); font-size:15px; line-height:1.8; -webkit-font-smoothing:antialiased; }
+.grain{ position:fixed; inset:0; pointer-events:none; opacity:.5; mix-blend-mode:multiply; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.04'/%3E%3C/svg%3E"); }
+.wrap{ position:relative; max-width:920px; margin:0 auto; padding:56px 30px 90px; }
+header.top{ display:flex; align-items:center; gap:18px; flex-wrap:wrap; padding-bottom:22px; border-bottom:1px solid var(--line); margin-bottom:12px; position:relative; }
+header.top::after{ content:""; position:absolute; left:0; right:0; bottom:-1px; height:1px; background:linear-gradient(90deg,transparent,color-mix(in srgb,var(--seed-gold) 62%,transparent) 20%,color-mix(in srgb,var(--seed-primary) 44%,transparent) 52%,transparent); }
+.seal{ flex:none; width:52px; height:52px; display:grid; place-items:center; border-radius:6px; border:1px solid color-mix(in srgb,var(--seed-primary) 45%,transparent); background:var(--primary-soft); color:var(--primary); }
+.seal svg{ width:66%; height:76%; }
+.titles h1{ margin:0; font-family:var(--serif); font-size:1.5rem; font-weight:600; letter-spacing:.06em; line-height:1.2; }
+.titles h1 .lat{ font-family:var(--sans); font-weight:400; font-size:.6rem; letter-spacing:.32em; color:var(--faint); text-transform:uppercase; margin-left:.7em; }
+.titles p{ margin:.2rem 0 0; font-size:.74rem; color:var(--muted); letter-spacing:.1em; }
+.spacer{ flex:1; }
+.navlink{ font-family:var(--serif); font-size:.8rem; letter-spacing:.08em; color:var(--gold); text-decoration:none; border:1px solid color-mix(in srgb,var(--seed-gold) 48%,transparent); background:var(--gold-soft); border-radius:999px; padding:.38rem 1rem; box-shadow:var(--shadow-1); }
+.navlink:hover{ filter:brightness(1.04); }
+h1.doc{ font-family:var(--serif); font-size:2rem; letter-spacing:.04em; margin:26px 0 4px; line-height:1.35; }
+h2{ font-family:var(--serif); font-size:1.22rem; font-weight:600; letter-spacing:.05em; margin:46px 0 10px; padding-bottom:.5rem; border-bottom:1px solid var(--line); position:relative; }
+h2::before{ content:""; position:absolute; left:-14px; top:.42em; width:6px; height:6px; border-radius:50%; background:var(--gold); }
+h3{ font-family:var(--serif); font-size:1.02rem; font-weight:600; margin:26px 0 8px; padding:.55rem .9rem; border-radius:6px; border:1px solid var(--line); border-left-width:3px; background:var(--surface); box-shadow:var(--shadow-1); }
+h3.fig.short{ border-left-color:var(--primary); color:var(--primary); }
+h3.fig.long{ border-left-color:var(--accent); color:var(--accent); }
+h3.fig.long strong{ color:inherit; }
+p{ margin:.7rem 0; color:color-mix(in srgb, var(--fg) 90%, var(--bg)); }
+strong{ color:var(--fg); font-weight:600; }
+code{ font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:.84em; background:color-mix(in srgb, var(--seed-fg) 6%, transparent); border:1px solid var(--line); border-radius:4px; padding:.06em .34em; }
+ul.pts{ list-style:none; margin:.5rem 0 .9rem; padding:0; display:flex; flex-direction:column; gap:.45rem; }
+ul.pts li{ position:relative; padding-left:1.2rem; color:var(--muted); font-size:.94rem; }
+ul.pts li::before{ content:""; position:absolute; left:0; top:.72em; width:.4rem; height:.4rem; border-radius:50%; background:var(--gold); }
+pre.flow{ font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:.82rem; line-height:1.85; background:var(--surface); border:1px solid var(--line); border-left:3px solid var(--accent); border-radius:6px; padding:1rem 1.1rem; overflow:auto; color:color-mix(in srgb, var(--fg) 88%, var(--bg)); box-shadow:var(--shadow-1); }
+.note{ margin:1.1rem 0; padding:.85rem 1.1rem; border-left:2px solid color-mix(in srgb,var(--seed-gold) 55%,transparent); background:linear-gradient(90deg,var(--gold-soft),transparent 72%); font-size:.9rem; color:color-mix(in srgb, var(--fg) 84%, var(--bg)); border-radius:0 6px 6px 0; }
+.tw{ overflow-x:auto; margin:1.1rem 0; border:1px solid var(--line); border-radius:6px; background:var(--surface); }
+table{ border-collapse:collapse; width:100%; font-size:.85rem; }
+th,td{ padding:.6rem .7rem; text-align:left; border-bottom:1px solid var(--line); vertical-align:top; }
+th{ font-family:var(--serif); font-weight:600; color:var(--muted); font-size:.78rem; letter-spacing:.06em; background:color-mix(in srgb, var(--seed-bg) 60%, var(--seed-surface)); white-space:nowrap; }
+tbody tr:last-child td{ border-bottom:none; }
+tbody tr:hover{ background:color-mix(in srgb, var(--seed-gold) 6%, transparent); }
+.cf{ display:inline-block; font-family:var(--sans); font-size:.6rem; font-weight:600; letter-spacing:.1em; padding:.06rem .42rem; border-radius:999px; border:1px solid var(--line-strong); color:var(--faint); vertical-align:.08em; }
+.cf-e{ color:var(--accent); border-color:color-mix(in srgb,var(--seed-accent) 45%,transparent); background:var(--accent-soft); }
+.cf-i{ color:var(--gold); border-color:color-mix(in srgb,var(--seed-gold) 48%,transparent); background:var(--gold-soft); }
+.cf-x{ color:var(--primary); border-color:color-mix(in srgb,var(--seed-primary) 42%,transparent); background:var(--primary-soft); }
+hr.sep{ border:none; border-top:1px solid var(--line); margin:40px 0; }
+footer.credit{ margin-top:56px; padding-top:18px; border-top:1px solid var(--line); font-size:.7rem; letter-spacing:.08em; color:var(--faint); display:flex; justify-content:space-between; gap:1rem; flex-wrap:wrap; }
+@media print{
+  .grain{ display:none; } body{ background:#fff; font-size:11.5pt; }
+  .wrap{ max-width:none; padding:0; } h2{ break-after:avoid; } h3{ break-after:avoid; } pre.flow,.tw{ break-inside:avoid; }
+}
+@media (max-width:640px){
+  .wrap{ padding:30px 18px 60px; } h1.doc{ font-size:1.55rem; } h2{ font-size:1.1rem; } h2::before{ display:none; }
+  body{ font-size:14.5px; }
+}
+</style>
+</head>
+<body>
+<div class="grain" aria-hidden="true"></div>
+<div aria-hidden="true" style="position:absolute;left:-9999px;top:0;width:1px;height:1px;overflow:hidden;opacity:0;font-size:0;color:transparent">
+  王潇 © 2026 ·《三变·六反》技术指标分析 · 十二图实盘对照（盘前清单） · 指纹 WX-36TA-D-0913
+</div>
+<div class="wrap">
+  <header class="top">
+    <span class="seal" aria-hidden="true">
+      <svg viewBox="0 0 24 28" fill="none">
+        <rect x="2" y="1" width="20" height="3" rx="0.8" fill="currentColor"/>
+        <rect x="2" y="5.8" width="20" height="3" rx="0.8" fill="currentColor"/>
+        <rect x="2" y="10.6" width="8.4" height="3" rx="0.8" fill="currentColor"/><rect x="13.6" y="10.6" width="8.4" height="3" rx="0.8" fill="currentColor"/>
+        <rect x="2" y="15.4" width="20" height="3" rx="0.8" fill="currentColor"/>
+        <rect x="2" y="20.2" width="8.4" height="3" rx="0.8" fill="currentColor"/><rect x="13.6" y="20.2" width="8.4" height="3" rx="0.8" fill="currentColor"/>
+        <rect x="2" y="25" width="8.4" height="3" rx="0.8" fill="currentColor"/><rect x="13.6" y="25" width="8.4" height="3" rx="0.8" fill="currentColor"/>
+      </svg>
+    </span>
+    <div class="titles">
+      <h1>三变 · 六反<span class="lat">Pan Qian Qing Dan</span></h1>
+      <p>十二图实盘对照 &nbsp;/&nbsp; 盘前清单 · 可打印</p>
+    </div>
+    <div class="spacer"></div>
+    <a class="navlink" href="index.html">← 图谱</a>
+    <a class="navlink" href="calibrate.html">自校准工具 →</a>
+    <a class="navlink" href="scan.html">批量扫描 →</a>
+  </header>
+<p><strong>配套</strong>：三变·六反 — 技术指标分析 · 知识图谱（index.html）</p>
+<p><strong>用法</strong>：盘前 5 分钟按顺序扫一遍；每张图只需回答「是不是、够不够、走不走」</p>
+<p><strong>版本</strong>：v1.3（反六·幅 ATR 整块替换为反六·筹 筹码）｜ © 2026 王潇 · 自由使用，请注明来处；禁止商用</p>
+<div class="note"><strong>每条结论都标 cf</strong>：<strong>E</strong> = 可证（算术或图形本身）｜<strong>I</strong> = 推断（阈值需自己校准）｜<strong>X</strong> = 信条（经验，不可证）</div>
+<div class="note">默认阈值都是 <strong>I</strong>——必须用你自己的标的、自己回测过，才升级为 E。</div>
+<hr class="sep">
+<h2>〇、盘前五步（固定顺序，不许跳步）</h2>
+<pre class="flow">① 定级别 —— 先看周线定方向，再看日线找形态。形态必须与所看级别一致。
+② 找颈线 —— 画出最近一个明确的高点连线或低点连线。找不到颈线 = 没有形态 = 不做。
+③ 认形态 —— 走下面的识别树，只认一棵树上的一个形态，不许「什么像什么」。
+④ 算满足 —— 形态高度等幅移动，算出第一/第二满足位；再过**筹码校验**（空间 ≥ 0.5×90% 成本区间宽）。
+⑤ 验门槛 —— 量比、换手、筹码三个数报出来。三个数缺一个 = 不动手。</pre>
+<p><strong>顺序错了，全错。</strong> 最常见的错是④→③（先想赚多少，再找一个形态来支持）。</p>
+<hr class="sep">
+<h2>一、识别树（先分流，再认图）</h2>
+<pre class="flow">Q1  前面是「一段单边」还是「一个顶/底结构」？
+    ├ 一段单边 → 中继族：①上飘旗形 / ②下飘旗形
+    └ 顶底结构 → Q2
+
+Q2  价格是不是「破过关键位又回来了」？
+    ├ 是 → 骗线族：③矩形假突破 / ④头肩顶假突破 / ⑤破底翻 / ⑥破底翻W底
+    └ 否 → Q3
+
+Q3  结构是「收敛」还是「双峰/双谷」？
+    ├ 收敛 → ⑦三角形头部 / ⑧收敛三角底部
+    └ 双峰双谷 → ⑨头肩底 / ⑩头肩顶 / ⑪M头 / ⑫W底
+
+Q4  【一票否决】破立点发生在形态横向长度的哪里？
+    ├ 1/2 之前  → 不算（太早，多半是噪音）           cf: I
+    ├ 1/2 ~ 3/4 → 有效
+    └ 已到尖端  → 形态已死，作废</pre>
+<p><strong>Q4 是这套方法里最容易被跳过、也最值钱的一条。</strong> <span class="cf cf-i">cf I</span></p>
+<hr class="sep">
+<h2>二、破立确认律：收盘站住（先于一切指标）</h2>
+<p><strong>这是十二图里唯一一条「所有图都必须过」的关。</strong> 它原先藏在「假突破」里、用「3 根内跌回」表述——现在独立出来，并且<strong>根数不是固定的 3，而是用你自己标的的历史校准出来的</strong>。</p>
+<h3 class="">2.1 定义（可观测，无歧义） <span class="cf cf-e">cf E</span></h3>
+<pre class="flow">破立日 t，破立位 L    上破 L = 前 W 日最高收盘；下破 L = 前 W 日最低收盘
+站住根数 H            从 t+1 起，连续「收盘不回到 L 的另一侧」的根数
+                      任一收盘失守 → H 就此定格，不再累加
+入场价                走满 k 根那一根的收盘（不是破立位，也不是破立日收盘）</pre>
+<p><strong>只看收盘，不看盘中。</strong> 盘中穿越不算破——盘中是情绪，收盘是结账。</p>
+<h3 class="">2.2 为什么是 k 根：用你自己的数据算，别抄 3 <span class="cf cf-e">cf E</span></h3>
+<p>把「站住 k 根」当入场条件，统计该股<strong>历史上每一次破立事件</strong>，看之后 10 根相对<strong>入场价</strong>的最大有利（MFE）与最大不利（MAE）：</p>
+<div class="tw"><table><thead><tr><th>站住根数 k</th><th>样本</th><th>10 根后胜率</th><th>MFE 中位（%）</th><th>MAE 中位（%）</th><th>盈亏比</th></tr></thead><tbody><tr><td>1</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>…</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr></tbody></table></div>
+<p>取<strong>同时满足「胜率 ≥ 55% 且 盈亏比 ≥ 1.5」的最小 k</strong> 作为 k*。</p>
+<div class="note"><strong>若无任何 k 达标 → 这只票的「破立」本身没有统计优势，就不该追破立。</strong></div>
+<div class="note">实例（天海防务 300008，500 根日线）：k=1~5 的胜率 46%~55%、盈亏比 1.15~1.50，<strong>无一达标</strong>。此时把质量分<strong>反过来用</strong>——质量差（≤2/4）的破立才是机会（图③④⑤⑥ 的诱杀方向）。</div>
+<h3 class="">2.3 四分打分卡（四项互相独立，缺一即降级） <span class="cf cf-i">cf I</span></h3>
+<pre class="flow">① 站住根数 ≥ k*                    —— 时间确认：不是当天冲上去就算
+② 站住期最小收盘溢价 ≥ 0.5%       —— 不是贴着线走
+③ 站住期均量 ≤ 破立日量 × 0.8      —— 缩量站稳，而非持续放量出货
+④ 盘中破立、收盘收回 ≤ 1 次        —— 只允许一次正常回踩</pre>
+<div class="tw"><table><thead><tr><th>得分</th><th>判定</th><th>动作</th></tr></thead><tbody><tr><td><strong>4/4</strong></td><td>强确认</td><td>可上计划仓位</td></tr><tr><td><strong>3/4</strong></td><td>可动手</td><td>半仓</td></tr><tr><td><strong>≤2/4</strong></td><td>不动</td><td>回到观察（若要反向，见图③④⑤⑥）</td></tr></tbody></table></div>
+<div class="note">第 ② 项最容易被忽略：<strong>贴着颈线站住的「站住」是最脆弱的</strong>——一根小阴线就失守。要求离破立位至少 0.5%，是把它从「假站住」里挑出来。</div>
+<h3 class="">2.4 十二图逐图的强制项（这就是「专属」的部分） <span class="cf cf-i">cf I</span></h3>
+<div class="tw"><table><thead><tr><th>族</th><th>图</th><th>k</th><th>强制项</th><th>理由</th></tr></thead><tbody><tr><td>中继</td><td>①② 上飘 / 下飘旗形</td><td>k*</td><td>①③</td><td>顺势，量能确认即可</td></tr><tr><td><strong>骗线</strong></td><td><strong>③④ 矩形 / 头肩顶假突破</strong></td><td><strong>k\*+1</strong></td><td><strong>①②③④ 全过</strong></td><td>骗线的本质就是「先给你破立，再收回去」——多等一根的代价，远小于被骗一次的代价</td></tr><tr><td>骗线</td><td>⑤⑥ 破底翻 / 破底翻W底</td><td>k*</td><td>①②④</td><td>要换手承接；③ 不适用（破底翻要的是放量，不是缩量）</td></tr><tr><td>反转</td><td>⑦ 三角形头部</td><td>k*</td><td>①②</td><td>收敛破位，看溢价</td></tr><tr><td>反转</td><td>⑧ 收敛三角底部</td><td>k*</td><td>①②③</td><td>突破要量</td></tr><tr><td>反转</td><td>⑨ 头肩底</td><td>k*</td><td>①②③</td><td>同上</td></tr><tr><td>反转</td><td>⑩ 头肩顶</td><td>k*</td><td>①③</td><td>顺势破位</td></tr><tr><td>反转</td><td>⑪ M头</td><td>k*</td><td>①③</td><td>同上</td></tr><tr><td>反转</td><td>⑫ W底</td><td>k*</td><td>①②③</td><td>突破要量</td></tr></tbody></table></div>
+<h3 class="">2.5 为什么它比量能可靠 <span class="cf cf-x">cf X</span></h3>
+<p><strong>因为量能可以对倒做出来，收盘价站不站得住做不出来。</strong> 放量只说明当天有人抢；站住说明<strong>第二天、第三天还有人愿意在更高的位置接</strong>——那需要真金白银。</p>
+<p>（本工具会实测两者的区分度：真突破与假突破的量比分布一旦<strong>重叠</strong>，就直接告诉你「这一格判不了真假，改用站住」。）</p>
+<h3 class="">2.6 它在清单里的位置</h3>
+<pre class="flow">① 定级别 → ② 找颈线 → ③ 认形态 → ④ 算满足 → ⑤ 验门槛
+                                          ↑
+                        验门槛之前，先过「站住」这一关：
+                        破立没走满 k* 根 → 后面全部不用看</pre>
+<hr class="sep">
+<h3 class="">二·补、满足计算只记一句话（十二图通用）</h3>
+<p>所有十二张图的算法其实是<strong>同一件事</strong>，别去背十二个公式：</p>
+<pre class="flow">第一步  找颈线   形态的横向分界——必须能画出一条线，画不出就没有形态
+第二步  量步长   顶部形态：步长 = 最高点 − 颈线
+                 底部形态：步长 = 颈线 − 最低点
+第三步  推目标   往哪个方向突破，就从颈线朝那个方向迈一步 = 第一目标
+                                        再迈一步 = 第二目标</pre>
+<div class="note"><strong>一句话：以颈线为起跑线，形态高度为步长，顺着突破方向迈步。</strong></div>
+<p><strong>三个最容易搞错的地方：</strong></p>
+<p>1. <strong>颈线画错，全盘皆错。</strong> 颈线是形态的横向分界（连接两个高点、或两个低点），不是随便一条水平线。</p>
+<p>2. <strong>步长要用「形态高度」，不是「突破位到某个价」。</strong> 顶部形态量「头到颈线」，底部形态量「颈线到底」。</p>
+<p>3. <strong>第二目标不是必到。</strong> 第一目标减半仓，第二目标才考虑清仓；两段都走完就该走人。</p>
+<hr class="sep">
+<h2>三、十二图逐图对照</h2>
+<div class="note">每张图回答四个问题：<strong>看到什么</strong>（全部满足才认）｜<strong>门槛</strong>（数字）｜<strong>动作</strong>｜<strong>失效</strong>（立刻认错）</div>
+<h3 class="fig short">① 上飘旗形 · 跌幅满足 ｜做空</h3>
+<ul class="pts">
+<li><strong>看到什么</strong>：前有一段可测幅度的下跌；随后反弹，但<strong>反弹高点逐级下移、低点逐级抬高</strong>（收敛）；<strong>跌破前低才成立</strong>。 <span class="cf cf-e">cf E</span></li>
+<li><strong>门槛</strong>：破前低当日量比 ≥ 1.5（相对 5 日均量）；破位后 3 根 K 线内不许收回前低之上。 <span class="cf cf-i">cf I</span></li>
+<li><strong>算满足</strong>：<strong>先量一段</strong>：90 跌到 70，跌掉 20。<strong>再看反弹</strong>：弹到 75。<strong>推目标</strong>：从 75 再往下走 20 ⇒ <strong>55</strong>。　*跌一段、歇一下、再跌一段。* <span class="cf cf-e">cf E</span></li>
+<li><strong>动作</strong>：破前低进场做空 ｜ 止损设反弹高点之上 ｜ 到第一满足减半仓</li>
+<li><strong>失效</strong>：破前低后立刻拉回前低之上 = 假跌破，立即离场</li>
+<li><strong>常见误判</strong>：<strong>还没破前低就当信号</strong>——旗形不破不算，破前低是唯一开关</li>
+</ul>
+<h3 class="fig long">② 下飘旗形 · 涨幅满足 ｜做多</h3>
+<ul class="pts">
+<li><strong>看到什么</strong>：前有一段可测幅度的上涨；随后回落，<strong>高点与低点都逐级下移</strong>；<strong>突破前高才成立</strong>。 <span class="cf cf-e">cf E</span></li>
+<li><strong>门槛</strong>：突破前高需<strong>放量</strong>（量比 ≥ 1.5）；缩量过线按假突破处理。 <span class="cf cf-i">cf I</span></li>
+<li><strong>算满足</strong>：<strong>先量一段</strong>：20 涨到 35，涨了 15。<strong>再看回落</strong>：落到 30。<strong>推目标</strong>：从 30 再往上走 15 ⇒ <strong>45</strong>。　*涨一段、歇一下、再涨一段。* <span class="cf cf-e">cf E</span></li>
+<li><strong>动作</strong>：破前高进场 ｜ 止损设回落低点之下</li>
+<li><strong>失效</strong>：跌回回落低点之下</li>
+<li><strong>常见误判</strong>：<strong>把中继回调当反转</strong>——只要没破前低，方向没变</li>
+</ul>
+<h3 class="fig short">③ 矩形假突破 ｜做空</h3>
+<ul class="pts">
+<li><strong>看到什么</strong>：矩形整理（上颈线 / 下颈线平行）；价格冲出上颈线，但<strong>收盘站不住、重新跌回上颈线之下</strong>。 <span class="cf cf-e">cf E</span></li>
+<li><strong>开关</strong>：<strong>必须在跌破上颈线之下才「确立」</strong>——突破当根不算数。 <span class="cf cf-e">cf E</span></li>
+<li><strong>门槛</strong>：先过<strong>站住关</strong>——按 §2.4，骗线取 <strong>k\*+1 根且四项全过</strong>。原「缩量过线」只作参考：本工具会实测真/假突破的量比分布，<strong>若两组重叠就不看量比</strong>。 <span class="cf cf-i">cf I</span></li>
+<li><strong>算满足</strong>：<strong>步长</strong>：箱体高度 80−70＝10。<strong>推目标</strong>：假突破冲到 86 掉头，从 86 往下走 10 ⇒ <strong>76</strong>；跌破箱底 70 再走 10 ⇒ <strong>60</strong>。　*箱体多高，跌下来就再跌多高。* <span class="cf cf-e">cf E</span></li>
+<li><strong>动作</strong>：跌回上颈线之下做空 ｜ 止损设假突破高点之上</li>
+<li><strong>失效</strong>：重新站回假突破高点之上 = 真突破，反手</li>
+<li><strong>常见误判</strong>：<strong>用上影线代替收盘价</strong>——要等<strong>收盘</strong>跌回颈线之下，影线不算</li>
+</ul>
+<h3 class="fig short">④ 头肩顶假突破 ｜做空</h3>
+<ul class="pts">
+<li><strong>看到什么</strong>：头肩顶结构；<strong>右肩位置向上冲出颈线又跌回</strong>。 <span class="cf cf-e">cf E</span></li>
+<li><strong>额外确认</strong>：MACD 顶背离（右头价格新高，DIF 不新高）。 <span class="cf cf-i">cf I</span></li>
+<li><strong>门槛</strong>：跌落颈线当日量比 ≥ 1.5；反抽颈线不过 = 加码点。 <span class="cf cf-i">cf I</span></li>
+<li><strong>算满足</strong>：<strong>步长</strong>：头到颈线 95−70＝25。<strong>推目标</strong>：跌回颈线 70 之下后，从颈线往下走 25 ⇒ <strong>45</strong>。　*头有多高，跌破颈线就还能跌多深。* <span class="cf cf-e">cf E</span></li>
+<li><strong>动作</strong>：跌落颈线做空 ｜ 止损设 95 之上</li>
+<li><strong>失效</strong>：重回颈线之上并站稳 3 根 K 线</li>
+<li><strong>常见误判</strong>：<strong>右肩没走完就预设</strong>——右肩必须是「冲上去又掉下来」的既成事实</li>
+</ul>
+<h3 class="fig long">⑤ 破底翻 ｜做多</h3>
+<ul class="pts">
+<li><strong>看到什么</strong>：跌破前低创出新低后，<strong>迅速站回颈线之上</strong>。 <span class="cf cf-e">cf E</span></li>
+<li><strong>门槛</strong>：破底当日<strong>换手放大</strong>（≥ 20 日均值 1.5 倍）＝筹码在换手，不是无人接。 <span class="cf cf-i">cf I</span></li>
+<li><strong>算满足</strong>：<strong>这张图不算等幅</strong>。破了前低 20 又站回颈线 22 之上＝买点，目标看回前波起跌处。　*破了又站回来，就买。* <span class="cf cf-e">cf E</span></li>
+<li><strong>动作</strong>：站回颈线之上进场 ｜ 止损设破底低点之下 ｜ 目标看回前波起跌点</li>
+<li><strong>失效</strong>：站回后再破破底低点 = 破底翻失败，立即离场</li>
+<li><strong>常见误判</strong>：<strong>破底当天就抄</strong>——破底 ≠ 翻，必须等站回</li>
+</ul>
+<h3 class="fig long">⑥ 破底翻 · W底 ｜做多</h3>
+<ul class="pts">
+<li><strong>看到什么</strong>：W底右底<strong>再破前低</strong>，随后站回右底之上。 <span class="cf cf-e">cf E</span></li>
+<li><strong>门槛</strong>：站回当日量比 ≥ 1.5；突破颈线需放量。 <span class="cf cf-i">cf I</span></li>
+<li><strong>算满足</strong>：<strong>步长</strong>：前低到颈线 45−30＝15。<strong>推目标</strong>：站回右底、突破颈线 45 后，从 45 往上走 15 ⇒ <strong>60</strong>。　*底到颈线多高，突破后就再涨多高。* <span class="cf cf-e">cf E</span></li>
+<li><strong>动作</strong>：站回右底试仓 ｜ <strong>突破颈线加码</strong> ｜ 止损设破底低点之下</li>
+<li><strong>失效</strong>：跌破破底低点</li>
+<li><strong>常见误判</strong>：<strong>把第一次破底当 W 底</strong>——W 底要两个底，且第二个底必须「破而翻」</li>
+</ul>
+<h3 class="fig short">⑦ 三角形头部 · 跌幅满足 ｜做空</h3>
+<ul class="pts">
+<li><strong>看到什么</strong>：收敛三角形（上缘下倾、下缘上倾）；<strong>跌破发生在横向长度的 1/2 ~ 3/4 处</strong>。 <span class="cf cf-e">cf E</span></li>
+<li><strong>门槛</strong>：带宽（布林）处于近一年低分位 = 收口待变。 <span class="cf cf-i">cf I</span></li>
+<li><strong>算满足</strong>：<strong>步长</strong>：三角形高度 80−60＝20。<strong>推目标</strong>：从破线位 65 往下走 20 ⇒ <strong>45</strong>；再走 20 ⇒ <strong>25</strong>。　*三角形多高，破位就还能跌多深——可以量两段。* <span class="cf cf-e">cf E</span></li>
+<li><strong>动作</strong>：破线做空 ｜ 止损设回三角形之内 ｜ 第一满足减仓、第二满足止盈</li>
+<li><strong>失效</strong>：跌回三角形内并向上突破上缘</li>
+<li><strong>常见误判</strong>：<strong>破位太早</strong>——1/2 之前的破位多半是噪音，宁可不做</li>
+</ul>
+<h3 class="fig long">⑧ 收敛三角底部 · 涨幅满足 ｜做多</h3>
+<ul class="pts">
+<li><strong>看到什么</strong>：同上反向；<strong>突破发生在 1/2 ~ 3/4 处</strong>。 <span class="cf cf-e">cf E</span></li>
+<li><strong>门槛</strong>：突破日量比 ≥ 1.5。 <span class="cf cf-i">cf I</span></li>
+<li><strong>算满足</strong>：<strong>步长</strong>：三角形高度 55−40＝15。<strong>推目标</strong>：从突破位 50 往上走 15 ⇒ <strong>65</strong>；再走 15 ⇒ <strong>80</strong>。　*同上，只是往上量。* <span class="cf cf-e">cf E</span></li>
+<li><strong>动作</strong>：突破进场 ｜ 止损设回三角形内</li>
+<li><strong>失效</strong>：假突破后跌回三角形内</li>
+<li><strong>常见误判</strong>：<strong>在三角形里提前埋单</strong>——突破前不动手</li>
+</ul>
+<h3 class="fig long">⑨ 头肩底 · 涨幅满足 ｜做多</h3>
+<ul class="pts">
+<li><strong>看到什么</strong>：左肩—头—右肩，颈线（常下倾）；<strong>突破颈线才成立</strong>。 <span class="cf cf-e">cf E</span></li>
+<li><strong>算满足</strong>：<strong>步长</strong>：头到颈线 78−60＝18。<strong>推目标</strong>：突破颈线 74 后，从 74 往上走 18 ⇒ <strong>92</strong>；再走 18 ⇒ <strong>110</strong>。　*头有多深，突破颈线就还能涨多高。* <span class="cf cf-e">cf E</span></li>
+<li><strong>动作</strong>：放量突破颈线进场 ｜ 止损设头之下</li>
+<li><strong>失效</strong>：突破后跌回颈线之下</li>
+<li><strong>常见误判</strong>：<strong>颈线倾斜时用错基准</strong>——一律以<strong>突破处的颈线值</strong>为准，不是左端值</li>
+</ul>
+<h3 class="fig short">⑩ 头肩顶 · 跌幅满足 ｜做空</h3>
+<ul class="pts">
+<li><strong>看到什么</strong>：左肩—头—右肩，颈线（水平或倾斜）；<strong>跌破颈线才成立</strong>。 <span class="cf cf-e">cf E</span></li>
+<li><strong>额外确认</strong>：右头 MACD 顶背离。 <span class="cf cf-i">cf I</span></li>
+<li><strong>算满足</strong>：<strong>步长</strong>：头到颈线 90−70＝20。<strong>推目标</strong>：跌破颈线 70 后，从 70 往下走 20 ⇒ <strong>50</strong>；再走 20 ⇒ <strong>30</strong>。 <span class="cf cf-e">cf E</span></li>
+<li><strong>动作</strong>：破颈线做空 ｜ <strong>反抽颈线不过 = 加码</strong> ｜ 止损设头之上</li>
+<li><strong>失效</strong>：站回颈线之上</li>
+<li><strong>常见误判</strong>：<strong>跌破就满仓</strong>——反抽不过再加，比一次打满更稳</li>
+</ul>
+<h3 class="fig short">⑪ M头 · 跌幅满足 ｜做空</h3>
+<ul class="pts">
+<li><strong>看到什么</strong>：两个高点（<strong>不必等高</strong>），中间低点为颈线。 <span class="cf cf-e">cf E</span></li>
+<li><strong>算满足</strong>：<strong>步长</strong>：两个头不必等高，<strong>拿左边那个</strong>量——105 到颈线 80＝25。<strong>推目标</strong>：跌破颈线 80 后，从 80 往下走 25 ⇒ <strong>55</strong>；再走 25 ⇒ <strong>30</strong>。 <span class="cf cf-e">cf E</span></li>
+<li><strong>动作</strong>：破颈线做空 ｜ 止损设右头之上</li>
+<li><strong>失效</strong>：站回颈线之上</li>
+<li><strong>常见误判</strong>：<strong>用更高的那个头算幅度</strong>——取<strong>前一头（左头）</strong>，否则目标会定得过远</li>
+</ul>
+<h3 class="fig long">⑫ W底 · 涨幅满足 ｜做多</h3>
+<ul class="pts">
+<li><strong>看到什么</strong>：双底（<strong>不必等深</strong>），中间高点连线为颈线（常下倾）。 <span class="cf cf-e">cf E</span></li>
+<li><strong>算满足</strong>：<strong>步长</strong>：最低底到突破位 18−13＝5。<strong>推目标</strong>：突破 18 后，从 18 往上走 5 ⇒ <strong>23</strong>；再走 5 ⇒ <strong>28</strong>。 <span class="cf cf-e">cf E</span></li>
+<li><strong>动作</strong>：突破颈线进场 ｜ 止损设最低底之下</li>
+<li><strong>失效</strong>：跌回颈线之下</li>
+<li><strong>常见误判</strong>：<strong>用两底之间的中间高点当基准</strong>——要用突破处的颈线值</li>
+</ul>
+<hr class="sep">
+<h2>四、六指标门槛速查（默认起点，必须自校准）</h2>
+<div class="tw"><table><thead><tr><th>指标</th><th>参数</th><th>门槛（默认起点）</th><th>不达标怎么办</th><th>cf</th></tr></thead><tbody><tr><td><strong>K线形态</strong></td><td>—</td><td>只在<strong>颈线附近</strong>才计入；孤立形态不算</td><td>忽略</td><td><span class="cf cf-i">cf I</span></td></tr><tr><td><strong>成交量</strong></td><td>5 / 20 日均量</td><td>突破/破位日 <strong>量比 ≥ 1.5</strong>；&lt; 0.9 判缩量过线</td><td>等回抽确认</td><td><span class="cf cf-i">cf I</span></td></tr><tr><td><strong>换手率</strong></td><td>20 日均值</td><td>破底翻破底日 <strong>≥ 1.5 倍</strong>；高位 <strong>≥ 2 倍且滞涨</strong> = 派发</td><td>降级为观察</td><td><span class="cf cf-i">cf I</span></td></tr><tr><td><strong>MACD</strong></td><td>12 / 26 / 9</td><td>看<strong>背离</strong>，不看交叉；交叉只作确认</td><td>不作为唯一依据</td><td><span class="cf cf-i">cf I</span></td></tr><tr><td><strong>布林通道</strong></td><td>20 日 / 2σ</td><td>带宽处于近 1 年 <strong>20% 分位以下</strong> = 收口待变</td><td>等待，不预判方向</td><td><span class="cf cf-i">cf I</span></td></tr><tr><td><strong>筹码</strong></td><td>三角分布+换手衰减</td><td>止损放<strong>最近下方筹码峰</strong>之下；目标看<strong>最近上方筹码峰</strong>；空间 &lt; <strong>0.5 × 90%成本区间宽</strong> = 不做</td><td>该形态作废</td><td><span class="cf cf-i">cf I</span></td></tr></tbody></table></div>
+<div class="note"><strong>校准方法</strong>（把 I 升成 E）：拿你自己要做的标的，取近 1 年日线，把上表每个阈值上下各浮动 20%，回测十二图的破立信号，取<strong>胜率×盈亏比</strong>最高的那一组，写死进你的清单。不校准就用，等于用别人的尺量自己的布。</div>
+<hr class="sep">
+<h2>五、三道闸门（沿用《三变·六反》）</h2>
+<pre class="flow">闸门一 · 死法闸：每笔下单前先写「什么情况下我错了」。
+                 写不出来 = 裸暴露，不许下单。
+闸门二 · 证据闸：量比、换手倍数、筹码峰位、颈线值 —— 必须是数字。
+                 说「感觉放量」的，一律降级为不做。
+闸门三 · 动作闸：凡是标了「风险」的，必须配一条动作（减仓 / 止损 / 不加仓）。
+                 标了风险没动作 = 没标。</pre>
+<hr class="sep">
+<h2>六、这 12 张图不管用的时候（必须知道）</h2>
+<p><span class="cf cf-x">cf X</span>——以下三条是经验判断，不是定理：</p>
+<p>1. <strong>无量横盘里</strong>：形态频繁假破立，颈线来回被穿。此时十二图胜率显著下降，<strong>降低频率比优化参数更有用</strong>。</p>
+<p>2. <strong>事件 / 政策驱动的跳空里</strong>：跳空直接越过颈线与满足位，几何关系被破坏，<strong>颈线失去意义</strong>。重大事件窗口前后不做形态。</p>
+<p>3. <strong>极低流动性标的上</strong>：量比与换手失真，缩量/放量无法区分。<strong>这 12 张图只适用于流动性好、波动连续、少跳空的标的。</strong></p>
+<p>4. <strong>当校准显示「破立无统计优势」时</strong>：站住规则照样能用，但用法要反过来——<strong>别去追站住的破立，去等站不住的破立</strong>；更进一步，直接改用 <strong>第七章的区间边界反向</strong>。这是同一套数据给出的另一个答案，不是另一套方法。</p>
+<p><strong>共同纪律</strong>：这 12 张图是<strong>结构工具</strong>，不是预测工具。它们的价值来自「破立之后再动」，而不是「提前猜」。任何一次提前动手，都是把结构工具当成了水晶球。</p>
+<hr class="sep">
+<h2>六·补、反六·筹：筹码替代 ATR（v1.3 口径变更）</h2>
+<p><strong>v1.3 起，六反第六项由「反六·幅 ATR」改为「反六·筹 筹码」。</strong></p>
+<h3 class="">6b.1 为什么换</h3>
+<p>ATR 回答「波动多大」，筹码回答「<strong>哪里有人在等</strong>」。止损与目标本质是价位问题，不是波动问题。</p>
+<h3 class="">6b.2 算法（三角形分布 ＋ 换手衰减） <span class="cf cf-e">cf E</span></h3>
+<pre class="flow">每根 K 线：
+  ① 旧筹码衰减：chip[p] *= (1 − 当日换手率 × A)     A 默认 1.0
+  ② 新增：当日成交量按三角形铺在 [最低,最高] 之间，峰值在均价 (H+L+2C)/4
+换手率 = 当日成交量 ÷ 流通股本
+输出：获利盘比例 / 平均成本 / 90% 成本区间 / 集中度 / 筹码峰</pre>
+<h3 class="">6b.3 替代 ATR 的三处口径</h3>
+<div class="tw"><table><thead><tr><th>原（ATR）</th><th>新（筹码）</th></tr></thead><tbody><tr><td>止损 ≥ 1.5 × ATR</td><td><strong>止损位 ＝ 最近下方筹码峰</strong>（无峰取 90% 区间下沿）</td></tr><tr><td>满足下限 ≥ 1 × ATR</td><td><strong>最小有效空间 ＝ 0.5 × 90% 成本区间宽度</strong></td></tr><tr><td>边界触发 d×ATR</td><td><strong>d%（价格百分比）</strong></td></tr><tr><td>破立质量② ≥ 0.3×ATR</td><td><strong>≥ 0.5%</strong></td></tr></tbody></table></div>
+<p>ATR 仅保留为<strong>统计归一化的内部量纲</strong>，不再出现在任何界面。</p>
+<h3 class="">6b.4 四条读法</h3>
+<p>1. <strong>获利盘 &gt; 80%</strong> 抛压轻；<strong>&lt; 30%</strong> 上方全是套牢盘。</p>
+<p>2. <strong>现价在平均成本之上</strong> 多数浮盈、心态稳；<strong>之下</strong> 多数被套、反弹遇解冻盘。</p>
+<p>3. <strong>集中度 &lt; 10%</strong> 单峰密集，方向选出常走得远；<strong>&gt; 20%</strong> 散乱易磨。</p>
+<p>4. <strong>上峰不死，反弹不止步</strong>：目标优先放<strong>最近上方筹码峰</strong>，与等幅满足位冲突时以筹码峰为准。</p>
+<h3 class="">6b.5 失效情形 <span class="cf cf-x">cf X</span></h3>
+<p>次新股 / 长期停牌复牌 / 流通股本大幅变动（解禁·增发·回购）→ 筹码失真；<strong>换衰减系数 A 后阈值要重新校准，不要混用</strong>。</p>
+<hr class="sep">
+<h2>七、区间边界反向律：破立没优势时，优势在哪</h2>
+<p><strong>当自校准显示「破立无统计优势」时，不要换方法，要换用法。</strong> 同一套数据会告诉你优势在哪一格。</p>
+<h3 class="">7.1 什么时候用 <span class="cf cf-e">cf E</span></h3>
+<pre class="flow">效率比 ER(20) = |收盘 − 20 根前收盘| ÷ 期间每日涨跌绝对值之和
+ER ≤ 0.40  → 震荡状态，区间边界反向适用
+ER &gt; 0.40  → 趋势状态，反向不适用（此时宁可不做，而不是硬做）</pre>
+<h3 class="">7.2 规则</h3>
+<pre class="flow">边界      上沿 = 前 W 根最高收盘（W 默认 60）；下沿 = 前 W 根最低收盘
+触发      收盘进入「下沿 + d%」之内 → 反向做多（d% ＝ 价格百分比）
+          收盘进入「上沿 − d%」之内 → 反向做空
+持有      h 根后的收盘平仓（不看盘中）
+止损      取最近下方筹码峰；或按边沿外 MAE 中位（自校准直接给出）
+冷却      同一时间只持一笔（h 根冷却），避免重复计数</pre>
+<h3 class="">7.3 d 与 h 也自校准，不预设 <span class="cf cf-e">cf E</span></h3>
+<p>网格：d ∈ {0, 0.5, 1.0, 1.5, 2.0}%（价格百分比） × h ∈ {3, 5, 10, 20} 根，逐格统计样本 / 胜率 / 平均收益 / MAE / 盈亏比，<strong>并扣掉双边成本</strong>（默认 0.15%：印花税 0.05% 单边卖出 + 佣金 + 滑点）。</p>
+<div class="note"><strong>不扣成本的期望值没有意义。</strong> 区间越窄，成本占比越高——一个 0.5% 的来回，扣掉 0.15% 就只剩 0.35%。</div>
+<h3 class="">7.4 两个必看的质量指标（不看这两条就会拿过拟合去实盘）<span class="cf cf-i">cf I</span></h3>
+<p>1. <strong>样本数</strong>：少于 20 笔，只能算方向性提示，不能算结论。先把 ER 门槛放宽、或把持有期缩短，把样本做大再复核。</p>
+<p>2. <strong>邻域稳健性</strong>：最优格<strong>周围的格子是不是也为正</strong>？只有一个角落为正 = 过拟合。真正稳健的参数，邻域应该是连片为正的。</p>
+<h3 class="">7.5 与十二图的接口</h3>
+<p>区间边界反向不是新体系，它是<strong>骗线族的边界版</strong>：</p>
+<div class="tw"><table><thead><tr><th>十二图</th><th>边界版</th><th>区别</th></tr></thead><tbody><tr><td>③④ 假突破</td><td>上沿附近到边 → 反向做空</td><td>骗线等「破立之后收回来」；边界反向「到边就动手」</td></tr><tr><td>⑤⑥ 破底翻</td><td>下沿附近到边 → 反向做多</td><td>前者要<strong>确认</strong>，后者要<strong>位置</strong></td></tr></tbody></table></div>
+<p>哪一种期望高，由校准说话，不由偏好说话。</p>
+<h3 class="">7.6 天海防务实测（300008，500 根日线，成本 0.15%）<span class="cf cf-e">cf E</span></h3>
+<div class="tw"><table><thead><tr><th>打法</th><th>样本</th><th>胜率</th><th>平均每笔</th><th>扣成本后</th></tr></thead><tbody><tr><td>追破立（站住 3 根，持 10 根）</td><td>63</td><td>51%</td><td>+1.13%</td><td><strong>+0.98%</strong></td></tr><tr><td>区间边界反向（d=0.5% 价格，持 20 根，ER≤0.40）</td><td>12</td><td>67%</td><td>+4.76%</td><td><strong>+4.61%</strong></td></tr></tbody></table></div>
+<p><strong>方向明确：这只票该在区间边界做反向，不该追突破。</strong></p>
+<p>但工具同时给出了两条自我否定的警告，必须一起看：</p>
+<ul class="pts">
+<li><strong>样本仅 12 笔</strong> → 方向性提示，不是可实盘的结论</li>
+<li><strong>邻域稳健性 3/6 格为正</strong> → <strong>疑似过拟合</strong>（只有一个角落为正）</li>
+</ul>
+<p>→ <strong>结论的正确写法</strong>：「这只票的优势方向在区间边界反向，但当前参数不足以实盘，需先扩大样本并让邻域连片为正。」</p>
+<hr class="sep">
+<h2>八、一页纸盘前 10 句（时间紧只问这 10 句）</h2>
+<pre class="flow">1  周线方向是什么？日线形态和它同向吗？
+2  颈线画出来了吗？具体是多少？
+3  是十二图里的哪一张？说不出来就不做。
+4  破立发生了吗？还是我在提前猜？
+5  破立点在横向长度的 1/2 ~ 3/4 之间吗？
+5b 破立走满 k* 根了吗？（没走满 → 后面全部不用看）
+5c 四项打分：站住根数 / 最小溢价 ≥0.3×ATR / 站住期缩量 / 盘中收回 ≤1 次 —— 几分？
+6  形态高度多少？第一、第二满足位各是多少？
+7  满足距离 ≥ 1 × ATR 吗？（小于就是噪音）
+8  量比多少？换手在什么位置？（若真假突破的量比分布重叠，此题作废，只看 5b/5c）
+8b 这只票的两种打法，校准出来的期望谁高？（追破立 / 区间边界反向）
+8d 筹码：获利盘多少？上方最近筹码峰在哪？下方最近筹码峰在哪？空间够 0.5×成本区间宽吗？
+8c 若走边界反向：ER ≤ 0.40 吗？到边距离进了 d×ATR 之内吗？邻域连片为正吗？
+9  止损放哪？这一笔最多亏多少（写数字）？
+10 什么情况下我认错？——写不出第 10 条，前 9 条作废。</pre>
+<hr class="sep">
+<h2>九、一句总结</h2>
+<p><strong>形态给方向，量能给真假，情绪给位置，ATR 给止损。</strong></p>
+<p><strong>先算满足、再等确认；颈线未破立之前，一切目标位都只是假设。</strong></p>
+<hr class="sep">
+<p>© 2026 王潇 · 自由使用，请注明来处；禁止商用</p>
+<p>*本文是《三变·六反》技术指标分析框架的实盘操作清单，不构成任何投资建议。所有 I 级阈值须自行回测校准。市场有风险，投资需谨慎。*</p>
+  <footer class="credit">
+    <span>© 2026 王潇 · 自由使用，请注明来处；禁止商用</span>
+    <span>不构成投资建议 · I 级阈值须自行回测校准 · 市场有风险，投资需谨慎</span>
+  </footer>
+</div>
+</body>
+</html>
