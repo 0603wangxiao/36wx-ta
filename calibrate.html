@@ -626,7 +626,7 @@ function chipLevels(rows, A, B, baseTurn){
     for(let b=b0;b<=b1&&b<B;b++) sum+=den[b];
     bands.push({lo:a, hi:a+bw, pct:sum});
   }
-  return {px, profit, avgCost, p5, p95, width:p95-p5, conc:(p95-p5)/(p95+p5)*100, vunit:(VF===100?'手':'股'),
+  return {px, profit, avgCost, p5, p95, width:p95-p5, conc:(p95-p5)/(p95+p5)*100, vunit:'量',
     curT, tRank:rank(curT), ma20, expand, lowLine, belowD, wallChip, digest, amp, buffer,
     hasVol, medV, dOI, baseTurn,
     wall1, wall2, shelf1, bands, PX, den, lo, hi, step, B,
