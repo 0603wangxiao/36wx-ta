@@ -328,6 +328,7 @@ function _toFutures(arr, outer){
   return out;
 }
 async function srcSina(rc,lmt){
+  if(typeof rc==='string'){ const q=resolveComm(rc); if(!q) throw new Error('不是有效的商品代码：'+rc); rc=q; }
   const outer=(rc.mk==='hf');
   const svc=outer? 'GlobalFuturesService.getGlobalFuturesDailyKLine' : 'InnerFuturesNewService.getDailyKLine';
   const raw=await jsonpSina(svc+'?symbol='+encodeURIComponent(rc.sym));
@@ -442,26 +443,25 @@ async function getKline(rc,lmt){
   throw new Error(errs.join('　|　'));
 }
 
-async function probe(code){
+async function probe(codes){
   const out=[];
-  for(const pair of SOURCES){
+  for(const code of codes){
+    const rc=resolveComm(code);
     const t0=Date.now();
-    try{ const r=await pair[1](code,60);
-      out.push({src:pair[0], ok:true, ms:Date.now()-t0, n:r.rows.length, name:r.name}); }
-    catch(e){ out.push({src:pair[0], ok:false, ms:Date.now()-t0, err:((e&&e.message)||String(e))}); }
+    try{
+      if(!rc) throw new Error('不是有效商品代码');
+      const r=await srcSina(rc,60);
+      out.push({src:(rc.market+' '+rc.sym+' '+(rc.cname||'')), ok:true, ms:Date.now()-t0, n:r.rows.length, name:r.name});
+    }catch(e){
+      out.push({src:(rc? (rc.market+' '+rc.sym+' '+(rc.cname||'')) : String(code)),
+                ok:false, ms:Date.now()-t0, err:((e&&e.message)||String(e))});
+    }
   }
   return out;
 }
 
 /* ---------- 引擎：筹码分布 + 累计阶梯（位阶） ---------- */
-/* 成交量单位自适应：腾讯源对科创板(688/689)返回「股」，其余板块返回「手」。
-   用近 20 日均量反推：若按「手」算出的换手率 > 25%（不可能），即判为「股」。 */
-function volFactor(rows, fsShares){
-  const v=rows.slice(-20).map(r=>r.v).sort((a,b)=>a-b);
-  if(!v.length) return 100;
-  const mv=v[Math.floor(v.length/2)];
-  return (mv*100/fsShares > 0.25) ? 1 : 100;
-}
+/* 注：srcTencent / srcEastmoney / secid / usSecid 是股票页的源，本页不使用，保留仅为同源派生。 */
 /* ===== MACD 多头状态（12/26/9）=====
    实测依据（17 只 × 8516 根 K 线，10 日持有）：
      含慢档金叉的信号：10日均 +2.89%、胜率 61%、n=96   ← 显著（t=2.15，p≈0.03）
@@ -872,15 +872,15 @@ $('run').addEventListener('click',run);
 $('demo').addEventListener('click',()=>{ $('codes').value='RB0 螺纹钢\nCU0 沪铜\nAU0 沪金\nI0 铁矿石\nM0 豆粕\nTA0 PTA\nSC0 原油\nCL 纽约原油\nGC 纽约黄金\nSI 纽约白银\nHG COMEX铜\nS 美国大豆\nC 美国玉米'; run(); });
 $('check').addEventListener('click',async()=>{
   const btn=$('check'); btn.disabled=true;
-  const box=$('probeOut'); box.classList.remove('hide'); box.textContent='正在测两条数据源（用 600150 试）…';
-  const rows=await probe('600150');
+  const box=$('probeOut'); box.classList.remove('hide'); box.textContent='正在测新浪期货接口（内盘 RB0 螺纹钢 · 外盘 CL 纽约原油）…';
+  const rows=await probe(['RB0','CL']);
   const okAny=rows.some(r=>r.ok);
   box.innerHTML='<strong>数据源自检</strong>　'+rows.map(r=> r.ok
-    ? '<span style="color:var(--accent)">'+r.src+' ✓ '+r.ms+' ms（'+r.name+'，'+r.n+' 根）</span>'
-    : '<span class="err">'+r.src+' ✗ '+r.ms+' ms — '+r.err+'</span>').join('　｜　')+
+    ? '<span style="color:var(--accent)">'+r.src+'　✓ '+r.ms+' ms（'+r.name+'，'+r.n+' 根）</span>'
+    : '<span class="err">'+r.src+'　✗ '+r.ms+' ms — '+r.err+'</span>').join('　｜　')+
     '<div style="margin-top:.35rem;color:var(--muted)">'+(okAny
-      ? '有源可用。若个别票仍抓不到，多半是该票停牌或代码写错。'
-      : '两条都不通：通常是接口限额或本地网络策略，隔几分钟再试；也可换网络（如手机热点）验证。')+'</div>';
+      ? '接口可用。<strong>内盘有成交量、外盘没有</strong>——外盘的筹码按时间均匀加权，属正常。'
+      : '<strong>两条都不通。</strong>该接口是 JSONP（&lt;script&gt; 加载），常见原因：① 浏览器扩展（广告拦截／隐私保护）拦了跨域脚本；② 本地网络策略；③ 新浪临时限额。<br>先关掉拦截插件重试，或换网络（手机热点）验证。')+'</div>';
   btn.disabled=false;
 });
 $('clear').addEventListener('click',()=>{ $('codes').value=''; $('out').classList.add('hide'); $('prog').textContent=''; $('pbar').style.width='0%'; });
