@@ -265,6 +265,7 @@ footer.credit{ margin-top:52px; padding-top:16px; border-top:1px solid var(--lin
       </ul>
       <p style="font-size:.88rem;margin-bottom:.4rem"><strong>商品特有的三处处理</strong></p>
       <ul style="margin:0 0 .8rem;padding-left:1.1rem;font-size:.85rem;color:var(--muted)">
+        <li><strong>K 线周期与形态</strong>：图上为 <strong>日 K</strong>（股票走前复权，期货为连续合约）。<strong>实心柱＝阳线（收盘≥开盘）</strong>，<strong>空心柱＝阴线（收盘&lt;开盘）</strong>。颜色与形态是两个独立维度——<strong>颜色表示「量·换手·筹码」的综合强度，形态表示这一根自己的涨跌方向</strong>；因此会出现「空心黄柱」（当期收跌但综合强度仍最高），那通常是上升趋势中的回调而非转弱。每次扫描取 500 根，图上默认显示最近 120 根，可拖动平移／滚轮缩放。</li>
         <li><strong>彩色 K 线（本工具自定规则，非商业软件原版）</strong>：每根按三项各 0~2 分——<strong>量</strong>（量比 ≥1.5→2／≥0.8→1）、<strong>换手</strong>（相对量分位 ≥70%→2／≥40%→1）、<strong>筹码</strong>（收盘在筹码主峰之上→2／主峰与平均成本之间→1／均本之下→0）。总分 ≥5 <span style="color:#d4a017">黄</span>（量价筹共振）／3~4 <span style="color:#b23a26">红</span>／1~2 <span style="color:#2e6f8e">蓝</span>／0 <span style="color:#2e7d5b">绿</span>。灰虚线＝平均成本。<strong>那张截图里商业软件的原版算法看不到，这是按你猜的三个维度自定的一套，不是复刻。</strong></li>
         <li><strong>没有流通股本 → 用等效换手。</strong>当日成交量 ÷ 近 250 日中位量 × 基准（默认 2%），再乘衰减系数 A。<strong>这是为与股票可比而做的归一化，不是商品的真实换手率。</strong>基准可在输入区调整。</li>
         <li><strong>外盘无成交量 → 时间均匀加权。</strong>纽约原油、黄金、CBOT 农产品等外盘品种，新浪接口成交量恒为 0。此时每根按基准衰减，分布退化为<strong>「价格近期停留最久的位置」</strong>——压力位／支撑位仍可用，但不再含成交量信息，该行标「无成交量」。</li>
@@ -928,7 +929,7 @@ function gcard(r){
       '<span class="px"><span class="t1 xl">'+P2(r.px)+'</span><span class="t3">现价</span></span>'+
     '</div>'+
   /* ── 主图：彩色 K 线仪表盘（视觉中心）── */
-    (r.bars? '<div class="ck-kl"><div class="kl-bar">'+'<span class="t3 kl-legend"><b style="color:#e8a800">黄</b> 共振 · <b style="color:#d92b2b">红</b> 中强 · '+'<b style="color:#1565d8">蓝</b> 偏弱 · <b style="color:#0f9d58">绿</b> 最弱　｜　'+'<span style="color:#a3823c">金虚线</span>压力　<span style="color:#0f9d58">绿虚线</span>支撑　'+'<span style="color:#8a8375">灰虚线</span>均本　<span style="color:#7b4bb7">紫线</span>MA20</span>'+'<span class="kl-pos t3"></span>'+'<button class="kl-btn kl-out" title="缩小">−</button>'+'<button class="kl-btn kl-in" title="放大">+</button>'+'<button class="kl-btn kl-reset" title="回到最近120根">复位</button>'+'<button class="kl-btn kl-chip" title="显示/隐藏筹码">筹码 开</button>'+'</div><div class="kl-host" data-k="'+r.kidx+'"><div class="kl-svg"></div></div></div>' : '')+
+    (r.bars? '<div class="ck-kl"><div class="kl-bar">'+'<span class="t3 kl-legend">'+'<b>日K</b>（股票为前复权）　<b>实心</b>=阳线(收≥开)　<b>空心</b>=阴线(收&lt;开)　｜　'+'颜色=<b>量·换手·筹码</b>强度：<b style="color:#e8a800">黄</b> 共振 · <b style="color:#d92b2b">红</b> 中强 · '+'<b style="color:#1565d8">蓝</b> 偏弱 · <b style="color:#0f9d58">绿</b> 最弱<br>'+'<span style="color:#a3823c">金虚线</span>压力位　<span style="color:#0f9d58">绿虚线</span>支撑位　'+'<span style="color:#8a8375">灰虚线</span>平均成本　<span style="color:#7b4bb7">紫线</span>MA20　'+'<b>下副图</b>=成交量(同色)　<b>右侧</b>=筹码分布（<span style="color:#d92b2b">红</span>上方套牢 / <span style="color:#0f9d58">绿</span>下方获利）</span>'+'<span class="kl-pos t3"></span>'+'<button class="kl-btn kl-out" title="缩小">−</button>'+'<button class="kl-btn kl-in" title="放大">+</button>'+'<button class="kl-btn kl-reset" title="回到最近120根">复位</button>'+'<button class="kl-btn kl-chip" title="显示/隐藏筹码">筹码 开</button>'+'</div><div class="kl-host" data-k="'+r.kidx+'"><div class="kl-svg"></div></div></div>' : '')+
   /* ── 交易计划：全是 T1 ── */
     '<div class="ck-plan">'+
       '<div><span class="t3">入场</span><span class="t1">'+
