@@ -111,6 +111,15 @@ button:disabled{ opacity:.5; cursor:default; }
 
 .c-go{ color:#2e7d5b; } .c-wait{ color:#a3823c; } .c-no{ color:#b23a26; }
 .c-fnt{ color:var(--faint); font-weight:600; }
+
+/* ── 主图：彩色 K 线仪表盘（卡片视觉中心）── */
+.ck-kl{ padding:10px 14px 14px; border-bottom:1px solid var(--line);
+        background:color-mix(in srgb, var(--seed-fg) 2.2%, transparent); }
+.kl-legend{ margin-bottom:7px; line-height:1.7; white-space:normal; font-size:.68rem; }
+.kl-legend b{ font-weight:600; }
+.ck-kl svg{ width:100%; height:auto; display:block; }
+@media (max-width:860px){ .ck-kl{ padding:8px 10px 10px; } }
+
 .ck-empty{ padding:28px 16px; text-align:center; color:var(--faint); font-size:.88rem;
            border:1px dashed var(--line); border-radius:10px; }
 @media (max-width:860px){
@@ -766,57 +775,84 @@ function render(){
   });
   const P2=x=> (x==null||!isFinite(x))?'—':Number(x).toFixed(2);
   
-/* ══════ 彩色 K 线（量 · 换手 · 筹码 三档打分）══════
+/* ══════ 彩色 K 线仪表盘（量 · 换手 · 筹码 三档打分）══════
    每根按三项各 0~2 分：
      量    量比≥1.5→2 ｜ ≥0.8→1 ｜ 否则 0
      换手  相对量分位≥70%→2 ｜ ≥40%→1 ｜ 否则 0
      筹码  收盘在筹码主峰之上→2 ｜ 主峰与均本之间→1 ｜ 均本之下→0
    总分 ≥5 黄 ｜ 3~4 红 ｜ 1~2 蓝 ｜ 0 绿
-   ⚠ 这是本工具自定的配色规则，非任何商业软件的原版指标 */
-const KC={5:'#d4a017',4:'#c8862a',3:'#b23a26',2:'#4a6f8a',1:'#2e6f8e',0:'#2e7d5b'};
+   ⚠ 本工具自定配色，非任何商业软件原版指标 */
+const KC=('#d4a017,#c8862a,#b23a26,#4a6f8a,#2e6f8e,#2e7d5b').split(',');
 function kScore(b, ma20v, vRank, row, peak, avgCost){
   let s=0;
   const r = ma20v>0? b.v/ma20v : 1;
   s += r>=1.5? 2 : (r>=0.8? 1 : 0);
   s += vRank>=0.7? 2 : (vRank>=0.4? 1 : 0);
-  const c=b.c;
-  if(peak!=null && avgCost!=null){
-    s += c>=peak? 2 : (c>=avgCost? 1 : 0);
-  } else s += 1;
+  s += (peak!=null && avgCost!=null) ? (b.c>=peak? 2 : (b.c>=avgCost? 1 : 0)) : 1;
   return s;
 }
-function klineSVG(bars, R, vRankArr, w, h){
+function kColor(sc){ return sc>=5? KC[0] : (sc>=4? KC[1] : (sc>=3? KC[2] : (sc>=2? KC[3] : (sc>=1? KC[4] : KC[5])))); }
+function klineSVG(bars, R, vRankArr, W, H){
   const m=bars.length; if(m<10) return '';
-  let lo=Infinity, hi=-Infinity;
-  for(const b of bars){ if(b.l<lo) lo=b.l; if(b.h>hi) hi=b.h; }
+  const padR=150, padT=10, padB=10, gap=10;
+  const cw = W - padR;                     // 主图宽度
+  const volH = 74;                          // 成交量区高度
+  const priceH = H - padT - padB - volH - gap;
+  const volTop = padT + priceH + gap;
+  let lo=Infinity, hi=-Infinity, vmax=0;
+  for(const b of bars){ if(b.l<lo) lo=b.l; if(b.h>hi) hi=b.h; if(b.v>vmax) vmax=b.v; }
   if(!(hi>lo)) return '';
-  const pad=4, H=h-pad*2, W=w, bw=W/m;
-  /* 主峰价格 */
-  let peak=null;
-  if(R.PX && R.den){
-    let bi=0; for(let i=1;i<R.PX.length;i++) if(R.den[i]>R.den[bi]) bi=i;
-    peak=R.PX[bi];
-  }
-  const y=v=> pad + (hi-v)/(hi-lo)*H;
+  const padv=(hi-lo)*0.04; lo-=padv; hi+=padv;
+  const bw = cw/m;
+  const yP=v=> padT + (hi-v)/(hi-lo)*priceH;
+  const yV=v=> volTop + volH - (vmax>0? v/vmax*volH : 0);
+  /* 筹码主峰 + 直方图（右侧横柱，价格轴对齐） */
+  let peak=null, dmax=0;
+  if(R.PX && R.den){ for(let i=0;i<R.PX.length;i++) if(R.den[i]>dmax){ dmax=R.den[i]; peak=R.PX[i]; } }
   let o='';
+  /* 右侧筹码分布 */
+  if(R.PX && R.den && dmax>0){
+    const bwid = padR - 16;
+    for(let i=0;i<R.PX.length;i++){
+      const p=R.PX[i], w=R.den[i]/dmax*bwid;
+      if(w<0.4) continue;
+      const yy=yP(p);
+      o+='<rect x="'+(cw+8).toFixed(1)+'" y="'+(yy-1.2).toFixed(1)+'" width="'+w.toFixed(1)+'" height="2.4" fill="#2e4b52" opacity="0.32"/>';
+    }
+    o+='<text x="'+(cw+8)+'" y="'+(padT+9)+'" font-size="9" fill="#8a8375">筹码分布</text>';
+  }
+  /* 彩色 K 线 */
   for(let i=0;i<m;i++){
     const b=bars[i], x=i*bw;
-    const sc=kScore(b, R.ma20v||0, vRankArr[i], b, peak, R.avgCost);
-    const col=KC[sc]||KC[0];
-    const up=b.c>=b.o;
-    const yh=y(b.h), yl=y(b.l), yo=y(b.o), yc=y(b.c);
-    const top=Math.min(yo,yc), bh=Math.max(1, Math.abs(yc-yo));
-    o+='<line x1="'+(x+bw/2).toFixed(1)+'" y1="'+yh.toFixed(1)+'" x2="'+(x+bw/2).toFixed(1)+'" y2="'+yl.toFixed(1)+
-       '" stroke="'+col+'" stroke-width="0.7" opacity="0.75"/>';
-    o+='<rect x="'+(x+0.3).toFixed(1)+'" y="'+top.toFixed(1)+'" width="'+Math.max(0.9,bw-0.6).toFixed(1)+'" height="'+bh.toFixed(1)+
-       '" fill="'+(up?col:'none')+'" stroke="'+col+'" stroke-width="0.8"/>';
+    const sc=kScore(b, R.ma20v||0, vRankArr[i]||0.5, b, peak, R.avgCost);
+    const col=kColor(sc), up=b.c>=b.o;
+    const yh=yP(b.h), yl=yP(b.l), yo=yP(b.o), yc=yP(b.c);
+    const top=Math.min(yo,yc), bh=Math.max(1,Math.abs(yc-yo));
+    o+='<line x1="'+(x+bw/2).toFixed(1)+'" y1="'+yh.toFixed(1)+'" x2="'+(x+bw/2).toFixed(1)+'" y2="'+yl.toFixed(1)+'" stroke="'+col+'" stroke-width="0.8" opacity="0.8"/>';
+    o+='<rect x="'+(x+0.4).toFixed(1)+'" y="'+top.toFixed(1)+'" width="'+Math.max(0.9,bw-0.8).toFixed(1)+'" height="'+bh.toFixed(1)+'" fill="'+(up?col:'none')+'" stroke="'+col+'" stroke-width="0.9"/>';
+    o+='<rect x="'+(x+0.4).toFixed(1)+'" y="'+yV(b.v).toFixed(1)+'" width="'+Math.max(0.9,bw-0.8).toFixed(1)+'" height="'+(volTop+volH-yV(b.v)).toFixed(1)+'" fill="'+col+'" opacity="0.55"/>';
   }
-  /* 平均成本参考线 */
-  if(R.avgCost!=null && R.avgCost>=lo && R.avgCost<=hi){
-    o+='<line x1="0" y1="'+y(R.avgCost).toFixed(1)+'" x2="'+W+'" y2="'+y(R.avgCost).toFixed(1)+
-       '" stroke="#8a8375" stroke-width="0.7" stroke-dasharray="3 3" opacity="0.8"/>';
-  }
-  return '<svg viewBox="0 0 '+W+' '+h+'" width="'+W+'" height="'+h+'" style="display:block">'+o+'</svg>';
+  /* 参考横线：压力位 / 支撑位 / 平均成本 / MA20 */
+  const hl=(v,col,dash,lab)=>{
+    if(v==null||!(v>=lo&&v<=hi)) return;
+    o+='<line x1="0" y1="'+yP(v).toFixed(1)+'" x2="'+cw+'" y2="'+yP(v).toFixed(1)+'" stroke="'+col+'" stroke-width="1" stroke-dasharray="'+dash+'" opacity="0.85"/>';
+    if(lab) o+='<text x="'+(cw-3)+'" y="'+(yP(v)-3).toFixed(1)+'" font-size="9" fill="'+col+'" text-anchor="end">'+lab+'</text>';
+  };
+  hl(R.wall1&&R.wall1.p, '#a3823c', '5 3', '压力 '+((R.wall1&&R.wall1.p)||0).toFixed(2));
+  hl(R.shelf1&&R.shelf1.p, '#2e6f8e', '5 3', '支撑 '+((R.shelf1&&R.shelf1.p)||0).toFixed(2));
+  hl(R.avgCost, '#8a8375', '2 3', '均本');
+  /* MA20 */
+  let ma='';
+  for(let i=19;i<m;i++){ let s=0; for(let k=i-19;k<=i;k++) s+=bars[k].c; const v=s/20;
+    const x=i*bw+bw/2; ma+=(i===19?'M':'L')+x.toFixed(1)+' '+yP(v).toFixed(1)+' '; }
+  o+='<path d="'+ma+'" fill="none" stroke="#b23a26" stroke-width="1.1" opacity="0.75"/>';
+  /* 现价 */
+  const last=bars[m-1].c;
+  o+='<line x1="0" y1="'+yP(last).toFixed(1)+'" x2="'+cw+'" y2="'+yP(last).toFixed(1)+'" stroke="#1b1813" stroke-width="0.9" opacity="0.6"/>';
+  /* 高低价标注 */
+  o+='<text x="2" y="'+(padT+9)+'" font-size="9" fill="#8a8375">'+(hi-padv).toFixed(2)+'</text>';
+  o+='<text x="2" y="'+(padT+priceH-2)+'" font-size="9" fill="#8a8375">'+(lo+padv).toFixed(2)+'</text>';
+  return '<svg viewBox="0 0 '+W+' '+H+'" width="100%" height="auto" preserveAspectRatio="none" style="display:block">'+o+'</svg>';
 }
 /* ══════ 卡片渲染 · 三层次 ══════ */
 function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
@@ -845,6 +881,14 @@ function gcard(r){
         (r.tag? ' · '+esc(r.tag) : '')+'</span>'+
       '<span class="px"><span class="t1 xl">'+P2(r.px)+'</span><span class="t3">现价</span></span>'+
     '</div>'+
+  /* ── 主图：彩色 K 线仪表盘（视觉中心）── */
+    (r.bars? '<div class="ck-kl">'+
+      '<div class="t3 kl-legend">近 120 根 ｜ '+
+      '<b style="color:#d4a017">黄</b> 量价筹共振 · <b style="color:#b23a26">红</b> 中强 · '+
+      '<b style="color:#2e6f8e">蓝</b> 偏弱 · <b style="color:#2e7d5b">绿</b> 最弱'+
+      '　｜　<span style="color:#a3823c">金虚线</span> 压力位　<span style="color:#2e6f8e">青虚线</span> 支撑位　'+
+      '<span style="color:#8a8375">灰虚线</span> 平均成本　<span style="color:#b23a26">红线</span> MA20</div>'+
+      klineSVG(r.bars, r, r.vRankArr||[], 1100, 430) +'</div>' : '')+
   /* ── 交易计划：全是 T1 ── */
     '<div class="ck-plan">'+
       '<div><span class="t3">入场</span><span class="t1">'+
@@ -884,10 +928,7 @@ function gcard(r){
       '<span class="adv t2">'+esc(r.advice)+'</span>'+
       (oiTxt? '<span class="t3">'+oiTxt.replace('　','')+'</span>' : '')+
     '</div>'+
-    (r.bars? '<div class="ck-kl" style="padding:8px 16px 12px;border-top:1px solid var(--line)">'+
-      '<div class="t3" style="margin-bottom:4px">彩色 K 线 · 近 120 根 ｜ <span style="color:#d4a017">黄</span>=量价筹共振 '+
-      '<span style="color:#b23a26">红</span>=中强 <span style="color:#2e6f8e">蓝</span>=偏弱 <span style="color:#2e7d5b">绿</span>=最弱'+
-      '　灰虚线=平均成本</div>'+ klineSVG(r.bars, r, r.vRankArr||[], 420, 96) +'</div>' : '')+
+
   '</div>';
 }
   $('cklist').innerHTML = sorted.map(gcard).join('');
