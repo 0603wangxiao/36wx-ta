@@ -181,7 +181,7 @@ footer.credit{ margin-top:52px; padding-top:16px; border-top:1px solid var(--lin
     <p style="margin-top:0;font-size:.86rem;color:var(--muted)">
       <strong>内盘期货</strong>以 0 结尾（<code>RB0</code> 螺纹、<code>CU0</code> 沪铜、<code>AU0</code> 沪金、<code>I0</code> 铁矿、<code>M0</code> 豆粕、<code>TA0</code> PTA、<code>SC0</code> 原油…）｜<strong>外盘商品</strong>不带 0（<code>CL</code> 原油、<code>GC</code> 黄金、<code>SI</code> 白银、<code>HG</code> 铜、<code>S</code> 大豆、<code>C</code> 玉米、<code>W</code> 小麦、<code>NG</code> 天然气…）。也可写 <code>nf:RB0</code> / <code>hf:CL</code>。后面跟名称会被忽略。逗号空格换行分隔都行。
     </p>
-    <textarea id="codes" spellcheck="false" placeholder="RB0 螺纹钢&#10;CU0 沪铜&#10;AU0 沪金&#10;I0 铁矿石&#10;M0 豆粕&#10;CL 纽约原油&#10;GC 纽约黄金&#10;S 美国大豆"></textarea>
+    <textarea id="codes" spellcheck="false" placeholder="RB0 螺纹钢&#10;NI0 沪镍&#10;AL0 沪铝&#10;LH0 生猪&#10;PK0 花生&#10;SM0 锰硅&#10;IM0 中证1000&#10;IF0 沪深300&#10;CL 纽约原油&#10;GC 纽约黄金"></textarea>
     <div class="grid">
       <label class="f">抓取根数
         <input id="lmt" type="number" value="500" min="120" max="1500" step="20" />
@@ -278,9 +278,10 @@ const $=id=>document.getElementById(id);
 const INNER={RB:'螺纹钢',HC:'热卷',CU:'沪铜',AL:'沪铝',ZN:'沪锌',PB:'沪铅',NI:'沪镍',SN:'沪锡',
   AU:'沪金',AG:'沪银',RU:'橡胶',BU:'沥青',SP:'纸浆',FU:'燃油',
   I:'铁矿石',J:'焦炭',JM:'焦煤',M:'豆粕',Y:'豆油',P:'棕榈油',C:'玉米',A:'豆一',CS:'玉米淀粉',
-  JD:'鸡蛋',EG:'乙二醇',PP:'聚丙烯',L:'塑料',V:'PVC',
+  JD:'鸡蛋',LH:'生猪',EG:'乙二醇',PP:'聚丙烯',L:'塑料',V:'PVC',
   TA:'PTA',MA:'甲醇',SR:'白糖',CF:'棉花',OI:'菜油',RM:'菜粕',FG:'玻璃',SA:'纯碱',UR:'尿素',
-  AP:'苹果',SF:'硅铁',SM:'锰硅',SC:'原油',LU:'低硫燃油',NR:'20号胶'};
+  AP:'苹果',PK:'花生',SF:'硅铁',SM:'锰硅',SC:'原油',LU:'低硫燃油',NR:'20号胶',
+  IF:'沪深300',IH:'上证50',IC:'中证500',IM:'中证1000'};
 const OUTER={CL:'纽约原油',NG:'纽约天然气',HO:'纽约取暖油',GC:'纽约黄金',SI:'纽约白银',
   HG:'COMEX铜',S:'美国大豆',C:'美国玉米',W:'美国小麦',BO:'美国豆油',SM:'美国豆粕',
   KC:'咖啡',SB:'白糖11号',CT:'棉花',CC:'可可'};
