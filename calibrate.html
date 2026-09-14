@@ -241,6 +241,7 @@ footer.credit{ margin-top:52px; padding-top:16px; border-top:1px solid var(--lin
       </ul>
       <p style="font-size:.88rem;margin-bottom:.4rem"><strong>商品特有的三处处理</strong></p>
       <ul style="margin:0 0 .8rem;padding-left:1.1rem;font-size:.85rem;color:var(--muted)">
+        <li><strong>彩色 K 线（本工具自定规则，非商业软件原版）</strong>：每根按三项各 0~2 分——<strong>量</strong>（量比 ≥1.5→2／≥0.8→1）、<strong>换手</strong>（相对量分位 ≥70%→2／≥40%→1）、<strong>筹码</strong>（收盘在筹码主峰之上→2／主峰与平均成本之间→1／均本之下→0）。总分 ≥5 <span style="color:#d4a017">黄</span>（量价筹共振）／3~4 <span style="color:#b23a26">红</span>／1~2 <span style="color:#2e6f8e">蓝</span>／0 <span style="color:#2e7d5b">绿</span>。灰虚线＝平均成本。<strong>那张截图里商业软件的原版算法看不到，这是按你猜的三个维度自定的一套，不是复刻。</strong></li>
         <li><strong>没有流通股本 → 用等效换手。</strong>当日成交量 ÷ 近 250 日中位量 × 基准（默认 2%），再乘衰减系数 A。<strong>这是为与股票可比而做的归一化，不是商品的真实换手率。</strong>基准可在输入区调整。</li>
         <li><strong>外盘无成交量 → 时间均匀加权。</strong>纽约原油、黄金、CBOT 农产品等外盘品种，新浪接口成交量恒为 0。此时每根按基准衰减，分布退化为<strong>「价格近期停留最久的位置」</strong>——压力位／支撑位仍可用，但不再含成交量信息，该行标「无成交量」。</li>
         <li><strong>主力连续合约有拼接跳空。</strong><code>RB0</code>／<code>CU0</code> 是主力连续，换月时价格有跳空，会让 MACD 与摆动点产生假信号。<strong>换月前后两周内的结论要打折看。</strong></li>
