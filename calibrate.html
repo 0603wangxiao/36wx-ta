@@ -452,7 +452,7 @@ const _toRows=arr=>arr.map(a=>{ const p=Array.isArray(a)?a:String(a).split(',');
 /* 源一：腾讯（CORS: * ，无每日限额，前复权日线） */
 async function srcTencent(rc,lmt){
   const sym=rc.sym; if(!sym) throw new Error('代码格式不对');
-  const u='https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param='+sym+',day,,,'+lmt+',qfq';
+  const u='https://ifzq.gtimg.cn/appstock/app/fqkline/get?param='+sym+',day,,,'+lmt+',qfq';
   const r=await fetch(u); if(!r.ok) throw new Error('HTTP '+r.status);
   const d=await r.json();
   const node=d&&d.data&&d.data[sym]; if(!node) throw new Error('无返回');

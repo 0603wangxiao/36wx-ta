@@ -461,10 +461,19 @@ const _toRows=arr=>arr.map(a=>{ const p=Array.isArray(a)?a:String(a).split(',');
   return {d:p[0],o:+p[1],c:+p[2],h:+p[3],l:+p[4],v:+p[5]}; }).filter(r=>r.c>0&&r.h>=r.l&&r.v>0);
 
 /* 源一：腾讯（CORS: * ，无每日限额，前复权日线） */
+/* ⚠ 2026-09-15 实测：ifzq.gtimg.cn 起反爬，稳定返回 501（带一段 JS 挑战页），
+   而裸域 ifzq.gtimg.cn 稳定 200 且 Access-Control-Allow-Origin: *。
+   两个都试，谁通用谁 —— 腾讯随时可能只封其中一个。 */
+const TX_HOSTS=['https://ifzq.gtimg.cn','https://ifzq.gtimg.cn'];
 async function srcTencent(rc,lmt){
   const sym=rc.sym; if(!sym) throw new Error('代码格式不对');
-  const u='https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param='+sym+',day,,,'+lmt+',qfq';
-  const r=await fetch(u); if(!r.ok) throw new Error('HTTP '+r.status);
+  const tail='/appstock/app/fqkline/get?param='+sym+',day,,,'+lmt+',qfq';
+  let r=null, lastErr=null;
+  for(const h of TX_HOSTS){
+    try{ const rr=await fetch(h+tail); if(rr.ok){ r=rr; break; } lastErr=new Error('HTTP '+rr.status); }
+    catch(e){ lastErr=e; }
+  }
+  if(!r) throw (lastErr||new Error('两个腾讯域名都不通'));
   const d=await r.json();
   const node=d&&d.data&&d.data[sym]; if(!node) throw new Error('无返回');
   const arr=node.qfqday||node.day; if(!arr||!arr.length) throw new Error('无K线（停牌或代码不存在）');
