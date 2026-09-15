@@ -915,6 +915,22 @@ function klineSVG(bars, R, vRankArr, W, H, opt){
      String(bars[m-1].d)+'</text>';
   return '<svg viewBox="0 0 '+W+' '+H+'" width="100%" height="auto" preserveAspectRatio="none" style="display:block">'+o+'</svg>';
 }
+/* ══════ 鼠标坐标 → K 线索引 ══════
+   ⚠ 这里踩过一个很隐蔽的坑：K 线只占 SVG viewBox 的前 (1100 − padR) 一段，
+     右侧 padR 是筹码分布栏。若直接拿「鼠标 x ÷ 元素宽度 × 根数」，
+     等于把整幅宽度都当成 K 线区，索引会系统性偏小：
+
+       悬停第 120 根（最右那根）→ x ≈ 宽度的 86.2% → 算出第 103 根
+       第 119 根是 9/14，第 103 根往前 16 个交易日 = 8/21
+
+     于是「底下写着 9.14，鼠标一碰却显示 8.21」。
+     这类坐标错误不会抛异常，只会安静地报错日期 —— 所以抽成独立函数，便于直接测试。 */
+function klIdxAt(px, hostW, count, padR){
+  if(!(hostW>0) || !(count>0)) return -1;
+  const cw=1100-padR;                       /* K 线区在 viewBox 里的宽度 */
+  return (px*1100/hostW) / (cw/count);
+}
+
 function wireCharts(sorted){
   document.querySelectorAll('.kl-host').forEach(function(host){
     const idx=+host.dataset.k, r=sorted[idx];
@@ -928,11 +944,15 @@ function wireCharts(sorted){
       const pos=host.querySelector('.kl-pos');
       if(pos) pos.textContent='第 '+(st.start+1)+'–'+(st.start+bars.length)+' 根 / 共 '+total;
     }
+    /* 鼠标位置 → K 线索引（浮点）。padR 跟着筹码开关变，不能写死。 */
+    function idxAt(clientX){
+      const rect=host.getBoundingClientRect();
+      return klIdxAt(clientX-rect.left, rect.width, st.count, (st.chip===false)? 44 : 152);
+    }
     host.addEventListener('wheel', function(e){
       e.preventDefault();
       const nc=Math.max(15,Math.min(total,Math.round(st.count*(e.deltaY>0?1.22:0.82))));
-      const rect=host.getBoundingClientRect();
-      const keep=Math.max(0,Math.min(1,(e.clientX-rect.left)/rect.width));
+      const keep=Math.max(0,Math.min(1, idxAt(e.clientX)/st.count));
       st.start=Math.max(0,Math.min(total-nc,Math.round(st.start+(st.count-nc)*keep)));
       st.count=nc; draw();
     }, {passive:false});
@@ -941,7 +961,7 @@ function wireCharts(sorted){
     function hover(e){
       const rect=host.getBoundingClientRect();
       const x=e.clientX-rect.left;
-      const i=Math.floor(x/rect.width*st.count);
+      const i=Math.floor(idxAt(e.clientX));
       if(i<0||i>=st.count||!r.bars[st.start+i]){ if(tip) tip.style.display='none'; if(xln) xln.style.display='none'; return; }
       const b=r.bars[st.start+i];
       if(tip){
@@ -952,11 +972,12 @@ function wireCharts(sorted){
       }
       if(xln){ xln.style.display='block'; xln.style.left=(x)+'px'; xln.style.height=host.clientHeight+'px'; }
     }
-    host.addEventListener('mousedown', function(e){ drag={x:e.clientX,s:st.start}; host.classList.add('kl-drag'); e.preventDefault(); });
+    host.addEventListener('mousedown', function(e){ drag={i:idxAt(e.clientX), s:st.start}; host.classList.add('kl-drag'); e.preventDefault(); });
     host.addEventListener('mousemove', function(e){
       if(!drag){ hover(e); return; }
-      const per=st.count/host.clientWidth;
-      st.start=Math.max(0,Math.min(total-st.count,Math.round(drag.s-(e.clientX-drag.x)*per))); draw(); hover(e);
+      /* 拖动的位移也按「索引差」算，同样不能再拿整幅宽度当比例 */
+      const di=idxAt(e.clientX)-drag.i;
+      st.start=Math.max(0,Math.min(total-st.count,Math.round(drag.s-di))); draw(); hover(e);
     });
     ['mouseup','mouseleave'].forEach(function(ev){ host.addEventListener(ev,function(){ drag=null; host.classList.remove('kl-drag');
       if(ev==='mouseleave'){ if(tip) tip.style.display='none'; if(xln) xln.style.display='none'; } }); });
