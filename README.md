@@ -1,17 +1,31 @@
 # 三变·六反 — 技术指标分析
 
-一套自包含的静态分析工具，共五页。纯前端，无后端、无构建步骤，直接用浏览器打开即可。
+一套自包含的静态分析工具，纯前端，无后端、无构建步骤，直接用浏览器打开即可。
+
+**导航是三级结构：**
+
+```
+首页  index.html
+├─ 股票扫描  scan.html          （二级）
+│   ├─ 基本面扫描  guide.html    （三级 · 主营构成／财务现金流／股东主力）
+│   └─ 择股        select.html   （三级 · 勾选条件 → 匹配度 → 自动推选）
+└─ 商品扫描  calibrate.html     （二级）
+    ├─ 基本面扫描  cguide.html   （三级 · 仓单库存／期限结构／持仓量／价格位置）
+    └─ 择商品      cselect.html  （三级 · 勾选条件 → 匹配度 → 自动推选）
+```
 
 **线上地址：<https://0603wangxiao.github.io/36wx-ta/>**
 
-| 页面 | 线上直达 |
-|---|---|
-| 知识图谱 | <https://0603wangxiao.github.io/36wx-ta/> |
-| 基本面扫描 | <https://0603wangxiao.github.io/36wx-ta/guide.html> |
-| 股票扫描 | <https://0603wangxiao.github.io/36wx-ta/scan.html> |
-| 商品扫描 | <https://0603wangxiao.github.io/36wx-ta/calibrate.html> |
-| 择股 | <https://0603wangxiao.github.io/36wx-ta/select.html> |
-| 数据源诊断 | <https://0603wangxiao.github.io/36wx-ta/数据源诊断.html> |
+| 页面 | 层级 | 线上直达 |
+|---|---|---|
+| 首页 · 知识图谱 | 一级 | <https://0603wangxiao.github.io/36wx-ta/> |
+| 股票扫描 | 二级 | <https://0603wangxiao.github.io/36wx-ta/scan.html> |
+| 商品扫描 | 二级 | <https://0603wangxiao.github.io/36wx-ta/calibrate.html> |
+| 股票 · 基本面扫描 | 三级 | <https://0603wangxiao.github.io/36wx-ta/guide.html> |
+| 股票 · 择股 | 三级 | <https://0603wangxiao.github.io/36wx-ta/select.html> |
+| 商品 · 基本面扫描 | 三级 | <https://0603wangxiao.github.io/36wx-ta/cguide.html> |
+| 商品 · 择商品 | 三级 | <https://0603wangxiao.github.io/36wx-ta/cselect.html> |
+| 数据源诊断 | 工具 | <https://0603wangxiao.github.io/36wx-ta/数据源诊断.html> |
 
 ---
 
@@ -23,7 +37,9 @@
 | **guide.html** | 基本面扫描。<strong>每块先给一句人话结论（大字＋highlight），数据表退到后面小字呈现。</strong><br><strong>① 主营构成与竞争力</strong>（按产品／地区／行业的收入、占比、毛利率 ＋ 核心题材原文）<br><strong>② 财务与现金流</strong>（营收／净利及同比、毛利率、ROE、资产负债率、经营／投资／筹资现金流、现金流含金量）<br><strong>③ 股东与主力</strong>（股东户数趋势与集中度、十大流通股东、机构持仓按类型） |
 | **scan.html** | 股票扫描。A股／港股／美股同一套口径：彩色 K 线仪表盘（可拖动・可缩放・筹码可开关）、MACD 三档状态与力道、筹码位阶（压力位／支撑位）、协调强度、入场价／止损价／目标价／盈亏比 |
 | **calibrate.html** | 大宗商品扫描。内盘 49 个品种 ／ 外盘 15 个品种，口径与股票页一致，换手率用「相对成交量折算等效换手」 |
-| **select.html** | 择股。勾选你在意的条件，全池按匹配度打分，够分的自动推选。**MACD 闸门关时匹配度封顶 49，永远进不了推荐区** |
+| **select.html** | 股票 · 择股。勾选条件，A股／港股／美股全池按匹配度打分，够分的自动推选。**MACD 闸门关时匹配度封顶 49** |
+| **cguide.html** | 商品 · 基本面扫描。**① 仓单库存**（交易所标准仓单量，库存最硬的代理）**② 期限结构**（近月贵还是远月贵）**③ 持仓量**（钱在进还是在撤）**④ 价格位置**。每块先给一句人话结论，明细数据排在后面 |
+| **cselect.html** | 商品 · 择商品。持仓量变化／期限结构／MACD 闸门／站上 MA20／协调强度／距支撑位 |
 
 ## 两份方法说明
 
@@ -51,7 +67,11 @@
 
 ### 拿不到的数据（如实交代）
 
-- **现货价格、库存、仓单、基差**：新浪期货没有对应接口（`getWarehouseStock`／`getSpotPrice`／`getBasis`／`getInventory` 全部返回 `Service not found`）；上期所仓单日报 404，大商所／郑商所被 412／301 拦掉。**`select.html` 的商品筛选因此改用「期限结构」作为库存的替代读数** —— 它不是猜的，是市场自己在给不同月份的货定价。
+- **现货价格 / 基差**（＝现货 − 期货）：新浪、东财都没有可跨域调用的接口。**期限结构是基差最接近的替代** —— 它不是猜的，是市场自己在给不同月份的货定价。
+- **库存／仓单：拿到了。** 上一版说「拿不到」是**我没找对表**。东财数据中心有 `RPT_FUTU_STOCKDATA`，
+  字段 `ON_WARRANT_NUM`（仓单量）、`ADDCHANGE`（增减）、`UNIT`（单位），实测覆盖 **71 个品种**，历史期数完整。
+  仓单＝交易所登记的标准仓单量，是库存最硬的代理；但它只含交割品，**不等于全社会库存**。**外盘没有这张表。**
+  （另外注意：`SECURITY_CODE` 大小写不统一 —— 多数大写 RB/HC/AL，原油是 `sc` 小写，两种都要试。）
 - **港美股的 PB**：腾讯行情第 46 位只有 A 股是市净率，港美股那一位是英文名。代码做了纯数字校验，拿不到就留空、该项不计入匹配度分母。
 - **外盘的持仓量**：新浪外盘 K 线里 `volume` 与 `position` 实测恒为 0，所以外盘只能靠价格本身。
 - **`hq.sinajs.cn` 实时行情**：非新浪来源的 Referer 一律返回 **403**，无法跨域取用。
@@ -118,7 +138,14 @@
 
 ```
 ~/Desktop/36wx-ta-github/          ← 改内容改这里（同时是 git 仓库）
-    index.html  guide.html  scan.html  calibrate.html  select.html  数据源诊断.html
+    index.html
+      scan.html        股票扫描（二级）
+        guide.html     股票 · 基本面扫描（三级）
+        select.html    股票 · 择股（三级）
+      calibrate.html   商品扫描（二级）
+        cguide.html    商品 · 基本面扫描（三级）
+        cselect.html   商品 · 择商品（三级）
+      数据源诊断.html   工具页
     guide.md    README.md   .nojekyll   .gitignore
 ```
 

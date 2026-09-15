@@ -1,0 +1,1148 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>三变·六反 — 商品基本面扫描 · 仓单库存 / 期限结构 / 持仓量</title>
+<meta name="description" content="商品基本面扫描：交易所仓单库存、期货期限结构、持仓量变化、价格区间位置。内盘 49 个品种 + 外盘 15 个品种。" />
+<meta name="author" content="王潇" />
+<meta name="generator" content="WX-36TA-H-0913" />
+<style>
+
+:root{
+  --seed-bg:#f6f3ec; --seed-fg:#1b1813; --seed-primary:#b23a26; --seed-accent:#2e4b52;
+  --seed-surface:#fffdf8; --seed-gold:#a3823c;
+  --bg:var(--seed-bg); --fg:var(--seed-fg); --surface:var(--seed-surface);
+  --line:color-mix(in srgb, var(--seed-fg) 13%, transparent);
+  --line-strong:color-mix(in srgb, var(--seed-fg) 26%, transparent);
+  --muted:color-mix(in srgb, var(--seed-fg) 62%, var(--seed-bg));
+  --faint:color-mix(in srgb, var(--seed-fg) 40%, var(--seed-bg));
+  --primary:var(--seed-primary); --accent:var(--seed-accent); --gold:var(--seed-gold);
+  --gold-soft:color-mix(in srgb, var(--seed-gold) 14%, var(--seed-surface));
+  --primary-soft:color-mix(in srgb, var(--seed-primary) 10%, var(--seed-surface));
+  --primary-line:color-mix(in srgb, var(--seed-primary) 45%, transparent);
+  --accent-soft:color-mix(in srgb, var(--seed-accent) 10%, var(--seed-surface));
+  --accent-line:color-mix(in srgb, var(--seed-accent) 45%, transparent);
+  --serif:"Noto Serif SC","Songti SC","Source Han Serif SC",Georgia,serif;
+  --sans:"Inter","PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,monospace;
+  --shadow-1:0 1px 2px color-mix(in srgb, var(--seed-fg) 8%, transparent);
+}
+*,*::before,*::after{ box-sizing:border-box; }
+body{ margin:0; background:var(--bg); color:var(--fg); font-family:var(--sans); font-size:15px; line-height:1.7; -webkit-font-smoothing:antialiased; }
+.grain{ position:fixed; inset:0; pointer-events:none; opacity:.5; mix-blend-mode:multiply; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.04'/%3E%3C/svg%3E"); }
+.wrap{ position:relative; max-width:1240px; margin:0 auto; padding:52px 26px 90px; }
+header.top{ display:flex; align-items:center; gap:18px; padding-bottom:20px; border-bottom:1px solid var(--line); position:relative; flex-wrap:wrap; }
+header.top::after{ content:""; position:absolute; left:0; right:0; bottom:-1px; height:1px; background:linear-gradient(90deg,transparent,color-mix(in srgb,var(--seed-gold) 62%,transparent) 20%,color-mix(in srgb,var(--seed-primary) 44%,transparent) 52%,transparent); }
+.seal{ flex:none; width:52px; height:52px; display:grid; place-items:center; border-radius:6px; border:1px solid var(--primary-line); background:var(--primary-soft); color:var(--primary); }
+.seal svg{ width:66%; height:76%; }
+.titles h1{ margin:0; font-family:var(--serif); font-size:1.5rem; font-weight:600; letter-spacing:.06em; line-height:1.2; }
+.titles h1 .lat{ font-family:var(--sans); font-weight:400; font-size:.6rem; letter-spacing:.3em; color:var(--faint); text-transform:uppercase; margin-left:.7em; }
+.titles p{ margin:.2rem 0 0; font-size:.74rem; color:var(--muted); letter-spacing:.1em; }
+.spacer{ flex:1; }
+.navlink{ font-family:var(--serif); font-size:.8rem; letter-spacing:.08em; color:var(--gold); text-decoration:none; border:1px solid color-mix(in srgb,var(--seed-gold) 48%,transparent); background:var(--gold-soft); border-radius:999px; padding:.38rem 1rem; box-shadow:var(--shadow-1); white-space:nowrap; }
+.navlink:hover{ filter:brightness(1.04); }
+h2{ font-family:var(--serif); font-size:1.18rem; font-weight:600; letter-spacing:.05em; margin:44px 0 12px; padding-bottom:.5rem; border-bottom:1px solid var(--line); position:relative; }
+h2::before{ content:""; position:absolute; left:-14px; top:.42em; width:6px; height:6px; border-radius:50%; background:var(--gold); }
+h3{ font-family:var(--serif); font-size:1rem; font-weight:600; margin:0 0 .4rem; }
+p{ margin:.7rem 0; color:color-mix(in srgb, var(--fg) 88%, var(--bg)); }
+strong{ color:var(--fg); font-weight:600; }
+code{ font-family:var(--mono); font-size:.84em; background:color-mix(in srgb, var(--seed-fg) 6%, transparent); border:1px solid var(--line); border-radius:4px; padding:.06em .34em; }
+.note{ margin:1rem 0; padding:.8rem 1.1rem; border-left:2px solid color-mix(in srgb,var(--seed-gold) 55%,transparent); background:linear-gradient(90deg,var(--gold-soft),transparent 72%); font-size:.88rem; border-radius:0 6px 6px 0; }
+.panel{ border:1px solid var(--line); border-radius:8px; background:var(--surface); box-shadow:var(--shadow-1); padding:16px 18px; margin:14px 0; }
+textarea{ width:100%; min-height:150px; font-family:var(--mono); font-size:.8rem; line-height:1.7; padding:.8rem .9rem; border:1px solid var(--line); border-radius:6px; background:var(--bg); color:var(--fg); resize:vertical; }
+textarea:focus{ outline:2px solid var(--primary); outline-offset:1px; }
+.grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:12px; margin-top:12px; }
+label.f{ display:flex; flex-direction:column; gap:.3rem; font-size:.74rem; color:var(--muted); letter-spacing:.04em; }
+label.f input,label.f select{ font-family:var(--sans); font-size:.86rem; padding:.45rem .6rem; border:1px solid var(--line); border-radius:6px; background:var(--bg); color:var(--fg); }
+.row{ display:flex; gap:.6rem; flex-wrap:wrap; align-items:center; margin-top:14px; }
+button.go{ font-family:var(--serif); font-size:.92rem; letter-spacing:.08em; font-weight:600; padding:.6rem 1.6rem; border-radius:999px; border:1px solid var(--primary); background:var(--primary); color:var(--surface); cursor:pointer; box-shadow:var(--shadow-1); }
+button.ghost{ font-family:var(--serif); font-size:.84rem; letter-spacing:.06em; padding:.52rem 1.1rem; border-radius:999px; border:1px solid var(--line-strong); background:var(--surface); color:var(--muted); cursor:pointer; }
+button.go:hover{ filter:brightness(1.06); } button.ghost:hover{ color:var(--fg); }
+button:disabled{ opacity:.5; cursor:default; }
+.cards{ display:grid; grid-template-columns:repeat(auto-fit,minmax(168px,1fr)); gap:12px; }
+.card{ border:1px solid var(--line); border-left:3px solid var(--accent); border-radius:6px; background:var(--surface); padding:.8rem 1rem; box-shadow:var(--shadow-1); }
+.card .k{ font-size:.7rem; letter-spacing:.1em; color:var(--faint); }
+.card .v{ font-family:var(--serif); font-size:1.5rem; font-weight:600; line-height:1.25; margin:.15rem 0; }
+.card .s{ font-size:.74rem; color:var(--muted); line-height:1.55; }
+
+/* ══════ 交易计划卡片 · 三层次排版 ══════
+   T1 最重要：字号大 + 语义色 + 加粗
+   T2 次要  ：中号 + 黑体(600) + 主文字色
+   T3 不凸显：统一小字 + 浅灰，不加粗                        */
+.cklist{ display:flex; flex-direction:column; gap:14px; margin:1.1rem 0; }
+.ck{ border:1px solid var(--line); border-left:5px solid var(--line); border-radius:10px;
+     background:var(--surface); overflow:hidden; }
+.ck[data-st="go"]  { border-left-color:#2e7d5b; }
+.ck[data-st="wait"]{ border-left-color:#a3823c; }
+.ck[data-st="no"]  { border-left-color:#b23a26; }
+.ck[data-st="err"] { border-left-color:var(--faint); opacity:.8; }
+
+/* —— T1 / T2 / T3 三个层次 —— */
+.t1{ font-size:1.14rem; font-weight:750; letter-spacing:-.015em;
+     font-variant-numeric:tabular-nums; line-height:1.15; white-space:nowrap; }
+.t1.xl{ font-size:1.62rem; letter-spacing:-.03em; }
+.t2{ font-size:.94rem; font-weight:600; color:var(--seed-fg); line-height:1.3;
+     font-variant-numeric:tabular-nums; }
+.t3{ font-size:.7rem; font-weight:400; color:var(--faint); letter-spacing:.03em;
+     line-height:1.3; white-space:nowrap; }
+.t3w{ white-space:normal; }
+
+.ck-h{ display:flex; align-items:flex-end; gap:12px; padding:13px 18px 11px;
+       border-bottom:2px solid var(--line); }
+.ck-h .nm{ font-family:var(--serif); font-size:1.22rem; font-weight:700; letter-spacing:.01em; }
+.ck-h .meta{ padding-bottom:3px; }
+.ck-h .px{ margin-left:auto; text-align:right; }
+.ck-h .px .t3{ display:block; margin-top:1px; }
+
+.ck-grid{ display:grid; grid-template-columns:repeat(4,minmax(0,1fr));
+          gap:12px 18px; padding:13px 18px; }
+.ck-grid>div{ display:flex; flex-direction:column; gap:2px; min-width:0; }
+.ck-plan{ display:grid; grid-template-columns:repeat(4,minmax(0,1fr));
+          gap:12px 18px; padding:14px 18px; border-top:1px dashed var(--line);
+          background:color-mix(in srgb, var(--seed-fg) 4%, transparent); }
+.ck-plan>div{ display:flex; flex-direction:column; gap:2px; min-width:0; }
+.ck-foot{ padding:11px 18px; border-top:1px solid var(--line); display:flex;
+          align-items:baseline; gap:14px; flex-wrap:wrap; }
+.ck-foot .adv{ flex:1; min-width:200px; }
+
+.ck-bar{ height:5px; border-radius:3px; margin-top:4px; width:100%;
+         background:color-mix(in srgb, var(--seed-fg) 9%, transparent); overflow:hidden; }
+.ck-bar s{ display:block; height:100%; border-radius:3px; text-decoration:none; }
+
+.c-go{ color:#2e7d5b; } .c-wait{ color:#a3823c; } .c-no{ color:#b23a26; }
+.c-fnt{ color:var(--faint); font-weight:600; }
+
+/* ── 主图：彩色 K 线仪表盘（卡片视觉中心）── */
+.ck-kl{ padding:10px 14px 14px; border-bottom:1px solid var(--line);
+        background:color-mix(in srgb, var(--seed-fg) 2.2%, transparent); }
+.kl-legend{ margin-bottom:7px; line-height:1.7; white-space:normal; font-size:.68rem; }
+.kl-legend b{ font-weight:600; }
+.ck-kl svg{ width:100%; height:auto; display:block; }
+@media (max-width:860px){ .ck-kl{ padding:8px 10px 10px; } }
+
+
+/* ── 主图控件条 ── */
+.kl-bar{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:8px; }
+.kl-legend{ flex:1 1 260px; white-space:normal; line-height:1.75; font-size:.68rem; }
+.kl-legend b{ font-weight:700; }
+/* ══════ 数据新鲜度标记 ══════ */
+.fresh{ display:inline-block; font-size:.7rem; padding:.14rem .5rem; border-radius:4px;
+  letter-spacing:.02em; white-space:nowrap; }
+.fresh.ok{ color:var(--accent); background:var(--accent-soft);
+  border:1px solid var(--accent-line); }
+.fresh.warn{ color:var(--seed-primary); background:var(--primary-soft);
+  border:1px solid var(--primary-line); font-weight:700; }
+.kl-pos{ color:var(--faint); font-variant-numeric:tabular-nums; white-space:nowrap; font-size:.68rem; }
+.kl-btn{ font:inherit; font-size:.7rem; padding:3px 10px; border-radius:6px; line-height:1.5;
+         border:1px solid var(--line); background:var(--surface); color:var(--muted); cursor:pointer; }
+.kl-btn:hover{ border-color:var(--gold); color:var(--gold); }
+.kl-btn:active{ transform:translateY(1px); }
+.kl-btn.off{ opacity:.45; text-decoration:line-through; }
+.kl-host{ cursor:grab; user-select:none; -webkit-user-select:none; touch-action:none; }
+.kl-host.kl-drag{ cursor:grabbing; }
+.kl-host svg{ pointer-events:none; }
+
+
+/* ── K线日期跟随标注 ── */
+.kl-host{ position:relative; }
+.kl-tip{ position:absolute; bottom:-2px; display:none; pointer-events:none;
+         background:var(--seed-fg); color:var(--surface); font-size:.68rem;
+         padding:2px 7px; border-radius:4px; white-space:nowrap; z-index:5;
+         font-variant-numeric:tabular-nums; letter-spacing:.02em; }
+.kl-xline{ position:absolute; top:0; width:1px; display:none; pointer-events:none;
+           background:color-mix(in srgb, var(--seed-fg) 45%, transparent); z-index:4; }
+
+.ck-empty{ padding:28px 16px; text-align:center; color:var(--faint); font-size:.88rem;
+           border:1px dashed var(--line); border-radius:10px; }
+@media (max-width:860px){
+  .ck-grid,.ck-plan{ grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .ck-h .px .t1.xl{ font-size:1.4rem; }
+}
+
+.tw{ overflow-x:auto; margin:1rem 0; border:1px solid var(--line); border-radius:6px; background:var(--surface); }
+table{ border-collapse:collapse; width:100%; font-size:.82rem; }
+th,td{ padding:.5rem .6rem; text-align:left; border-bottom:1px solid var(--line); vertical-align:middle; white-space:nowrap; }
+th{ font-family:var(--serif); font-weight:600; color:var(--muted); font-size:.74rem; letter-spacing:.06em; background:color-mix(in srgb, var(--seed-bg) 60%, var(--seed-surface)); position:sticky; top:0; z-index:2; }
+tbody tr:last-child td{ border-bottom:none; }
+tbody tr:hover{ background:color-mix(in srgb, var(--seed-gold) 6%, transparent); }
+td.num{ font-family:var(--mono); font-size:.8rem; }
+.pos{ color:var(--accent); font-weight:600; } .neg{ color:var(--primary); font-weight:600; }
+.badge{ display:inline-block; font-size:.68rem; font-weight:600; letter-spacing:.06em; padding:.12rem .5rem; border-radius:999px; border:1px solid; white-space:nowrap; }
+.b-bo{ color:var(--accent); border-color:var(--accent-line); background:var(--accent-soft); }
+.b-fade{ color:var(--gold); border-color:color-mix(in srgb,var(--seed-gold) 48%,transparent); background:var(--gold-soft); }
+.b-both{ color:var(--muted); border-color:var(--line-strong); background:var(--bg); }
+.b-none{ color:var(--primary); border-color:var(--primary-line); background:var(--primary-soft); }
+.cf{ display:inline-block; font-size:.58rem; font-weight:600; letter-spacing:.1em; padding:.05rem .42rem; border-radius:999px; border:1px solid var(--line-strong); color:var(--faint); vertical-align:.1em; }
+.cf-e{ color:var(--accent); border-color:var(--accent-line); background:var(--accent-soft); }
+.cf-i{ color:var(--gold); border-color:color-mix(in srgb,var(--seed-gold) 48%,transparent); background:var(--gold-soft); }
+.bar{ height:6px; border-radius:3px; background:color-mix(in srgb, var(--seed-fg) 10%, transparent); overflow:hidden; margin-top:6px; }
+.bar i{ display:block; height:100%; background:var(--primary); width:0; transition:width .2s; }
+.err{ color:var(--primary); font-size:.84rem; }
+footer.credit{ margin-top:52px; padding-top:16px; border-top:1px solid var(--line); font-size:.7rem; letter-spacing:.08em; color:var(--faint); display:flex; justify-content:space-between; gap:1rem; flex-wrap:wrap; }
+.hide{ display:none !important; }
+@media (max-width:640px){ .wrap{ padding:28px 16px 60px; } h2::before{ display:none; } .card .v{ font-size:1.25rem; } }
+@media print{ .grain{ display:none; } button,textarea{ display:none; } }
+
+/* ══════ 商品基本面页专用 ══════ */
+.cg{ border:1px solid var(--line-strong); border-radius:12px; background:var(--surface);
+  margin-bottom:22px; overflow:hidden; box-shadow:var(--shadow-1); }
+.cg-h{ display:flex; align-items:baseline; gap:.85rem; flex-wrap:wrap; padding:.85rem 1.15rem;
+  border-bottom:1px solid var(--line);
+  background:linear-gradient(180deg,color-mix(in srgb,var(--seed-accent) 8%,var(--seed-surface)),var(--surface)); }
+.cg-h .nm{ font-family:var(--serif); font-size:1.3rem; font-weight:700; letter-spacing:.03em; }
+.cg-h .cd{ font-size:.76rem; color:var(--muted); letter-spacing:.06em; }
+.cg-h .px{ margin-left:auto; display:flex; align-items:baseline; gap:1.2rem; flex-wrap:wrap; }
+.cg-h .px i{ font-style:normal; font-size:.68rem; color:var(--faint); display:block; letter-spacing:.08em; }
+.cg-h .px b{ font-size:1.02rem; font-variant-numeric:tabular-nums; }
+.cg-h .px .big{ font-size:1.5rem; font-weight:700; }
+.verdict{ font-family:var(--serif); font-size:1.08rem; line-height:1.95; color:var(--fg);
+  background:linear-gradient(90deg,color-mix(in srgb,var(--seed-gold) 17%,var(--seed-surface)),transparent 94%);
+  border-left:3px solid var(--seed-gold); border-radius:0 9px 9px 0;
+  padding:.85rem 1.15rem; margin:0 0 1rem; letter-spacing:.01em; }
+.verdict b{ font-family:var(--sans); font-size:1.34rem; font-weight:800; line-height:1;
+  color:var(--seed-primary); font-variant-numeric:tabular-nums; padding:0 .08em; }
+.verdict b.dn{ color:#0f7a52; }
+.verdict b.n{ color:var(--seed-accent); }
+.verdict em{ font-style:normal; font-weight:700; color:var(--seed-accent); }
+.verdict .sep{ color:var(--faint); padding:0 .3em; font-size:.82rem; }
+.dlab{ font-size:.68rem; letter-spacing:.18em; color:var(--faint); margin:.9rem 0 .35rem; }
+.dlab:first-child{ margin-top:0; }
+.blk .tw{ margin:0; background:transparent; border-color:color-mix(in srgb,var(--seed-fg) 9%,transparent); }
+.blk .tw table{ font-size:.79rem; }
+.blk .tw th{ font-size:.67rem; font-weight:400; letter-spacing:.05em; color:var(--faint);
+  background:transparent; padding:.34rem .5rem; border-bottom:1px solid var(--line); }
+.blk .tw td{ padding:.42rem .5rem; color:var(--muted);
+  border-bottom:1px solid color-mix(in srgb,var(--seed-fg) 6%,transparent); }
+.blk .tw td b{ color:var(--fg); font-weight:600; }
+.blk .tw tbody tr.now td{ background:color-mix(in srgb,var(--seed-gold) 10%,transparent); }
+.blk .tw td.num{ text-align:right; font-variant-numeric:tabular-nums; }
+.chain{ display:flex; flex-wrap:wrap; align-items:center; gap:.3rem; }
+.chain>span{ font-size:.74rem; font-family:var(--mono); color:var(--muted); border:1px solid var(--line);
+  border-radius:4px; padding:.12rem .38rem; background:var(--bg); }
+.chain>span b{ color:var(--fg); font-weight:700; }
+.chain>i{ font-style:normal; color:var(--faint); font-size:.7rem; }
+.spark{ display:flex; align-items:flex-end; gap:2px; height:44px; margin:.2rem 0 .1rem; }
+.spark s{ text-decoration:none; flex:1; min-width:3px; border-radius:1px 1px 0 0;
+  background:linear-gradient(180deg,var(--seed-gold),var(--seed-primary)); }
+.spark s.dn{ background:linear-gradient(180deg,#6fbf9a,#0f7a52); }
+@media(max-width:700px){ .cg-h .px{ margin-left:0; } }
+
+</style>
+</head>
+<body>
+<div class="grain" aria-hidden="true"></div>
+<div class="wrap">
+  <header class="top">
+    <span class="seal" aria-hidden="true">
+      <svg viewBox="0 0 24 28" fill="none">
+        <rect x="2" y="1" width="20" height="3" rx="0.8" fill="currentColor"/><rect x="2" y="5.8" width="20" height="3" rx="0.8" fill="currentColor"/>
+        <rect x="2" y="10.6" width="8.4" height="3" rx="0.8" fill="currentColor"/><rect x="13.6" y="10.6" width="8.4" height="3" rx="0.8" fill="currentColor"/>
+        <rect x="2" y="15.4" width="20" height="3" rx="0.8" fill="currentColor"/>
+        <rect x="2" y="20.2" width="8.4" height="3" rx="0.8" fill="currentColor"/><rect x="13.6" y="20.2" width="8.4" height="3" rx="0.8" fill="currentColor"/>
+        <rect x="2" y="25" width="8.4" height="3" rx="0.8" fill="currentColor"/><rect x="13.6" y="25" width="8.4" height="3" rx="0.8" fill="currentColor"/>
+      </svg>
+    </span>
+    <div class="titles">
+      <h1>三变 · 六反<span class="lat">Commodity Fundamentals</span></h1>
+      <p>商品基本面扫描 &nbsp;/&nbsp; 仓单库存 · 期限结构 · 持仓量 · 价格位置</p>
+    </div>
+    <div class="spacer"></div>
+    <a class="navlink" href="index.html">← 首页</a>
+    <a class="navlink" href="calibrate.html">← 商品扫描</a>
+    <a class="navlink" href="cselect.html">择商品</a>
+  </header>
+
+  <div class="note">
+    <strong>商品的「基本面」跟股票不是一回事 —— 它没有 PE、没有股东，只有货和钱。</strong>
+    这一页只做四件事，都是能拿到硬数据的：
+    <strong>① 仓单库存</strong>（交易所登记的标准仓单量，库存最硬的代理）、
+    <strong>② 期限结构</strong>（近月贵还是远月贵 —— 市场自己对供需的报价）、
+    <strong>③ 持仓量</strong>（钱在进还是在撤）、
+    <strong>④ 价格位置</strong>（在近 250 日区间的哪一段）。
+    <br>
+    <span style="color:var(--faint)">每块先给一句人话结论，明细数据排在后面。这里只读事实，不给买卖信号 —— 那是「择商品」页的事。</span>
+  </div>
+
+  <h2>一、输入品种 <span class="cf cf-e">cf E</span></h2>
+  <div class="panel">
+    <p style="margin-top:0;font-size:.86rem;color:var(--muted)">
+      <strong>内盘</strong>写代码末尾带 0（<code>RB0</code> 螺纹钢、<code>CU0</code> 沪铜、<code>I0</code> 铁矿石）｜
+      <strong>外盘</strong>不带 0（<code>CL</code> 纽约原油、<code>GC</code> 纽约黄金）｜分不清就写 <code>nf:RB0</code> / <code>hf:CL</code>。
+      后面跟名称会被忽略。<br>
+      <span style="color:var(--faint)">每个品种要抓：新浪日线 ＋ 10 个合约月 ＋ 东财仓单表，所以比行情扫描慢一些。</span>
+    </p>
+    <textarea id="ccodes" spellcheck="false" placeholder="RB0 螺纹钢&#10;CU0 沪铜&#10;I0 铁矿石&#10;hf:CL 纽约原油"></textarea>
+    <div class="row">
+      <button class="go" id="run">开始扫描</button>
+      <button class="ghost" id="demo">载入示例（8 个）</button>
+      <button class="ghost" id="clear">清空</button>
+      <button class="ghost" id="check">数据源自检</button>
+      <span id="prog" style="font-size:.82rem;color:var(--muted)"></span>
+    </div>
+    <div id="checkOut" class="hide" style="margin-top:10px;font-size:.8rem;padding:.6rem .8rem;
+      border:1px solid var(--line);border-radius:8px;background:var(--bg);line-height:1.7"></div>
+    <div class="bar"><i id="pbar"></i></div>
+  </div>
+
+  <div id="out" class="hide">
+    <h2>二、结果 <span class="cf cf-i">cf I</span></h2>
+    <div class="note" style="font-size:.84rem" id="sum"></div>
+    <div id="cards"></div>
+  </div>
+
+  <h2>三、四块分别怎么来的 <span class="cf cf-x">cf X</span></h2>
+  <div class="panel" style="padding:14px 16px">
+    <p style="margin-top:0;font-size:.88rem"><strong>① 仓单库存 —— 你上次点名要的「库存」，这次拿到了</strong></p>
+    <p style="margin:0 0 .9rem;font-size:.85rem;color:var(--muted)">
+      上一轮我告诉你「库存拿不到」，<b>那是我没找对表</b>。东财数据中心其实有：
+      <code>RPT_FUTU_STOCKDATA</code>，字段 <code>ON_WARRANT_NUM</code>（仓单量）、<code>ADDCHANGE</code>（增减）、<code>UNIT</code>（单位）。
+      实测覆盖 <b>71 个品种</b>，单位按品种给（吨／手／千克／桶），历史期数完整。<br>
+      <b>仓单＝交易所登记的标准仓单量</b>，是库存最硬的代理指标。但它只含交割品，<b>不等于全社会库存</b> —— 这一点必须说清楚。
+      另外<b>外盘没有这张表</b>，所以外盘只有下面三块。
+    </p>
+
+    <p style="font-size:.88rem;margin-bottom:.4rem"><strong>② 期限结构 —— 市场自己对供需的报价</strong></p>
+    <ul style="margin:0 0 .9rem;padding-left:1.1rem;font-size:.85rem;color:var(--muted)">
+      <li>把活跃合约的「距交割年数」对「对数价格」做最小二乘，斜率年化。</li>
+      <li><b>近月比远月贵（现货升水／backwardation）</b>：现在就要货的人愿意多付钱 → <b>现货紧张、库存低</b>。</li>
+      <li><b>远月比近月贵（期货升水／contango）</b>：现在不缺货 → <b>库存有压力</b>。</li>
+      <li>只取<b>最近 5 个活跃合约</b>。远月常常没量、报价失真，拉进来会把斜率带偏。卡片里把<b>实际参与计算的合约链原样列出</b>。</li>
+    </ul>
+
+    <p style="font-size:.88rem;margin-bottom:.4rem"><strong>③ 持仓量 —— 钱在进还是在撤</strong></p>
+    <ul style="margin:0 0 .9rem;padding-left:1.1rem;font-size:.85rem;color:var(--muted)">
+      <li>取自新浪内盘日线的持仓量字段。<b>增仓＋价涨＝新多进场</b>；<b>增仓＋价跌＝新空进场</b>；<b>减仓＋价涨＝空头平仓推的</b>，不是新多。</li>
+      <li><b>外盘该字段恒为 0</b>（实测），所以外盘这一块直接不渲染。</li>
+    </ul>
+
+    <p style="font-size:.88rem;margin-bottom:.4rem"><strong>④ 价格位置 —— 在区间的哪一段</strong></p>
+    <ul style="margin:0 0 .9rem;padding-left:1.1rem;font-size:.85rem;color:var(--muted)">
+      <li>用近 250 个交易日的<b>最高最低价</b>（不是收盘价）算现价的位置。</li>
+      <li>位置低不等于便宜，位置高不等于贵 —— 它只说「上下还有多少历史参照」。</li>
+    </ul>
+
+    <div class="note" style="font-size:.85rem;background:var(--primary-soft);border-color:var(--primary-line)">
+      <strong>仍然拿不到的，如实说：</strong>现货报价与基差（＝现货 − 期货）新浪、东财都没有可跨域调用的接口；
+      产量、开工率、库存分项（厂库／社库）同样没有。<strong>期限结构是基差最接近的替代</strong>——
+      它不是猜的，是市场自己在给不同月份的货定价。真正的现货基差要接第三方数据源，纯静态页做不到。
+    </div>
+
+    <p style="margin:.9rem 0 0;font-size:.82rem;color:var(--faint)">
+      ⚠ 本页只呈现公开数据，<strong>不做估值判断、不给买卖建议</strong>。仓单与行情接口可能滞后或有误，
+      <strong>下单前请以交易所原始公告核对</strong>。全部计算在本地浏览器完成。
+    </p>
+  </div>
+
+  <footer class="credit">
+    <span>© 2026 王潇 · 自由使用，请注明来处；禁止商用</span>
+    <span>全部计算在本地浏览器完成 · 不构成投资建议 · 市场有风险，投资需谨慎</span>
+  </footer>
+</div>
+
+<script>
+(function(){
+"use strict";
+const $=id=>document.getElementById(id);
+const F=(x,d)=>(x==null||!isFinite(x))?'—':Number(x).toFixed(d==null?2:d);
+const med=a=>{const b=a.filter(x=>x!=null&&isFinite(x)).sort((p,q)=>p-q); if(!b.length) return null;
+  const m=Math.floor(b.length/2); return b.length%2? b[m] : (b[m-1]+b[m])/2;};
+const pctl=(a,p)=>{ const b=a.filter(x=>x!=null&&isFinite(x)).sort((q,w)=>q-w); if(b.length<5) return null;
+  const i=(b.length-1)*p, lo=Math.floor(i), hi=Math.ceil(i); return b[lo]+(b[hi]-b[lo])*(i-lo); };
+const rankOf=(a,x)=>{ const b=a.filter(q=>q!=null&&isFinite(q)); if(b.length<20||x==null) return null;
+  return b.filter(q=>q<=x).length/b.length; };
+const emaOf=(a,n)=>{ const k=2/(n+1); const o=[]; let p=null;
+  for(let i=0;i<a.length;i++){ p=(p===null)? a[i] : a[i]*k+p*(1-k); o.push(p); } return o; };
+
+/* ---------- JSONP 抓取 ---------- */
+let jn=0;
+function jsonp(url){
+  return new Promise((res,rej)=>{
+    const cb='__jp'+(++jn); let done=false;
+    const s=document.createElement('script');
+    const fin=(ok,d)=>{ if(done) return; done=true; try{delete window[cb];}catch(_){ window[cb]=undefined; } s.remove(); ok?res(d):rej(d); };
+    window[cb]=d=>fin(true,d);
+    s.onerror=()=>fin(false,new Error('网络失败'));
+    s.src=url+(url.indexOf('?')>=0?'&':'?')+'cb='+cb;
+    document.head.appendChild(s);
+    setTimeout(()=>fin(false,new Error('超时')),15000);
+  });
+}
+function volFactor(rows, fsShares){
+  const v=rows.slice(-20).map(r=>r.v).sort((a,b)=>a-b);
+  if(!v.length) return 100;
+  const mv=v[Math.floor(v.length/2)];
+  return (mv*100/fsShares > 0.25) ? 1 : 100;
+}
+/* ===== MACD 多头状态（12/26/9）=====
+   实测依据（17 只 × 8516 根 K 线，10 日持有）：
+     含慢档金叉的信号：10日均 +2.89%、胜率 61%、n=96   ← 显著（t=2.15，p≈0.03）
+     不含慢档：        +0.39%、胜率 45%、n=354          ← 等于随机
+     快档 8/17/5 单独金叉：+0.20%、胜率 46%、n=146       ← 无 alpha
+   结论：决定信号质量的是「最慢的那一档在不在」，不是「有几档金叉」。 */
+function macdGate(c, f, s2, g){
+  const e1=emaOf(c,f), e2=emaOf(c,s2);
+  const dif=c.map((_,i)=>e1[i]-e2[i]);
+  const dea=emaOf(dif,g);
+  const m=c.map((_,i)=>dif[i]-dea[i]);
+  const N=m.length-1;
+  const on = m[N]>0;
+  let sinceUp=null, sinceDn=null;
+  for(let i=N;i>=1;i--){
+    if(sinceUp==null && m[i-1]<=0 && m[i]>0) sinceUp=N-i;
+    if(sinceDn==null && m[i-1]>=0 && m[i]<0) sinceDn=N-i;
+    if(sinceUp!=null && sinceDn!=null) break;
+  }
+  /* 强度：当前 |MACD| 相对自身近 250 日 |MACD| 中位数的倍数。贴着零轴的"金叉"是虚掩的门。 */
+  const ab=[];
+  for(let i=Math.max(0,N-250);i<=N;i++) ab.push(Math.abs(m[i]));
+  ab.sort((a,b)=>a-b);
+  const med=ab[Math.floor(ab.length/2)]||0;
+  const strength=(med>0? Math.abs(m[N])/med : 0);
+  const sk = strength>=1.5? '强' : (strength>=0.7? '中' : '弱');
+  return {on, sinceUp, sinceDn, v:m[N], strength, sk};
+}
+function gateOf(c){
+  const G1=macdGate(c,12,26,9);   // 慢档＝闸门
+  const G2=macdGate(c,8,17,5);    // 快档
+  const G3=macdGate(c,7,34,5);    // 第三档
+  const res=[G1,G2,G3].filter(g=>g.on).length;
+  let gtag, kind;
+  if(!G1.on){ gtag='闸门关'; kind='off'; }
+  else if(G1.sinceUp!=null && G1.sinceUp<=5){ gtag='开·新鲜'; kind='fresh'; }
+  else { gtag='开·'+(G1.sinceUp==null?'>250':G1.sinceUp)+'根'; kind='on'; }
+  /* 强度弱独立于新鲜度：不管金叉多少根，强度弱就是虚掩 */
+  if(kind!=='off' && G1.sk==='弱'){ kind='weak'; gtag=(G1.sinceUp!=null&&G1.sinceUp<=5?'开·新鲜但弱':'开·已走'+G1.sinceUp+'根但弱'); }
+  return {G1,G2,G3,res,gtag,kind};
+}
+/* ===== 协调强度（0~1）：这个稳定状态是"有共识的焦点"还是"没人交易的惰性" =====
+   三项平均：
+     ① 筹码单峰程度  (30 − 集中度) / 20      越集中越高
+     ② 交易活跃度    换手率的历史分位          地量 → 低
+     ③ 焦点清晰度    有明确支撑位 = 1，无支撑 = 0.3
+   用途：对应「稳态不追势、失衡下重手」——协调越强，破裂时才越值得下重手。 */
+function coordOf(R, ok){
+  const c1=Math.max(0,Math.min(1,(30-(R.conc||0))/20));
+  const c2=Math.max(0,Math.min(1,R.tRank||0));
+  const c3=(R.shelf1!=null)?1:(R.profit>=0.10?0.3:0.3);
+  return (c1+c2+c3)/3;
+}
+/* ===== 交易计划：入场 / 止损 / 目标 / 盈亏比 =====
+   三条纪律：
+     ① 入场用现价，不假设"回踩一定会来"——回踩是概率，不是前提
+     ② 止损放在支撑位下方，且缓冲 ≥ 该股近 20 日平均振幅的 2.5 倍（否则被噪音打掉）
+     ③ 目标只认筹码压力位；上方无压力位时不给目标、也不给盈亏比（不硬造数字） */
+function planOf(R, GT){
+  const px=R.px;
+  const sup = R.shelf1? R.shelf1.p : null;
+  const p1  = R.wall1? R.wall1.p : null;
+  const p2  = R.wall2? R.wall2.p : null;
+  const noShelf = (sup==null);
+  const canGo = (GT.kind==='fresh' || GT.kind==='on');
+  let entry=null, stop=null, note='';
+  if(!canGo){
+    note = (GT.kind==='off')? 'MACD 空头，不出手' : 'MACD 多头但力道很弱，不出手';
+  } else {
+    entry = px;
+    const anchor = (sup!=null? sup : px);
+    stop = anchor - px*R.buffer;                 // 支撑位下方一个"波动缓冲"
+    note = (GT.kind==='fresh')? '现价可入'
+         : (sup!=null? '已走一段，等回踩 '+anchor.toFixed(2)+' 再入' : '已走一段，脚下无支撑，轻仓');
+  }
+  const t1 = (p1!=null)? p1 : null;              // 目标只认压力位
+  const t2 = (p2!=null)? p2 : null;
+  let rr=null;
+  if(entry!=null && stop!=null && t1!=null && t1>entry) rr=(t1-entry)/(entry-stop);
+  return {entry, stop, t1, t2, rr, noShelf, noTarget:(t1==null), note,
+    risk: entry!=null? entry-stop : null,
+    riskPct: entry!=null? (entry-stop)/entry*100 : null};
+}
+function macdText(GT){
+  const g=GT.G1, sk=g.sk;
+  if(!g.on) return '空头'+(g.sinceDn!=null? ' '+g.sinceDn+' 天':'');
+  if(g.sinceUp==null) return '多头很久 · 力道'+sk;
+  if(sk==='弱') return '多头 '+g.sinceUp+' 天 · 力道很弱';
+  return (g.sinceUp<=5? '刚转多 ':'多头 ')+g.sinceUp+' 天 · 力道'+sk;
+}
+function structOf(R){
+  const upD = R.wall1? (R.wall1.p/R.px-1)*100 : null;
+  const dnD = R.shelf1? (R.shelf1.p/R.px-1)*100 : null;
+  let tag='结构中性';
+  if(dnD===null && upD!==null && upD<=8) tag='上压下空';
+  else if(dnD!==null && upD!==null && upD<=8) tag='上有压 · 下有撑';
+  else if(R.profit>=0.70) tag='多数浮盈';
+  else if(R.profit<=0.10) tag='几乎全被套';
+  return {tag, upD, dnD};
+}
+const INNER={RB:'螺纹钢',HC:'热卷',CU:'沪铜',AL:'沪铝',ZN:'沪锌',PB:'沪铅',NI:'沪镍',SN:'沪锡',
+  AU:'沪金',AG:'沪银',RU:'橡胶',BU:'沥青',SP:'纸浆',FU:'燃油',
+  I:'铁矿石',J:'焦炭',JM:'焦煤',M:'豆粕',Y:'豆油',P:'棕榈油',C:'玉米',A:'豆一',CS:'玉米淀粉',
+  JD:'鸡蛋',LH:'生猪',EG:'乙二醇',PP:'聚丙烯',L:'塑料',V:'PVC',
+  TA:'PTA',MA:'甲醇',SR:'白糖',CF:'棉花',OI:'菜油',RM:'菜粕',FG:'玻璃',SA:'纯碱',UR:'尿素',
+  AP:'苹果',PK:'花生',SF:'硅铁',SM:'锰硅',SC:'原油',LU:'低硫燃油',NR:'20号胶',
+  IF:'沪深300',IH:'上证50',IC:'中证500',IM:'中证1000'};
+const OUTER={CL:'纽约原油',NG:'纽约天然气',HO:'纽约取暖油',GC:'纽约黄金',SI:'纽约白银',
+  HG:'COMEX铜',S:'美国大豆',C:'美国玉米',W:'美国小麦',BO:'美国豆油',SM:'美国豆粕',
+  KC:'咖啡',SB:'白糖11号',CT:'棉花',CC:'可可'};
+function resolveComm(raw){
+  let t=String(raw).trim().toUpperCase().replace(/[\s]/g,'');
+  let force=null;
+  const mp=t.match(/^(NF|HF)[:.]?(.+)$/);
+  if(mp){ force=(mp[1]==='HF')?'hf':'nf'; t=mp[2]; }
+  t=t.replace(/[^A-Z0-9]/g,'');
+  if(!t) return null;
+  const isInner0 = /0$/.test(t) && INNER[t.replace(/0$/,'')];
+  const mk = force || (isInner0? 'nf' : 'hf');
+  if(mk==='nf'){ const b=t.replace(/0$/,'');
+    if(!INNER[b]) return null;
+    return {raw:String(raw).trim(), sym:b+'0', mk:'nf', market:'内盘', digits:b+'0', cname:INNER[b]}; }
+  if(!OUTER[t]) return null;
+  return {raw:String(raw).trim(), sym:t, mk:'hf', market:'外盘', digits:t, cname:OUTER[t]};
+}
+/* ---------- 新浪期货 JSONP ---------- */
+function jsonpSina(path){
+  return new Promise((res,rej)=>{
+    const cb='__sinacb'+Math.floor(Math.random()*1e9);
+    const el=document.createElement('script'); let done=false;
+    const fin=(ok,d)=>{ if(done) return; done=true; clearTimeout(to);
+      try{ delete window[cb]; }catch(e){ window[cb]=null; }
+      if(el.parentNode) el.parentNode.removeChild(el);
+      ok? res(d) : rej(d); };
+    const to=setTimeout(()=>fin(false,new Error('超时 20s')),20000);
+    window[cb]=d=>fin(true,d);
+    el.onerror=()=>fin(false,new Error('脚本加载失败（可能被网络拦截）'));
+    el.src='https://stock2.finance.sina.com.cn/futures/api/jsonp.php/'+cb+'/'+path;
+    document.head.appendChild(el);
+  });
+}
+const V=x=>{ const n=parseFloat(x); return isFinite(n)? n : 0; };
+function _toFutures(arr, outer){
+  const out=[];
+  for(const x of arr){
+    const d=outer? x.date : x.d, o=outer? x.open : x.o, h=outer? x.high : x.h;
+    const l=outer? x.low : x.l, c=outer? x.close : x.c, v=outer? x.volume : x.v, p=outer? x.position : x.p;
+    if(!d || !(V(c)>0)) continue;
+    out.push({d:String(d).slice(0,10), o:V(o), h:V(h), l:V(l), c:V(c), v:V(v), p:V(p)});
+  }
+  out.sort((a,b)=> a.d<b.d? -1 : (a.d>b.d? 1 : 0));
+  return out;
+}
+async function srcSina(rc,lmt){
+  if(typeof rc==='string'){ const q=resolveComm(rc); if(!q) throw new Error('不是有效的商品代码：'+rc); rc=q; }
+  const outer=(rc.mk==='hf');
+  const svc=outer? 'GlobalFuturesService.getGlobalFuturesDailyKLine' : 'InnerFuturesNewService.getDailyKLine';
+  const raw=await jsonpSina(svc+'?symbol='+encodeURIComponent(rc.sym));
+  if(!raw || !raw.length) throw new Error('无K线（代码不存在或该品种无历史）');
+  let rows=_toFutures(raw, outer);
+  if(!rows.length) throw new Error('K线为空');
+  if(rows.length>lmt) rows=rows.slice(-lmt);
+  return {name:(rc.cname||rc.sym), rows, hasVol:rows.some(r=>r.v>0)};
+}
+function chipLevelsC(rows, A, B, baseTurn){
+  const n=rows.length, c=rows.map(r=>r.c), px=c[n-1];
+  if(n<120) return null;
+  /* 商品无流通股本 → 用相对成交量折算等效换手（基准 baseTurn%，默认 2%）；
+     外盘无成交量 → 退化为时间均匀加权（每根都是基准值） */
+  const _vs=[]; for(const r of rows) if(r.v>0) _vs.push(r.v);
+  _vs.sort((a,b)=>a-b);
+  const medV=_vs.length? _vs[Math.floor(_vs.length/2)] : 0;
+  const hasVol=medV>0;
+  const relV=v=>hasVol? v/medV : 1;
+  const toOf=v=>Math.min(0.9, relV(v)*(baseTurn/100)*A);
+  let lo=Infinity, hi=-Infinity, mx=0;
+  for(const r of rows){ if(r.l<lo) lo=r.l; if(r.h>hi) hi=r.h; }
+  if(!(hi>lo)) return null;
+  const step=(hi-lo)/B, PX=new Array(B), CH=new Array(B);
+  for(let b=0;b<B;b++){ PX[b]=lo+step*(b+0.5); CH[b]=0; }
+  for(let i2=0;i2<n;i2++){
+    const r=rows[i2];
+    const to=toOf(r.v), k=1-to;
+    for(let b=0;b<B;b++) CH[b]*=k;
+    const rng=r.h-r.l;
+    if(rng<=1e-9){ const q=Math.max(0,Math.min(B-1,Math.floor((r.l-lo)/step))); CH[q]+=1; continue; }
+    let avg=(r.h+r.l+2*r.c)/4;
+    avg=Math.max(r.l+rng*0.001, Math.min(r.h-rng*0.001, avg));
+    const i0=Math.max(0,Math.floor((r.l-lo)/step)), i1=Math.min(B-1,Math.floor((r.h-lo)/step));
+    let sw=0; const w=[];
+    for(let b=i0;b<=i1;b++){ const p=PX[b];
+      const ww=(p<=avg)?(p-r.l)/(avg-r.l):(r.h-p)/(r.h-avg); w.push(ww); sw+=ww; }
+    const vol=1;
+    if(!(sw>1e-12)){ CH[i0]+=vol; continue; }
+    for(let q=0;q<w.length;q++) CH[i0+q]+=vol*w[q]/sw;
+  }
+  let tot=0; for(let b=0;b<B;b++) tot+=CH[b];
+  if(!(tot>0)) return null;
+  const den=CH.map(x=>x/tot);
+  const idxOf=p=>Math.max(0,Math.min(B-1,Math.floor((p-lo)/step)));
+  const qat=q=>{ let a=0; for(let b=0;b<B;b++){ a+=den[b]; if(a>=q) return PX[b]; } return PX[B-1]; };
+  const curB=idxOf(px);
+  let profit=0; for(let b=0;b<=curB;b++) profit+=den[b];
+  let avgCost=0; for(let b=0;b<B;b++) avgCost+=PX[b]*den[b];
+  const p5=qat(0.05), p95=qat(0.95);
+  /* 返回对象（与 calibrate.html 口径统一）：{p 价位, cum 累计占比, idx 档位} */
+  const upLad=t=>{ let a=0; for(let b=curB+1;b<B;b++){ a+=den[b]; if(a>=t) return {p:PX[b], cum:a, idx:b}; } return null; };
+  const dnLad=t=>{ let a=0; for(let b=curB;b>=0;b--){ a+=den[b]; if(a>=t) return {p:PX[b], cum:a, idx:b}; } return null; };
+  const wall1=upLad(0.20), wall2=upLad(0.50);
+  const shelf1=(profit>=0.10)? dnLad(0.10) : null;
+  let wallChip=0;
+  if(wall1) for(let b=curB+1;b<=wall1.idx;b++) wallChip+=den[b];
+  /* ---- 量筹配合因子：成交量 × 换手率 ---- */
+  const tno=rows.map(r=>relV(r.v));                        // 相对量（当日 ÷ 中位量）
+  const curT=tno[n-1];
+  const seg=tno.slice(Math.max(0,n-250));
+  const srt=seg.slice().sort((a,b)=>a-b);
+  const lowLine=srt[Math.floor(srt.length*0.20)]||0;        // 地量线
+  let belowD=0; for(let i3=n-1;i3>=0;i3--){ if(tno[i3]<=lowLine) belowD++; else break; }
+  const ma5=tno.slice(-5).reduce((a,b)=>a+b,0)/5;
+  const ma20=tno.slice(-21,-1).reduce((a,b)=>a+b,0)/20;
+  const expand=(ma20>0)? curT/ma20 : null;                  // 放量倍数
+  const digest=(wallChip>0 && ma20>0)? (wallChip*100)/(ma20*baseTurn) : null;
+  const rank=x=>seg.filter(y=>y<=x).length/seg.length;
+  /* 持仓量变化（仅内盘有） */
+  let dOI=null;
+  if(rows[n-1].p>0 && n>6 && rows[n-6].p>0) dOI=(rows[n-1].p/rows[n-6].p-1)*100;
+  /* 波动缓冲：近 20 日平均振幅 × 2.5，下限 3% */
+  let amp=0, cnt2=0;
+  for(let i4=Math.max(1,n-20);i4<n;i4++){ if(rows[i4].c>0){ amp+=(rows[i4].h-rows[i4].l)/rows[i4].c; cnt2++; } }
+  amp = cnt2? amp/cnt2 : 0.02;
+  const buffer = Math.max(0.03, amp*2.5);
+  const bw=(p95-p5)/10 || step*10, bands=[];
+  for(let a=px; a<p95+bw; a+=bw){
+    const b0=idxOf(a), b1=idxOf(a+bw); let sum=0;
+    for(let b=b0;b<=b1&&b<B;b++) sum+=den[b];
+    bands.push({lo:a, hi:a+bw, pct:sum});
+  }
+  return {px, profit, avgCost, p5, p95, width:p95-p5, conc:(p95-p5)/(p95+p5)*100, vunit:'量',
+    curT, tRank:rank(curT), ma20, expand, lowLine, belowD, wallChip, digest, amp, buffer,
+    hasVol, medV, dOI, baseTurn,
+    wall1, wall2, shelf1, bands, PX, den, lo, hi, step, B,
+    rangeLo:lo, rangeHi:hi, rangePos:(px-lo)/(hi-lo)*100};
+}
+
+const KC={ hi:'#e8a800', mid:'#d92b2b', low:'#1565d8', weak:'#0f9d58', up:'#d92b2b', dn:'#0f9d58' };
+function kScore(b, ma20v, vRank, peak, avgCost){
+  let s=0; const r = ma20v>0? b.v/ma20v : 1;
+  s += r>=1.5? 2 : (r>=0.8? 1 : 0);
+  s += vRank>=0.7? 2 : (vRank>=0.4? 1 : 0);
+  s += (peak!=null && avgCost!=null) ? (b.c>=peak? 2 : (b.c>=avgCost? 1 : 0)) : 1;
+  return s;
+}
+function kColor(sc){ return sc>=5? KC.hi : (sc>=3? KC.mid : (sc>=1? KC.low : KC.weak)); }
+function curYM(){ var d=new Date(); return {y:d.getFullYear(), m:d.getMonth()+1}; }
+function ym2(y,m){ return String(y).slice(2)+String(m<10?'0':'')+m; }
+function shiftYM(y,m,k){ var t=y*12+(m-1)+k; return {y:Math.floor(t/12), m:t%12+1}; }
+function ttmOf(y,m){                       /* 距交割的年数（交割日估为该月 15 日） */
+  var d=new Date(y, m-1, 15);
+  return Math.max(0.02, (d.getTime()-Date.now())/86400000/365);
+}
+function lsqSlope(pts){
+  var n=pts.length; if(n<3) return null;
+  var sx=0, sy=0, i;
+  for(i=0;i<n;i++){ sx+=pts[i].x; sy+=pts[i].y; }
+  var mx=sx/n, my=sy/n, num=0, den=0;
+  for(i=0;i<n;i++){ num+=(pts[i].x-mx)*(pts[i].y-my); den+=(pts[i].x-mx)*(pts[i].x-mx); }
+  if(!(den>1e-12)) return null;
+  return num/den;
+}
+async function termOf(code, lastDate, outer, maxProbe){
+  var svc = outer? 'GlobalFuturesService.getGlobalFuturesDailyKLine' : 'InnerFuturesNewService.getDailyKLine';
+  var c=curYM(), got=[], N=maxProbe||10, k;
+  for(k=0;k<N;k++){
+    var a=shiftYM(c.y,c.m,k), sym=code+ym2(a.y,a.m), arr=null;
+    try{ arr=await jsonpSina(svc+'?symbol='+encodeURIComponent(sym)); }catch(e){ arr=null; }
+    if(arr && arr.length){
+      var t=arr[arr.length-1];
+      var td=String(outer? t.date : t.d).slice(0,10);
+      var cl=parseFloat(outer? t.close : t.c);
+      var oi=parseFloat(outer? t.position : t.p); if(!isFinite(oi)) oi=0;
+      var vo=parseFloat(outer? t.volume : t.v);   if(!isFinite(vo)) vo=0;
+      if(td===lastDate && cl>0) got.push({sym:sym, y:a.y, m:a.m, k:k, close:cl, oi:oi, vol:vo});
+    }
+    await new Promise(function(r){ setTimeout(r,55); });
+  }
+  if(got.length<3) return {ok:false, n:got.length, pts:got, why:'活跃合约不足 3 个（该品种挂牌合约太稀）'};
+  /* 只取有量的合约：内盘看持仓量，外盘持仓量恒为 0 → 退回成交量 */
+  var key = (outer? 'vol' : 'oi');
+  var mx=0, i;
+  for(i=0;i<got.length;i++) if(got[i][key]>mx) mx=got[i][key];
+  var liq = got;
+  if(mx>0){
+    var f=[];
+    for(i=0;i<got.length;i++) if(got[i][key] >= mx*0.05) f.push(got[i]);
+    if(f.length>=3) liq=f;
+  }
+  /* 只取最近的 K 个活跃合约：期限结构说的是"曲线前端"，远月往往没量、报价失真。
+     实测：沪铜取 7 个远月 vs 取最近 5 个，年化展期差 1 个百分点；原油这类前端有逼仓的差得更多。 */
+  liq.sort(function(p,q){ return p.k-q.k; });
+  var K=5;
+  if(liq.length>K) liq=liq.slice(0,K);
+  var pts=[];
+  for(i=0;i<liq.length;i++)
+    pts.push({x:ttmOf(liq[i].y, liq[i].m), y:Math.log(liq[i].close), sym:liq[i].sym,
+              close:liq[i].close, oi:liq[i].oi, k:liq[i].k});
+  var b=lsqSlope(pts);
+  if(b==null) return {ok:false, n:pts.length, pts:pts, why:'合约月份过于集中，算不出斜率'};
+  /* 曲线过陡（|年化| > 60%）多半是近月逼仓或报价异常 —— 照报，但必须标出来 */
+  return {ok:true, slope:b, n:pts.length, pts:pts, liquid:liq.length, probed:N, used:K,
+          extreme:(Math.abs(b)>0.60), struct: b<0? 'back' : 'cont', why:''};
+}
+function oiChange(rows, n){
+  if(rows.length < n+1) return null;
+  var a=rows[rows.length-1-n].p, b=rows[rows.length-1].p;
+  if(!(a>0) || !(b>0)) return null;
+  return (b/a-1)*100;
+}
+const DCAPI='https://datacenter-web.eastmoney.com/api/data/v1/get';
+let jdc=0;
+/* 东财的回调参数名是 callback（不是 cb）—— 实测 cb 只会返回裸 JSON */
+function jsonpEP(url){
+  return new Promise((res,rej)=>{
+    const cb='__dc'+(++jdc); let done=false;
+    const s=document.createElement('script');
+    const fin=(ok,d)=>{ if(done) return; done=true;
+      try{ delete window[cb]; }catch(_){ window[cb]=undefined; }
+      s.remove(); ok? res(d) : rej(d); };
+    window[cb]=d=>fin(true,d);
+    s.onerror=()=>fin(false,new Error('网络失败'));
+    s.src=url+(url.indexOf('?')>=0?'&':'?')+'callback='+cb;
+    document.head.appendChild(s);
+    setTimeout(()=>fin(false,new Error('超时 20s')),20000);
+  });
+}
+/* 两条通道取同一个 URL：
+   ① fetch —— 首选。实测该接口**在请求带 Origin 时**返回 Access-Control-Allow-Origin: *，
+      且是简单 GET（不带自定义头）→ 连预检都不触发，最稳。
+      ⚠ 探测 CORS 必须带 Origin 头，否则服务器不返回该响应头，会误判成「无 CORS」。
+   ② JSONP —— 兜底。该接口的 Content-Type 是 text/plain 且没有 X-Content-Type-Options: nosniff，
+      浏览器因此仍会执行 <script>；但这条依赖 quirks 行为，所以只当备胎。 */
+async function dcGet(base){
+  try{
+    const r=await fetch(base, {method:'GET'});
+    if(r.ok){
+      const d=await r.json();
+      if(d && d.success!==undefined) return d;
+    }
+  }catch(e){ /* 落到 JSONP */ }
+  return await jsonpEP(base);
+}
+/* 取一张报表。sort 传 null 表示不排序（部分报表没有 REPORT_DATE 列，排了会报错） */
+async function dc(rn, secucode, o){
+  o=o||{};
+  let u=DCAPI+'?reportName='+encodeURIComponent(rn)
+    +'&columns=ALL&filter='+encodeURIComponent('(SECUCODE="'+secucode+'")')
+    +'&pageSize='+(o.size||60)+'&pageNumber=1';
+  if(o.sort) u+='&sortColumns='+o.sort+'&sortTypes=-1';
+  const d=await dcGet(u);
+  if(!d || !d.success) return null;
+  return (d.result && d.result.data) || [];
+}
+/* 只取一条报价（名称/现价/PE/PB/市值），要的根数很少，所以不能走 getKline */
+async function quoteOf(rc){
+  const variants=(rc.us && rc.needSuffix)? [rc.sym+'.OQ', rc.sym+'.N'] : [rc.sym];
+  for(let i=0;i<variants.length;i++){
+    const v=variants[i];
+    try{
+      const rc2=Object.assign({},rc,{sym:v, usedSuffix:v.slice(rc.sym.length)});
+      const g=await srcTencent(rc2, 130);
+      if(g && g.rows && g.rows.length){
+        return {name:g.name, px:g.rows[g.rows.length-1].c,
+                pe:g.pe, pb:g.pb, mcap:g.mcap, usedSuffix:rc2.usedSuffix};
+      }
+    }catch(e){ /* 试下一个后缀 */ }
+  }
+  return null;
+}
+function yi(v){
+  if(v==null||!isFinite(v)) return '—';
+  const a=Math.abs(v);
+  if(a>=1e8) return (v/1e8).toFixed(2)+' 亿';
+  if(a>=1e4) return (v/1e4).toFixed(1)+' 万';
+  return v.toFixed(0);
+}
+function pct(v,d){ return (v==null||!isFinite(v))? '—' : v.toFixed(d==null?2:d)+'%'; }
+function yoy(v){
+  if(v==null||!isFinite(v)) return '<span style="color:var(--faint)">—</span>';
+  const c = v>=0? 'pos':'neg';
+  return '<span class="'+c+'">'+(v>0?'+':'')+v.toFixed(1)+'%</span>';
+}
+/* 十大流通股东的「较上期」是混合字段：'新进' / '不变' / '-520897' 这种数字字符串。
+   直接 Math.round() 会得到 NaN —— 必须按文本分支处理。这三个状态本身就是重要信号。 */
+function holdChg(v){
+  if(v==null || v==='') return '<span style="color:var(--faint)">—</span>';
+  const t=String(v).trim();
+  if(t==='新进') return '<b style="color:var(--seed-primary)">新进</b>';
+  if(t==='不变') return '<span style="color:var(--faint)">不变</span>';
+  if(t==='退出') return '<b style="color:#0f7a52">退出</b>';
+  const num=parseFloat(t.replace(/,/g,''));
+  if(!isFinite(num)) return esc(t);
+  return (num>0? '<span class="pos">+':'<span class="neg">')+Math.round(num).toLocaleString()+'</span>';
+}
+function stripDate(s){ return String(s==null?'':s).slice(0,10); }
+function fmtDate(s){
+  const t=stripDate(s); if(!t) return '—';
+  return t.replace(/-/g,'/');
+}
+function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
+function nm(x){ return esc(String(x==null?'':x).replace(/\s+/g,'')); }
+
+/* ══════════════════════════════════════════════════════════════════
+   商品基本面：仓单库存 · 期限结构 · 持仓量 · 价格位置
+   数据源
+     · 仓单库存 —— 东财数据中心 RPT_FUTU_STOCKDATA（实测 71 个品种，含单位与增减）
+     · 期限结构 —— 新浪期货各交割月日线，最小二乘年化
+     · 持仓量   —— 新浪内盘日线 p 字段（外盘恒为 0）
+   ══════════════════════════════════════════════════════════════════ */
+
+/* 仓单表用 SECURITY_CODE 过滤。实测大小写不统一：多数大写（RB/HC/AL），原油是 sc 小写 —— 两种都试。 */
+async function dcFut(code){
+  const base=DCAPI+'?reportName=RPT_FUTU_STOCKDATA'
+    +'&columns=SECURITY_CODE,TRADE_DATE,ON_WARRANT_NUM,ADDCHANGE,UNIT'
+    +'&pageSize=14&pageNumber=1&sortColumns=TRADE_DATE&sortTypes=-1';
+  const cands=[String(code).toUpperCase(), String(code).toLowerCase()];
+  for(let i=0;i<cands.length;i++){
+    try{
+      const d=await dcGet(base+'&filter='+encodeURIComponent('(SECURITY_CODE="'+cands[i]+'")'));
+      const arr=(d && d.success && d.result && d.result.data) || [];
+      if(arr.length) return arr;
+    }catch(e){ /* 试下一种大小写 */ }
+  }
+  return null;
+}
+
+/* ── 数值格式化 ── */
+function fmtN(v, d){
+  if(v==null||!isFinite(v)) return '—';
+  return Number(v).toLocaleString('zh-CN', {minimumFractionDigits:(d||0), maximumFractionDigits:(d||0)});
+}
+function sign(v){ return (v>0?'+':''); }
+function hi(x, cls){ return '<b'+(cls?(' class="'+cls+'"'):'')+'>'+x+'</b>'; }
+
+/* ── ① 仓单库存 ── */
+function concStock(wh, cname){
+  if(!wh||!wh.length) return null;
+  const c=wh[0], unit=(c.UNIT||'').trim();
+  const cur=c.ON_WARRANT_NUM, chg=c.ADDCHANGE;
+  const old=wh[wh.length-1];
+  let s=cname+' 最新仓单 '+hi(fmtN(cur)+' '+unit);
+  if(chg!=null && isFinite(chg)){
+    const dir = chg>0? 'dn' : (chg<0? 'n' : null);
+    s+='，较上一期 '+hi(sign(chg)+fmtN(chg)+' '+unit, dir);
+    s+= chg>0? ' —— <em>在累库</em>：货往交割库里走，现货不缺，通常压价格。'
+       : (chg<0? ' —— <em>在去库</em>：货从库里流出，现货偏紧，通常撑价格。'
+               : ' —— 与前一期持平。');
+  }
+  if(old && old!==c && old.ON_WARRANT_NUM && cur!=null){
+    const tot=cur-old.ON_WARRANT_NUM;
+    const pctv=old.ON_WARRANT_NUM>0? tot/old.ON_WARRANT_NUM*100 : null;
+    if(Math.abs(pctv||0)>=5)
+      s+=' 拉长看这 '+wh.length+' 期'+hi(sign(tot)+fmtN(tot)+' '+unit
+         +(pctv!=null? '（'+sign(pctv)+pctv.toFixed(0)+'%）':''), tot>0?'dn':'n')+'。';
+  }
+  s+=' <span class="sep">·</span> <span style="font-size:.8rem;color:var(--faint)">仓单是交易所登记的标准仓单量，是库存最硬的代理；但它只含交割品，不等于全社会库存</span>';
+  return s;
+}
+
+/* ── ② 期限结构 ── */
+function concTerm(t, cname){
+  if(!t||!t.ok) return null;
+  const back = t.slope<0;
+  const near=t.pts[0], far=t.pts[t.pts.length-1];
+  let s=cname+' 的期货曲线是 '+hi(back? '近月贵、远月便宜' : '近月便宜、远月贵');
+  s+='（'+esc(near.sym)+' '+hi(fmtN(near.close))+' → '+esc(far.sym)+' '+hi(fmtN(far.close))+'）。';
+  s+= back? ' <em>现货升水（backwardation）</em> —— 现在就要货的人愿意多付钱，说明现货紧张、库存低。'
+          : ' <em>期货升水（contango）</em> —— 远月比近月贵，说明现在不缺货、库存有压力。';
+  s+=' 年化展期收益 '+hi(sign(t.slope*100)+ (t.slope*100).toFixed(1)+'%', back?'n':'dn')+'。';
+  if(t.extreme) s+=' <span style="color:var(--seed-primary);font-weight:700">⚠ 曲线过陡，可能是近月逼仓或报价异常，只作参考。</span>';
+  return s;
+}
+
+/* ── ③ 持仓量 ── */
+function concOI(rows, cname){
+  if(!rows||rows.length<25) return null;
+  const p=rows.map(function(r){ return r.p; });
+  if(!(p[p.length-1]>0)) return null;                       /* 外盘没有持仓量 */
+  const c1=p[p.length-1], c5=p[p.length-6], c20=p[p.length-21];
+  const d5=c5>0? (c1/c5-1)*100 : null, d20=c20>0? (c1/c20-1)*100 : null;
+  const px1=rows[rows.length-1].c, px20=rows[rows.length-21].c;
+  const pxChg=px20>0? (px1/px20-1)*100 : null;
+  let s=cname+' 持仓量 '+hi(fmtN(c1)+' 手');
+  if(d20!=null) s+='，20 个交易日 '+hi(sign(d20)+d20.toFixed(1)+'%', d20>0?'n':'');
+  if(pxChg!=null) s+='，同期价格 '+hi(sign(pxChg)+pxChg.toFixed(1)+'%', pxChg>0?'':'dn');
+  s+='。';
+  if(d20!=null && pxChg!=null){
+    if(d20>3 && pxChg>0)      s+=' <em>增仓上行</em> —— 有新资金在做多，趋势比较扎实。';
+    else if(d20>3 && pxChg<0) s+=' <em>增仓下行</em> —— 有新资金在做空，跌势反而更实。';
+    else if(d20<-3 && pxChg>0) s+=' <em>减仓上行</em> —— 空头在平仓推的价格，不是新多进场。';
+    else if(d20<-3 && pxChg<0) s+=' <em>减仓下行</em> —— 多头在离场，但抛压也在减弱。';
+    else s+=' 持仓变化不大，方向由价格自己走。';
+  }
+  if(d5!=null && Math.abs(d5)>=8) s+=' 近 5 日'+hi(sign(d5)+d5.toFixed(1)+'%', d5>0?'n':'dn')+'，短线资金在动。';
+  s+=' <span class="sep">·</span> <span style="font-size:.8rem;color:var(--faint)">只有内盘提供持仓量；外盘该字段恒为 0</span>';
+  return s;
+}
+
+/* ── ④ 价格位置 ── */
+function concPos(rows, cname){
+  if(!rows||rows.length<30) return null;
+  const n=rows.length, px=rows[n-1].c;
+  const seg=rows.slice(Math.max(0,n-250));
+  let lo=Infinity, hi2=-Infinity;
+  seg.forEach(function(r){ if(r.l<lo) lo=r.l; if(r.h>hi2) hi2=r.h; });
+  if(!(hi2>lo)) return null;
+  const pos=(px-lo)/(hi2-lo)*100;
+  const d=pos>=80? 'dn' : (pos<=20? 'n' : null);
+  let s=cname+' 现价 '+hi(fmtN(px))+'，处在近 '+seg.length+' 个交易日区间 '
+       +hi(fmtN(lo))+' ~ '+hi(fmtN(hi2))+' 的 '+hi(pos.toFixed(0)+'%')+' 位置 —— ';
+  s+= pos>=80? '<em>贴近区间上沿</em>，再往上没有历史参照，追多要有停损纪律。'
+    : (pos<=20? '<em>贴近区间下沿</em>，下方参照近，但便宜不等于会涨。'
+              : (pos>=45&&pos<=55? '<em>正好卡在区间中位</em>，上下都有一半空间。' : '处在区间中段。'));
+  s+=' 距上沿 '+hi(fmtN(hi2-px))+'，距下沿 '+hi(fmtN(px-lo))+'。';
+  if(hi2>0) s+=' <span class="sep">·</span> <span style="font-size:.8rem;color:var(--faint)">用最高最低价算，不是收盘价</span>';
+  return s;
+}
+
+/* ── 渲染 ── */
+const NUMC=['①','②','③','④','⑤'];
+function numCell(v, d){ return '<td class="num">'+fmtN(v,d)+'</td>'; }
+
+function blkStock(wh, cname, rc){
+  if(rc.mk==='hf') return null;               /* 外盘没有仓单 */
+  const v=concStock(wh, cname);
+  if(v===null) return null;
+  const unit=(wh[0].UNIT||'').trim();
+  const list=wh.slice(0,8);
+  const vals=list.map(function(r){ return r.ON_WARRANT_NUM||0; });
+  /* ⚠ 柱高不能从 0 起算：仓单从 7.3 万变到 8.7 万，从 0 画出来八根柱子几乎一样高，
+     等于没画。按区间缩放（最低那根也给 8px），才看得出趋势 —— 所以必须注明「按区间缩放」。 */
+  const mx=Math.max.apply(null, vals), mn=Math.min.apply(null, vals), span=(mx-mn)||1;
+  let b='<div class="dlab">仓单量走势（左起最早 → 右最新 · 柱高按区间缩放，只示相对变化）</div><div class="spark">';
+  list.slice().reverse().forEach(function(r,i){
+    const v=r.ON_WARRANT_NUM||0;
+    const h=8+(v-mn)/span*36;
+    b+='<s class="'+((r.ADDCHANGE||0)<0?'dn':'')+'" style="height:'+h.toFixed(1)+'px" title="'+v+'"></s>';
+  });
+  b+='</div><div class="tw"><table><thead><tr><th>交易日</th>'
+    +'<th style="text-align:right">仓单量</th><th style="text-align:right">较上期</th>'
+    +'<th style="text-align:right">较上期%</th><th>单位</th></tr></thead><tbody>';
+  list.forEach(function(r,i){
+    const nx=list[i+1];
+    const pctv=(nx && nx.ON_WARRANT_NUM>0 && r.ON_WARRANT_NUM!=null)
+      ? (r.ON_WARRANT_NUM/nx.ON_WARRANT_NUM-1)*100 : null;
+    b+='<tr'+(i===0?' class="now"':'')+'><td><b>'+String(r.TRADE_DATE).slice(0,10)+'</b></td>'
+      +numCell(r.ON_WARRANT_NUM)+numCell(r.ADDCHANGE)
+      +'<td class="num">'+(pctv==null? '—'
+          : (Math.abs(pctv)<1e-9? '<span style="color:var(--faint)">0.0%</span>'
+             : (pctv>0?'<span class="pos">+':'<span class="neg">')+pctv.toFixed(1)+'%</span>'))+'</td>'
+      +'<td>'+esc(r.UNIT||'')+'</td></tr>';
+  });
+  b+='</tbody></table></div>';
+  return {t:'仓单库存', cf:'E', v:v, b:b,
+    note:'来源：东方财富数据中心 RPT_FUTU_STOCKDATA。柱状图红＝当期累库、绿＝当期去库。'};
+}
+
+function blkTerm(t, cname){
+  if(!t) return null;
+  if(!t.ok){
+    return {t:'供需 · 期限结构', cf:'I', v:'<span style="color:var(--faint)">这条品种算不出期限结构：'
+      +esc(t.why||'活跃合约不足')+'。</span>', b:'', note:''};
+  }
+  const v=concTerm(t, cname);
+  if(v===null) return null;
+  const srt=t.pts.slice().sort(function(a,b){ return a.x-b.x; });
+  let chain='';
+  srt.forEach(function(p,i){
+    const code=String(p.sym).slice(0,-4)||'';
+    const ym=String(p.sym).slice(-4);
+    chain+=(i? '<i>→</i>':'')+'<span>'+esc(ym)+' <b>'+fmtN(p.close)+'</b></span>';
+  });
+  let b='<div class="dlab">活跃合约链（'+t.pts.length+' 个，按到期先后）</div><div class="chain">'+chain+'</div>';
+  b+='<div class="tw" style="margin-top:.6rem"><table><tbody>'
+    +'<tr><th style="width:190px">年化展期收益率</th><td class="num"><b>'
+      +sign(t.slope*100)+(t.slope*100).toFixed(2)+'%</b></td></tr>'
+    +'<tr><th>结构类型</th><td>'+(t.struct==='back'? '现货升水（近月贵）' : '期货升水（远月贵）')+'</td></tr>'
+    +'<tr><th>参与回归的活跃月</th><td>最近 '+t.pts.length+' 个</td></tr>'
+    +'<tr><th>逐月价差</th><td>'
+      +srt.slice(0,-1).map(function(p,i){
+          const nx=srt[i+1], d=nx.close-p.close;
+          return esc(String(p.sym).slice(-4))+'→'+esc(String(nx.sym).slice(-4))+' <b>'+sign(d)+fmtN(d)+'</b>';
+        }).join('　')+'</td></tr>'
+    +'</tbody></table></div>';
+  return {t:'供需 · 期限结构', cf:'E', v:v, b:b,
+    note:'把活跃合约的「距交割年数」对「对数价格」做最小二乘，斜率年化。只取最近 5 个活跃合约 —— 远月往往没量、报价失真。'};
+}
+
+function blkOI(rows, cname){
+  if(!rows||rows.length<25) return null;
+  if(!(rows[rows.length-1].p>0)) return null;              /* 外盘无持仓量 */
+  const v=concOI(rows, cname);
+  if(v===null) return null;
+  const seg=rows.slice(-8).reverse();
+  let b='<div class="dlab">持仓量（近 8 个交易日）</div><div class="tw"><table><thead><tr>'
+    +'<th>交易日</th><th style="text-align:right">持仓量</th><th style="text-align:right">较上日</th>'
+    +'<th style="text-align:right">收盘</th><th style="text-align:right">成交量</th>'
+    +'</tr></thead><tbody>';
+  seg.forEach(function(r,i){
+    const nx=seg[i+1];
+    const d=(nx && nx.p>0)? r.p-nx.p : null;
+    b+='<tr'+(i===0?' class="now"':'')+'><td><b>'+String(r.d).slice(0,10)+'</b></td>'
+      +numCell(r.p)
+      +'<td class="num">'+(d==null?'—':((d>0?'<span class="pos">+':'<span class="neg">')+fmtN(d)+'</span>'))+'</td>'
+      +numCell(r.c)+numCell(r.v)+'</tr>';
+  });
+  b+='</tbody></table></div>';
+  return {t:'资金 · 持仓量', cf:'E', v:v, b:b,
+    note:'持仓量来自新浪内盘日线。增仓＝有新资金进场；减仓＝资金离场。方向要结合价格一起读。'};
+}
+
+function blkPos(rows, cname){
+  const v=concPos(rows, cname);
+  if(v===null) return null;
+  const n=rows.length;
+  let lo=Infinity, hi2=-Infinity, vsum=0;
+  const seg=rows.slice(Math.max(0,n-250));
+  seg.forEach(function(r){ if(r.l<lo) lo=r.l; if(r.h>hi2) hi2=r.h; });
+  const last20=rows.slice(-20);
+  const v20=last20.reduce(function(a,b){ return a+b.v; },0)/last20.length;
+  const amp=last20.reduce(function(a,b){ return a+(b.h-b.l)/b.c; },0)/last20.length*100;
+  const px=rows[n-1].c;
+  let b='<div class="dlab">区间位置（近 '+seg.length+' 个交易日）</div>'
+    +'<div class="tw"><table><tbody>'
+    +'<tr><th style="width:190px">现价</th><td class="num"><b>'+fmtN(px)+'</b></td></tr>'
+    +'<tr><th>区间</th><td class="num">'+fmtN(lo)+' ~ '+fmtN(hi2)+'</td></tr>'
+    +'<tr><th>距上沿 / 距下沿</th><td class="num">'+fmtN(hi2-px)+' / '+fmtN(px-lo)+'</td></tr>'
+    +'<tr><th>近 20 日平均振幅</th><td class="num">'+amp.toFixed(2)+'%</td></tr>'
+    +'<tr><th>近 20 日平均成交</th><td class="num">'+fmtN(v20)+'</td></tr>'
+    +'</tbody></table></div>';
+  return {t:'价格位置', cf:'E', v:v, b:b, note:''};
+}
+
+function cgcard(item, rc){
+  const rows=item.rows;
+  const name=item.name||rc.cname||rc.digits;
+  const last=rows&&rows.length? rows[rows.length-1] : null;
+  let lo=Infinity, hi2=-Infinity;
+  if(rows&&rows.length){ const seg=rows.slice(-250); seg.forEach(function(r){ if(r.l<lo) lo=r.l; if(r.h>hi2) hi2=r.h; }); }
+  const pos=(last && hi2>lo)? ((last.c-lo)/(hi2-lo)*100) : null;
+  let h='<div class="cg"><div class="cg-h">'
+    +'<span class="nm">'+nm(name)+'</span>'
+    +'<span class="cd">'+esc(rc.digits)+' · '+esc(rc.market)+'</span>'
+    +'<span class="px">'
+      +'<span><i>最新收盘</i><b class="big">'+(last? fmtN(last.c) : '—')+'</b></span>'
+      +'<span><i>数据截至</i><b>'+(last? String(last.d).slice(0,10) : '—')+'</b></span>'
+      +(pos!=null? '<span><i>区间位置</i><b>'+pos.toFixed(0)+'%</b></span>':'')
+      +'<span><i>持仓量</i><b>'+(last&&last.p>0? fmtN(last.p) : '不提供')+'</b></span>'
+    +'</span></div>';
+  if(item.err){
+    h+='<div class="blk"><div class="na">'+esc(item.err)+'</div></div></div>';
+    return h;
+  }
+  const blks=[
+    blkStock(item.warehouse, name, rc),
+    blkTerm(item.term, name),
+    blkOI(rows, name),
+    blkPos(rows, name)
+  ].filter(function(x){ return !!x; });
+  blks.forEach(function(x,i){
+    h+='<div class="blk"><h3 class="blk-h">'+NUMC[i]+' '+esc(x.t)+' <em>cf '+esc(x.cf)+'</em></h3>'
+      +'<div class="verdict">'+x.v+'</div>'+x.b
+      +(x.note? '<div class="source-line">'+esc(x.note)+'</div>' : '')
+      +'</div>';
+  });
+  if(!blks.length) h+='<div class="blk"><div class="na">该品种没有取到任何基本面数据。</div></div>';
+  h+='<div class="src">数据来源：东方财富数据中心（仓单）· 新浪期货（合约月与日线）· 全部计算在本地浏览器完成</div></div>';
+  return h;
+}
+
+/* ── 主流程 ── */
+const RES=[];
+async function run(){
+  const toks=$('ccodes').value.split(/[\s,，;；、|]+/), codes=[], seen={};
+  toks.forEach(function(t){
+    const raw=String(t).trim(); if(!raw) return;
+    const a=raw.split(/[（(\/]/)[0].trim();
+    let rc=resolveComm(a);
+    if(!rc && a!==raw) rc=resolveComm(raw);
+    if(rc && !seen[rc.sym]){ seen[rc.sym]=1; codes.push(rc); }
+  });
+  if(!codes.length){ $('prog').innerHTML='<span class="err">没解析出品种</span>'; return; }
+  RES.length=0;
+  $('run').disabled=true; $('out').classList.add('hide');
+  $('pbar').style.width='0%';
+  const now=new Date();
+  const today=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0');
+  for(let i=0;i<codes.length;i++){
+    const rc=codes[i];
+    const item={rc:rc, name:rc.cname||rc.digits};
+    $('prog').textContent='抓取 '+rc.digits+' '+item.name+'（'+rc.market+'）…（'+(i+1)+' / '+codes.length+'）';
+    try{
+      const g=await srcSina(rc, 300);
+      let use=g.rows;
+      if(use.length>121 && String(use[use.length-1].d).slice(0,10)===today) use=use.slice(0,-1);
+      item.rows=use; item.name=g.name||item.name;
+      const code=String(rc.digits).replace(/0$/,'');
+      if(rc.mk!=='hf'){
+        try{ item.warehouse=await dcFut(code); }catch(e){ item.warehouse=null; }
+      }
+      $('prog').textContent='算期限结构 '+item.name+'…（'+(i+1)+' / '+codes.length+'）';
+      try{ item.term=await termOf(code, String(use[use.length-1].d).slice(0,10), rc.mk==='hf', 10); }
+      catch(e){ item.term={ok:false, n:0, why:'取合约月失败'}; }
+    }catch(e){ item.err=(e&&e.message)||String(e); }
+    RES.push(item);
+    $('pbar').style.width=((i+1)/codes.length*100).toFixed(0)+'%';
+    if(i<codes.length-1) await new Promise(function(r){ setTimeout(r,120); });
+  }
+  render();
+  $('run').disabled=false;
+  $('prog').textContent='完成：'+codes.length+' 个品种';
+  $('out').classList.remove('hide');
+}
+function render(){
+  const ok=RES.filter(function(r){ return !r.err; });
+  $('sum').innerHTML = '共 '+RES.length+' 个品种，取到数据 '+ok.length+' 个'
+    + (RES.length-ok.length? ('，失败 '+(RES.length-ok.length)+' 个') : '')
+    + '　｜　每个品种：仓单库存 ＋ 期限结构 ＋ 持仓量 ＋ 价格位置';
+  $('cards').innerHTML = RES.map(function(r){ return cgcard(r, r.rc); }).join('') || '<div class="na">没有结果。</div>';
+}
+function boot(){
+  $('run').addEventListener('click', function(){ run(); });
+  $('demo').addEventListener('click', function(){
+    $('ccodes').value='RB0 螺纹钢\nCU0 沪铜\nAL0 沪铝\nI0 铁矿石\nM0 豆粕\nSC0 原油\nAU0 沪金\nhf:CL 纽约原油';
+  });
+  $('clear').addEventListener('click', function(){ $('ccodes').value=''; });
+  $('check').addEventListener('click', selfCheck);
+}
+async function selfCheck(){
+  const host=$('checkOut'); host.classList.remove('hide'); host.innerHTML='<b>正在自检…</b>';
+  const out=[];
+  let t0=Date.now();
+  const U=DCAPI+'?reportName=RPT_FUTU_STOCKDATA&columns=SECURITY_CODE,TRADE_DATE,ON_WARRANT_NUM,ADDCHECK'
+    +'&pageSize=2&pageNumber=1&filter='+encodeURIComponent('(SECURITY_CODE="RB")');
+  try{
+    const r=await fetch(U); const txt=await r.text();
+    let n=0,ok=false; try{ const d=JSON.parse(txt); ok=!!d.success; n=((d.result||{}).data||[]).length; }catch(e){}
+    out.push(['① 东财仓单（fetch）', (r.ok&&ok)?'✓ 通':'✗ 失败',
+      'HTTP '+r.status+' · '+txt.length+' 字节 · '+n+' 行 · '+(Date.now()-t0)+'ms'+(r.ok&&ok?'':'　'+txt.slice(0,110))]);
+  }catch(e){ out.push(['① 东财仓单（fetch）','✗ 抛错',String((e&&e.message)||e)]); }
+  t0=Date.now();
+  try{
+    const d=await dcFut('RB');
+    out.push(['② 仓单解析', d&&d.length? '✓ 通':'✗ 失败',
+      d&&d.length? (d.length+' 期，最新 '+String(d[0].TRADE_DATE).slice(0,10)+' 仓单 '+d[0].ON_WARRANT_NUM+' '+d[0].UNIT):'无数据']);
+  }catch(e){ out.push(['② 仓单解析','✗ 抛错',String((e&&e.message)||e)]); }
+  t0=Date.now();
+  try{
+    const d=await jsonpSina('InnerFuturesNewService.getDailyKLine?symbol=RB0');
+    out.push(['③ 新浪期货日线', d&&d.length? '✓ 通':'✗ 失败',
+      d&&d.length? (d.length+' 根 · '+(Date.now()-t0)+'ms') : '无数据']);
+  }catch(e){ out.push(['③ 新浪期货日线','✗ 抛错',String((e&&e.message)||e)]); }
+  host.innerHTML='<b>数据源自检</b><div class="tw" style="margin:.5rem 0 0"><table><tbody>'
+    + out.map(function(p){ return '<tr><th style="width:170px">'+esc(p[0])+'</th><td style="width:76px"><b>'+esc(p[1])+'</b></td><td style="white-space:normal">'+esc(p[2])+'</td></tr>'; }).join('')
+    + '</tbody></table></div><div style="font-size:.76rem;color:var(--faint);margin-top:.4rem">'
+    + '①③ 任一通即可用；① 挂了就只有期限结构和价格位置，没有仓单。把这张表截图给我即可定位。</div>';
+}
+if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+
+})();
+</script>
+</body>
+</html>

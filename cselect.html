@@ -4,7 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <title>三变·六反 — 择股 · 勾选条件 → 匹配度 → 自动推选</title>
-<meta name="description" content="三变六反择股台：勾选你真正在意的条件，A股／港股／美股全池按匹配度排序，够分的自动推选。股票用股票标准，大宗商品用供需标准。" />
+<meta name="description" content="三变六反择商品台：勾选供需与位置条件，大宗商品全池按匹配度排序，够分的自动推选。股票用股票标准，大宗商品用供需标准。" />
 <meta name="author" content="王潇" />
 <meta name="generator" content="WX-36TA-G-0913" />
 <style>
@@ -270,12 +270,12 @@ footer.credit{ margin-top:52px; padding-top:16px; border-top:1px solid var(--lin
     </span>
     <div class="titles">
       <h1>三变 · 六反<span class="lat">Screener</span></h1>
-      <p>择股 &nbsp;/&nbsp; 勾选条件 · 匹配度 · 自动推选</p>
+      <p>择商品 &nbsp;/&nbsp; 勾选条件 · 匹配度 · 自动推选</p>
     </div>
     <div class="spacer"></div>
     <a class="navlink" href="index.html">← 首页</a>
-    <a class="navlink" href="scan.html">← 股票扫描</a>
-    <a class="navlink" href="guide.html">基本面扫描</a>
+    <a class="navlink" href="calibrate.html">← 商品扫描</a>
+    <a class="navlink" href="cguide.html">基本面扫描</a>
   </header>
 
   <div class="note">
@@ -287,41 +287,41 @@ footer.credit{ margin-top:52px; padding-top:16px; border-top:1px solid var(--lin
     <span style="color:var(--faint)">股票用股票的标准（估值 × 趋势），大宗商品用供需的标准（持仓量 × 期限结构）——两套条件完全独立，不能互相套用。</span>
   </div>
 
-  <!-- ══════ 股票 ══════ -->
-  <div id="pane-s" style="margin-top:22px">
-    <h2>一、股票池 <span class="cf cf-e">cf E</span></h2>
+  <!-- ══════ 商品 ══════ -->
+  <div id="pane-c" style="margin-top:22px">
+    <h2>一、商品池 <span class="cf cf-e">cf E</span></h2>
     <div class="panel">
       <p style="margin-top:0;font-size:.86rem;color:var(--muted)">
-        <strong>A股</strong> 6 位数字（<code>600519</code>）｜<strong>港股</strong> 1~5 位数字（<code>700</code> 或 <code>00700</code>）｜<strong>美股</strong> 字母代码（<code>AAPL</code>，自动试探纳斯达克／纽交所后缀）。
-        也可显式写 <code>SH600519</code> / <code>HK00700</code> / <code>USAAPL.OQ</code>。后面跟名称会被忽略（<code>600519 贵州茅台</code>）。
-        <strong>池子自动存在本机浏览器里，下次打开还在。</strong>
+        <strong>内盘</strong>写品种代码，末尾带 0 表示主连（<code>RB0</code> 螺纹钢、<code>CU0</code> 沪铜、<code>I0</code> 铁矿石）。
+        <strong>外盘</strong>直接写代码不带 0（<code>CL</code> 纽约原油、<code>GC</code> 纽约黄金）。
+        分不清就显式写 <code>nf:RB0</code> / <code>hf:CL</code>。
       </p>
-      <textarea id="codes" spellcheck="false" placeholder="600519 贵州茅台&#10;00700 腾讯控股&#10;AAPL 苹果"></textarea>
+      <textarea id="ccodes" spellcheck="false" placeholder="RB0 螺纹钢&#10;CU0 沪铜&#10;hf:CL"></textarea>
       <div class="row">
-        <button class="ghost" id="demoS">载入示例</button>
-        <button class="ghost" id="clrS">清空</button>
-        <span style="font-size:.78rem;color:var(--faint)">代码之间用空格、逗号或换行分隔都行</span>
+        <button class="ghost" id="demoC">载入示例</button>
+        <button class="ghost" id="clrC">清空</button>
+        <span style="font-size:.78rem;color:var(--faint)">勾了「期限结构」会额外抓该品种 10 个合约月，慢一些</span>
       </div>
     </div>
 
     <h2>二、勾选你要的条件 <span class="cf cf-i">cf I</span></h2>
     <div class="panel">
-      <div id="critS"></div>
+      <div id="critC"></div>
       <div class="row" style="margin-top:16px">
         <label class="f" style="max-width:210px">匹配度达到多少算「推荐」
-          <input id="thrS" type="number" value="80" min="20" max="100" step="5" />
+          <input id="thrC" type="number" value="80" min="20" max="100" step="5" />
         </label>
-        <button class="go" id="runS">开始择股</button>
-        <span id="progS" style="font-size:.82rem;color:var(--muted)"></span>
+        <button class="go" id="runC">开始择股</button>
+        <span id="progC" style="font-size:.82rem;color:var(--muted)"></span>
       </div>
-      <div class="bar"><i id="pbarS"></i></div>
+      <div class="bar"><i id="pbarC"></i></div>
     </div>
 
-    <div id="outS" class="hide">
+    <div id="outC" class="hide">
       <h2>三、推选区 <span class="cf cf-i">cf I</span></h2>
-      <div id="recS"></div>
+      <div id="recC"></div>
       <h2>四、全池排序（含没达标的）</h2>
-      <div id="tblS"></div>
+      <div id="tblC"></div>
     </div>
   </div>
 
@@ -334,15 +334,17 @@ footer.credit{ margin-top:52px; padding-top:16px; border-top:1px solid var(--lin
       <li><strong>闸门封顶：</strong>慢档 MACD 在零轴下方时，匹配度一律压到 49 以下，无论别的条件多好。<strong>闸门关＝不参与</strong>，这是三变六反的第一道门。</li>
     </ul>
 
-    <p style="font-size:.88rem;margin-bottom:.4rem"><strong>股票用的条件</strong></p>
+    <p style="font-size:.88rem;margin-bottom:.4rem"><strong>商品为什么是另一套条件</strong></p>
     <ul style="margin:0 0 .9rem;padding-left:1.1rem;font-size:.85rem;color:var(--muted)">
-      <li><strong>PE(TTM)</strong> 取自腾讯行情的第 39 位；<strong>PB</strong> 取自第 46 位——<strong>只有 A 股这一位是市净率，港美股那一位是英文名</strong>，所以港美股 PB 一律留空、该条件自动跳过。</li>
-      <li><strong>流通市值</strong>取自第 44 位（亿元）。</li>
-      <li><strong>黄柱</strong>＝彩色 K 线三项（量比、换手分位、筹码位置）同时占优。数的是最近 20 根里有几根。</li>
-      <li><strong>盈亏比</strong>＝(压力位1 − 现价) ÷ (现价 − 止损)。<strong>上方没有筹码压力位时不给盈亏比</strong>，该项算不满足。</li>
+      <li>商品没有 PE、没有 PB、没有股本——<strong>拿股票那套去筛商品是错的</strong>，所以另起一套。</li>
+      <li><strong>持仓量变化</strong>：持仓量相较 20 个交易日前的变化。增仓＝有新资金进场。<strong>只有内盘有持仓量</strong>；外盘该字段实测恒为 0，这一项对外盘自动跳过。</li>
+      <li><strong>期限结构</strong>（＝库存的替代读数）：把活跃合约的「距交割年数」对「对数价格」做最小二乘，斜率年化。<strong>斜率为负＝近月比远月贵＝现货升水＝现货紧张、库存低</strong>；斜率为正＝期货升水＝不缺货、库存压力大。</li>
+      <li>只取<strong>最近的 5 个活跃合约</strong>（持仓量／成交量为最大值的 5% 以上才算活跃）。远月常常没量、报价失真，拉进来会把斜率带偏。推荐卡里会把<strong>实际参与计算的合约链原样列出来</strong>，你可以自己核对。</li>
+      <li>年化展期<strong>绝对值超过 60%</strong> 的会标 ⚠：曲线这么陡，多半是近月逼仓或报价异常，<strong>照报，但只作参考</strong>。</li>
+      <li>外盘没有成交量也没有持仓量（新浪该字段实测恒为 0），所以外盘的「活跃合约」无法筛选，只能按最近月份取 —— <strong>外盘的期限结构比内盘粗糙</strong>，这一点必须说清楚。</li>
     </ul>
 
-        <div class="note" style="font-size:.85rem;background:var(--primary-soft);border-color:var(--primary-line)">
+    <div class="note" style="font-size:.85rem;background:var(--primary-soft);border-color:var(--primary-line)">
       <strong>关于「库存」和「基差」，我必须说实话：拿不到。</strong><br>
       本轮实测：新浪期货没有任何现货报价／库存／仓单／基差接口（<code>getWarehouseStock</code>、<code>getSpotPrice</code>、<code>getBasis</code>、<code>getInventory</code> 等全部返回 <code>Service not found</code>）；上期所仓单日报 <code>dailystock.dat</code> 返回 404，大商所／郑商所接口被 412／301 拦掉；<code>hq.sinajs.cn</code> 实时行情在非新浪来源下返回 <strong>403</strong>，无法跨域取用。<br>
       <strong>能拿到的最接近替代，就是上面那条「期限结构」</strong>——它不是猜的，它是市场自己在给不同月份的货定价：现货紧张时近月自然贵。<strong>真正的库存吨位必须接交易所仓单日报，那一定要后端代理</strong>，纯静态页面做不到。<br>
