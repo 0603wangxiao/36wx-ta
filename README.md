@@ -1,26 +1,29 @@
 # 三变·六反 — 技术指标分析
 
-一套自包含的静态分析工具，共四页。纯前端，无后端、无构建步骤，直接用浏览器打开即可。
+一套自包含的静态分析工具，共五页。纯前端，无后端、无构建步骤，直接用浏览器打开即可。
 
 **线上地址：<https://0603wangxiao.github.io/36wx-ta/>**
 
 | 页面 | 线上直达 |
 |---|---|
 | 知识图谱 | <https://0603wangxiao.github.io/36wx-ta/> |
-| 盘前清单 | <https://0603wangxiao.github.io/36wx-ta/guide.html> |
-| 单只自校准 | <https://0603wangxiao.github.io/36wx-ta/calibrate.html> |
-| 批量交易计划表 | <https://0603wangxiao.github.io/36wx-ta/scan.html> |
+| 基本面扫描 | <https://0603wangxiao.github.io/36wx-ta/guide.html> |
+| 股票扫描 | <https://0603wangxiao.github.io/36wx-ta/scan.html> |
+| 商品扫描 | <https://0603wangxiao.github.io/36wx-ta/calibrate.html> |
+| 择股 | <https://0603wangxiao.github.io/36wx-ta/select.html> |
+| 数据源诊断 | <https://0603wangxiao.github.io/36wx-ta/数据源诊断.html> |
 
 ---
 
-## 四页
+## 五页
 
 | 页面 | 作用 |
 |---|---|
 | **index.html** | 知识图谱。三变（形态之变／成交量之变／市场情绪之变）× 六反指标观察（K线形态・成交量・换手率・MACD・布林通道・筹码）＋ 形态十二图 ＋ 站住确认律矩阵 |
-| **guide.html** | 盘前清单。盘前五步、识别树、破立确认律（收盘站住）、十二图逐图对照、六指标门槛、三道闸门、区间边界反向律、一页纸速用版 |
-| **calibrate.html** | 单只自校准。贴一只票的日线，算出专属阈值：放量门槛、缩量判假线、筹码位阶（压力位／支撑位）、量筹配合因子、破立质量表、区间边界反向校准 |
-| **scan.html** | 批量交易计划表。贴一串代码，自动抓行情，输出每只票的 MACD 状态、协调强度、获利盘、压力位／支撑位、入场价／止损价／目标价／盈亏比 |
+| **guide.html** | 基本面扫描。估值（PE／PB／流通市值）× 技术趋势 的四象限对照，外加由市值与振幅推出的敞口建议 |
+| **scan.html** | 股票扫描。A股／港股／美股同一套口径：彩色 K 线仪表盘（可拖动・可缩放・筹码可开关）、MACD 三档状态与力道、筹码位阶（压力位／支撑位）、协调强度、入场价／止损价／目标价／盈亏比 |
+| **calibrate.html** | 大宗商品扫描。内盘 49 个品种 ／ 外盘 15 个品种，口径与股票页一致，换手率用「相对成交量折算等效换手」 |
+| **select.html** | 择股。勾选你在意的条件，全池按匹配度打分，够分的自动推选。**MACD 闸门关时匹配度封顶 49，永远进不了推荐区** |
 
 ## 两份方法说明
 
@@ -29,13 +32,23 @@
 
 ## 数据来源
 
-`scan.html` 与 `calibrate.html` 通过浏览器直接抓取公开行情接口：
+三页扫描工具都通过浏览器直接抓取公开行情接口：
 
-- 腾讯（`web.ifzq.gtimg.cn`）—— CORS 全开、无每日限额
-- 东方财富（`push2his.eastmoney.com`）—— 备用，JSONP 主 + fetch 备
+- **腾讯**（`web.ifzq.gtimg.cn/appstock/app/fqkline/get`）—— 股票日线，CORS 全开、无每日限额。
+  美股必须带交易所后缀（`usAAPL.OQ` 纳斯达克 ／ `usBABA.N` 纽交所），不带后缀只返回两根。
+- **新浪期货 JSONP**（`stock2.finance.sina.com.cn/futures/api/jsonp.php`）—— 内盘 `InnerFuturesNewService.getDailyKLine`、外盘 `GlobalFuturesService.getGlobalFuturesDailyKLine`。
+  支持自定义回调名，返回真函数调用，可跨域。
+- **东方财富**：`push2his.eastmoney.com` 实测长期不可达，代码里保留为备用但实际不会命中。
 
 均为前复权日线，成交量单位自动识别（科创板接口返回「股」，其余返回「手」）。
 **不经过任何第三方服务器，全部计算在你的浏览器里完成。**
+
+### 拿不到的数据（如实交代）
+
+- **现货价格、库存、仓单、基差**：新浪期货没有对应接口（`getWarehouseStock`／`getSpotPrice`／`getBasis`／`getInventory` 全部返回 `Service not found`）；上期所仓单日报 404，大商所／郑商所被 412／301 拦掉。**`select.html` 的商品筛选因此改用「期限结构」作为库存的替代读数** —— 它不是猜的，是市场自己在给不同月份的货定价。
+- **港美股的 PB**：腾讯行情第 46 位只有 A 股是市净率，港美股那一位是英文名。代码做了纯数字校验，拿不到就留空、该项不计入匹配度分母。
+- **外盘的持仓量**：新浪外盘 K 线里 `volume` 与 `position` 实测恒为 0，所以外盘只能靠价格本身。
+- **`hq.sinajs.cn` 实时行情**：非新浪来源的 Referer 一律返回 **403**，无法跨域取用。
 
 ## 关键口径
 
@@ -69,7 +82,7 @@
 
 ```
 ~/Desktop/36wx-ta-github/          ← 改内容改这里（同时是 git 仓库）
-    index.html  guide.html  calibrate.html  scan.html
+    index.html  guide.html  scan.html  calibrate.html  select.html  数据源诊断.html
     guide.md    README.md   .nojekyll   .gitignore
 ```
 
@@ -144,7 +157,7 @@ PATCH /git/refs/heads/main
 
 ## 本地打开
 
-直接双击 `index.html` 即可。`scan.html` 与 `calibrate.html` 需要联网取行情。
+直接双击 `index.html` 即可。`guide.html`／`scan.html`／`calibrate.html`／`select.html` 需要联网取行情。
 
 ---
 

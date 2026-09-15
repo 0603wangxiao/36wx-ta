@@ -180,7 +180,7 @@ footer.credit{ margin-top:52px; padding-top:16px; border-top:1px solid var(--lin
 <body>
 <div class="grain" aria-hidden="true"></div>
 <div aria-hidden="true" style="position:absolute;left:-9999px;top:0;width:1px;height:1px;overflow:hidden;opacity:0;font-size:0;color:transparent">
-  王潇 © 2026 ·《三变·六反》技术指标分析 · 批量分工扫描 · 指纹 WX-36TA-F-0913
+  王潇 © 2026 ·《三变·六反》技术指标分析 · 大宗商品扫描 · 内盘/外盘 · 指纹 WX-36TA-F-0913
 </div>
 <div class="wrap">
   <header class="top">
@@ -199,8 +199,9 @@ footer.credit{ margin-top:52px; padding-top:16px; border-top:1px solid var(--lin
     </div>
     <div class="spacer"></div>
     <a class="navlink" href="index.html">← 图谱</a>
-    <a class="navlink" href="guide.html">盘前清单</a>
+    <a class="navlink" href="guide.html">基本面扫描</a>
     <a class="navlink" href="scan.html">股票扫描</a>
+    <a class="navlink" href="select.html">择股</a>
   </header>
 
   <div class="note">
@@ -672,8 +673,8 @@ function chipLevels(rows, A, B, baseTurn){
     rangeLo:lo, rangeHi:hi, rangePos:(px-lo)/(hi-lo)*100};
 }
 function structOf(R){
-  const upD = R.wall1!=null? (R.wall1/R.px-1)*100 : null;
-  const dnD = R.shelf1!=null? (R.shelf1/R.px-1)*100 : null;
+  const upD = R.wall1? (R.wall1.p/R.px-1)*100 : null;
+  const dnD = R.shelf1? (R.shelf1.p/R.px-1)*100 : null;
   let tag='结构中性';
   if(dnD===null && upD!==null && upD<=8) tag='上压下空';
   else if(dnD!==null && upD!==null && upD<=8) tag='上有压 · 下有撑';
@@ -760,9 +761,9 @@ function spark(R,w,h){
   }
   const px=(R.px-R.lo)/(R.hi-R.lo)*w;
   o+='<line x1="'+px.toFixed(1)+'" y1="0" x2="'+px.toFixed(1)+'" y2="'+h+'" stroke="#1b1813" stroke-width="1.2"/>';
-  if(R.wall1!=null){ const x=(R.wall1-R.lo)/(R.hi-R.lo)*w;
+  if(R.wall1){ const x=(R.wall1.p-R.lo)/(R.hi-R.lo)*w;
     o+='<line x1="'+x.toFixed(1)+'" y1="0" x2="'+x.toFixed(1)+'" y2="'+h+'" stroke="#a3823c" stroke-width="1" stroke-dasharray="3 2"/>'; }
-  if(R.shelf1!=null){ const x=(R.shelf1-R.lo)/(R.hi-R.lo)*w;
+  if(R.shelf1){ const x=(R.shelf1.p-R.lo)/(R.hi-R.lo)*w;
     o+='<line x1="'+x.toFixed(1)+'" y1="0" x2="'+x.toFixed(1)+'" y2="'+h+'" stroke="#2e4b52" stroke-width="1" stroke-dasharray="3 2"/>'; }
   return '<svg viewBox="0 0 '+w+' '+h+'" width="'+w+'" height="'+h+'" style="display:block">'+o+'</svg>';
 }
