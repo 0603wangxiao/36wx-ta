@@ -253,6 +253,16 @@ footer.credit{ margin-top:52px; padding-top:16px; border-top:1px solid var(--lin
 .bar{ height:3px; background:var(--line); border-radius:2px; overflow:hidden; margin-top:12px; }
 .bar i{ display:block; height:100%; width:0; background:linear-gradient(90deg,var(--gold),var(--primary)); transition:width .2s; }
 
+/* ══════ 股票池：默认内置，折叠起来不占版面 ══════ */
+.poolbox{ margin:0 0 1.1rem; border:1px solid var(--line); border-radius:8px; background:var(--bg);
+  padding:.5rem .85rem; }
+.poolbox summary{ cursor:pointer; font-size:.83rem; color:var(--muted); letter-spacing:.04em;
+  list-style:none; }
+.poolbox summary::-webkit-details-marker{ display:none; }
+.poolbox summary::before{ content:"▸ "; color:var(--faint); }
+.poolbox[open] summary::before{ content:"▾ "; }
+.poolbox summary:hover{ color:var(--fg); }
+.poolbox textarea{ margin-top:.65rem; }
 </style>
 </head>
 <body>
@@ -289,22 +299,7 @@ footer.credit{ margin-top:52px; padding-top:16px; border-top:1px solid var(--lin
 
   <!-- ══════ 商品 ══════ -->
   <div id="pane-c" style="margin-top:22px">
-    <h2>一、商品池 <span class="cf cf-e">cf E</span></h2>
-    <div class="panel">
-      <p style="margin-top:0;font-size:.86rem;color:var(--muted)">
-        <strong>内盘</strong>写品种代码，末尾带 0 表示主连（<code>RB0</code> 螺纹钢、<code>CU0</code> 沪铜、<code>I0</code> 铁矿石）。
-        <strong>外盘</strong>直接写代码不带 0（<code>CL</code> 纽约原油、<code>GC</code> 纽约黄金）。
-        分不清就显式写 <code>nf:RB0</code> / <code>hf:CL</code>。
-      </p>
-      <textarea id="ccodes" spellcheck="false" placeholder="RB0 螺纹钢&#10;CU0 沪铜&#10;hf:CL"></textarea>
-      <div class="row">
-        <button class="ghost" id="demoC">载入示例</button>
-        <button class="ghost" id="clrC">清空</button>
-        <span style="font-size:.78rem;color:var(--faint)">勾了「期限结构」会额外抓该品种 10 个合约月，慢一些</span>
-      </div>
-    </div>
-
-    <h2>二、勾选你要的条件 <span class="cf cf-i">cf I</span></h2>
+    <h2>一、勾选你要的条件 <span class="cf cf-i">cf I</span></h2>
     <div class="panel">
       <div id="critC"></div>
       <div class="row" style="margin-top:16px">
@@ -318,14 +313,14 @@ footer.credit{ margin-top:52px; padding-top:16px; border-top:1px solid var(--lin
     </div>
 
     <div id="outC" class="hide">
-      <h2>三、推选区 <span class="cf cf-i">cf I</span></h2>
+      <h2>二、推选区 <span class="cf cf-i">cf I</span></h2>
       <div id="recC"></div>
-      <h2>四、全池排序（含没达标的）</h2>
+      <h2>三、全池排序（含没达标的）</h2>
       <div id="tblC"></div>
     </div>
   </div>
 
-  <h2>五、口径与限制（如实交代） <span class="cf cf-i">cf I</span></h2>
+  <h2>四、口径与限制（如实交代） <span class="cf cf-i">cf I</span></h2>
   <div class="panel" style="padding:14px 16px">
     <p style="margin-top:0;font-size:.88rem"><strong>匹配度怎么算</strong></p>
     <ul style="margin:0 0 .9rem;padding-left:1.1rem;font-size:.85rem;color:var(--muted)">
@@ -377,6 +372,7 @@ footer.credit{ margin-top:52px; padding-top:16px; border-top:1px solid var(--lin
 /* 以下引擎块从 scan.html / calibrate.html 原样抽取，口径完全一致 */
 (function(){
 "use strict";
+var PAGE_MODE='comm';
 const $=id=>document.getElementById(id);
 const F=(x,d)=>(x==null||!isFinite(x))?'—':Number(x).toFixed(d==null?2:d);
 const med=a=>{const b=a.filter(x=>x!=null&&isFinite(x)).sort((p,q)=>p-q); if(!b.length) return null;
@@ -1412,15 +1408,17 @@ async function runStock(){
 /* ══════════════════════════════════════════════════════════════════
    商品择股
    ══════════════════════════════════════════════════════════════════ */
+/* 商品池内置：品种表（内盘 49 + 外盘 15）本来就是固定的，不需要用户手输。
+   遍历内置表即可 —— 这就是「商品池多余」的正解。 */
+function allCommodities(){
+  var out=[], seen={}, k, rc;
+  for(k in INNER){ rc=resolveComm(k+'0'); if(rc && !seen[rc.sym]){ seen[rc.sym]=1; out.push(rc); } }
+  for(k in OUTER){ rc=resolveComm(k);    if(rc && !seen[rc.sym]){ seen[rc.sym]=1; out.push(rc); } }
+  return out;
+}
 async function runComm(){
-  var toks=$('ccodes').value.split(/[\s,，;；、|]+/), codes=[], seen={};
-  toks.forEach(function(t){
-    var raw=String(t).trim(); if(!raw) return;
-    var a=raw.split(/[（(\/]/)[0].trim();
-    var rc=resolveComm(a)||resolveComm(raw);
-    if(rc && !seen[rc.sym]){ seen[rc.sym]=1; codes.push(rc); }
-  });
-  if(!codes.length){ $('progC').innerHTML='<span class="err">没解析出品种</span>'; return; }
+  var codes=allCommodities(), seen={};
+  if(!codes.length){ $('progC').innerHTML='<span class="err">品种表是空的</span>'; return; }
   readCrit(C_CRIT,'ck');
   var A=1.0, B=240, baseTurn=2.0;
   var thr=Math.max(0,Math.min(100, parseInt($('thrC').value)||80));
@@ -1651,22 +1649,34 @@ function renderComm(thr){
 }
 
 /* ── 初始化 ── */
+/* 股票池内置。上一版是让用户手输 —— 但商品那一侧的品种表本来就是内置的，
+   两边不一致，还白占一块版面。现在默认用内置池，要换再点开。 */
+var DEF_POOL='600519 贵州茅台\n000858 五粮液\n002255 海陆重工\n600150 中国船舶\n601601 中国太保\n00700 腾讯控股\n09988 阿里巴巴\nAAPL 苹果\nNVDA 英伟达\nMSFT 微软';
+
+/* ══════════════════════════════════════════════════════════════════
+   boot：必须在两种页面上都能跑完。
+   ⚠ 拆页时只拆了 DOM、没拆 boot —— select.html 没有 critC、cselect.html 没有 critS，
+     而 getElementById 返回 null，buildCrit 里 null.innerHTML = … 直接抛异常，
+     boot 中断 → 后面的 addEventListener 全没绑上。
+     症状就是「点按钮没反应」和「条件区一片空白」。所以每一步都要判空。 */
 function boot(){
+  if(!PAGE_MODE) PAGE_MODE = $('critS')? 'stock' : 'comm';
+  var on=function(id, ev, fn){ var el=$(id); if(el) el.addEventListener(ev, fn); };
   loadCrit();
-  buildCrit($('critS'), S_CRIT, 'sk');
-  buildCrit($('critC'), C_CRIT, 'ck');
-  var defS='600519 贵州茅台\n000858 五粮液\n002255 海陆重工\n600150 中国船舶\n00700 腾讯控股\nAAPL 苹果\nNVDA 英伟达';
-  var defC='RB0 螺纹钢\nCU0 沪铜\nI0 铁矿石\nSC0 原油\nM0 豆粕\nnf:TA0\nhf:CL\nhf:GC';
-  $('codes').value = load(LS_POOL) || defS;
-  $('ccodes').value = load(LS_CPOOL) || defC;
-  $('codes').addEventListener('input', function(){ save(LS_POOL, $('codes').value); });
-  $('ccodes').addEventListener('input', function(){ save(LS_CPOOL, $('ccodes').value); });
-  $('runS').addEventListener('click', function(){ runStock(); });
-  $('runC').addEventListener('click', function(){ runComm(); });
-  $('demoS').addEventListener('click', function(){ $('codes').value=defS; save(LS_POOL,defS); });
-  $('clrS').addEventListener('click', function(){ $('codes').value=''; save(LS_POOL,''); });
-  $('demoC').addEventListener('click', function(){ $('ccodes').value=defC; save(LS_CPOOL,defC); });
-  $('clrC').addEventListener('click', function(){ $('ccodes').value=''; save(LS_CPOOL,''); });
+  if(PAGE_MODE==='stock'){
+    if($('critS')) buildCrit($('critS'), S_CRIT, 'sk');
+    var c=$('codes');
+    if(c){
+      c.value = load(LS_POOL) || DEF_POOL;
+      c.addEventListener('input', function(){ save(LS_POOL, c.value); });
+    }
+    on('runS','click', function(){ runStock(); });
+    on('demoS','click', function(){ if($('codes')) $('codes').value=DEF_POOL; save(LS_POOL,DEF_POOL); });
+    on('clrS','click', function(){ if($('codes')) $('codes').value=''; save(LS_POOL,''); });
+  } else {
+    if($('critC')) buildCrit($('critC'), C_CRIT, 'ck');
+    on('runC','click', function(){ runComm(); });
+  }
 }
 if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', boot); else boot();
 })();
