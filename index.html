@@ -329,6 +329,25 @@ button{ font:inherit; color:inherit; background:none; border:none; cursor:pointe
 .cm-legend i{ font-style:normal; display:inline-flex; align-items:center; gap:.3rem; }
 .cm-legend s{ text-decoration:none; width:16px; height:0; border-top-width:2px; border-top-style:solid; display:inline-block; }
 @media(max-width:720px){ .cm-grid{ grid-template-columns:1fr; } }
+
+/* ══════ 图 = 按钮：每一张小图都可点击放大 ══════ */
+.fig-wrap, .case{ cursor:zoom-in; position:relative; transition:border-color var(--t-fast) var(--ease),
+  box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease); }
+.fig-wrap:hover, .case:hover{ border-color:var(--gold); box-shadow:0 4px 16px color-mix(in srgb,var(--seed-fg) 14%,transparent);
+  transform:translateY(-1px); }
+.fig-wrap:active, .case:active{ transform:translateY(0); }
+.fig-zoom{ position:absolute; right:.5rem; bottom:.5rem; z-index:3; font-size:.66rem; letter-spacing:.06em;
+  padding:.2rem .55rem; border-radius:var(--r-pill,999px); pointer-events:none;
+  background:color-mix(in srgb,var(--seed-fg) 78%,transparent); color:var(--surface);
+  opacity:0; transition:opacity var(--t-fast) var(--ease); }
+.fig-wrap:hover .fig-zoom, .case:hover .fig-zoom{ opacity:1; }
+/* 放大后：占满屏幕、尽量大 */
+.figbox svg{ width:min(96vw,1600px); max-height:94vh; }
+.figbox .figzoom-cap{ margin-top:.6rem; text-align:center; color:var(--surface); font-size:.82rem;
+  letter-spacing:.06em; opacity:.9; max-width:min(96vw,1600px); }
+.figbox{ flex-direction:column; }
+.figbox-in{ display:flex; flex-direction:column; align-items:center; justify-content:center; }
+.case-btn{ font-size:.9rem; padding:.62rem .6rem; }
 .fig-wrap figcaption{ font-size:.6rem; letter-spacing:.05em; color:var(--faint); padding:.42rem .6rem; border-top:1px solid var(--line); text-align:center; }
 .figbox{ position:fixed; inset:0; z-index:40; display:grid; place-items:center; background:color-mix(in srgb,var(--seed-fg) 84%, transparent); padding:3vmin; cursor:zoom-out; }
 .figbox svg{ width:min(94vw,1180px); height:auto; max-height:92vh; border-radius:var(--r-sm); box-shadow:var(--shadow-2); background:var(--surface); }
@@ -392,11 +411,11 @@ button{ font:inherit; color:inherit; background:none; border:none; cursor:pointe
     <button class="icon-btn" id="btn-panel" title="详情面板" aria-label="切换详情面板" style="display:none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg></button>
   </header>
   <aside class="rail" data-component="control-rail">
-    <section class="rail-sec"><h2>六反 · 指标观察</h2><div class="stage-list" id="stage-list"></div></section>
     <section class="rail-sec"><h2>形态十二图 · 图例教学</h2>
       <p class="fig-lead">每个形态配 <b>3 个真实案例</b>，标的取自 A股／港股／美股／大宗商品 市值或持仓量前 50。</p>
       <div class="fig-list" id="fig-list"></div>
     </section>
+    <section class="rail-sec"><h2>六反 · 指标观察</h2><div class="stage-list" id="stage-list"></div></section>
     <section class="rail-sec"><h2>图层</h2>
       <div class="filters">
         <label class="filter f-core"><input type="checkbox" data-layer="core" checked><span class="swatch"></span>宗 · 象数（核心）</label>
@@ -931,7 +950,7 @@ function renderPanel(id){ const n=nodeById[id]; const links=linksFor(id);
   ${links.length?`<h4>关联节点</h4><div class="chips">${links.map(l=>{const t=nodeById[l];return `<button class="chip" data-goto="${l}"><span class="dot" style="background:${chipColor(t.g)}"></span>${t.name}</button>`;}).join('')}</div>`:''}`;
   panel.querySelectorAll('[data-goto]').forEach(b=>b.addEventListener('click',()=>select(b.dataset.goto,true)));
   panel.querySelectorAll('[data-expand]').forEach(b=>b.addEventListener('click',()=>enterSub(b.dataset.expand)));
-  panel.scrollTop=0; }
+  panel.scrollTop=0; if(window.__markZoomable) window.__markZoomable(); }
 function renderIntro(){
   panel.innerHTML=`<span class="panel-badge">导读 · 看盘框架</span>
   <div class="intro-hero"><div class="big"><span class="gd">三变</span>定其形<br><em>六反</em>验其真<br><span class="ac">颈线</span>定破立</div>
@@ -979,6 +998,7 @@ function openCaseModal(fig){
   document.getElementById('case-modal-bd').innerHTML=leg+sch+real;
   const m=document.getElementById('case-modal'); m.hidden=false; m.scrollTop=0;
   m.querySelector('.case-modal-in').scrollTop=0;
+  if(window.__markZoomable) window.__markZoomable();
 }
 function closeCaseModal(){ document.getElementById('case-modal').hidden=true; }
 (function buildFigList(){
@@ -1001,6 +1021,43 @@ function closeCaseModal(){ document.getElementById('case-modal').hidden=true; }
   if(m) m.addEventListener('click',e=>{ if(e.target===m) closeCaseModal(); });
   document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&!m.hidden) closeCaseModal(); });
 })();
+
+/* ══════════════════════════════════════════════════════════════════
+   图 = 按钮：点击任意一张图（示意图 / 真实案例 / 教学视图里的图）
+   都展开成完整大图。原来的处理只挂在 panel 上、且只认 .fig-wrap，
+   案例小图点不动 —— 这里改成 document 级、覆盖三种容器。
+   ══════════════════════════════════════════════════════════════════ */
+function figboxOpen(svgEl, caption){
+  if(!svgEl) return;
+  const box=document.getElementById('figbox'); if(!box) return;
+  box.innerHTML='<div class="figbox-in">'+svgEl.outerHTML
+    +(caption? '<div class="figzoom-cap">'+caption+'</div>' : '')+'</div>';
+  box.hidden=false;
+}
+document.addEventListener('click', function(e){
+  const box=document.getElementById('figbox');
+  if(box && !box.hidden && box.contains(e.target)){ box.hidden=true; box.innerHTML=''; return; }
+  if(e.target.closest('#case-modal-x')) return;
+  const w=e.target.closest('.fig-wrap, .case');
+  if(!w) return;
+  const sv=w.querySelector('.figsvg'); if(!sv) return;
+  const hd=w.querySelector('.case-hd b'), cap=w.querySelector('figcaption');
+  figboxOpen(sv, hd? hd.textContent+(cap? '　'+cap.textContent.replace(/\s+/g,' ').slice(0,90) : '') : '');
+});
+document.addEventListener('keydown', function(e){
+  const box=document.getElementById('figbox');
+  if(e.key==='Escape' && box && !box.hidden){ box.hidden=true; box.innerHTML=''; }
+});
+/* 给每张图挂上「点击放大」角标，让它看起来就是按钮 */
+function markZoomable(){
+  document.querySelectorAll('.fig-wrap, .case').forEach(function(w){
+    if(w.querySelector('.fig-zoom')) return;
+    const b=document.createElement('span'); b.className='fig-zoom'; b.textContent='⤢ 点击放大';
+    w.appendChild(b);
+  });
+}
+markZoomable();
+window.__markZoomable=markZoomable;
 
 renderIntro();
 const stageList=document.getElementById('stage-list');
