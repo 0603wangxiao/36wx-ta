@@ -378,7 +378,7 @@ footer.credit{ margin-top:52px; padding-top:16px; border-top:1px solid var(--lin
 </div>
 
 <script>
-/* 以下引擎块从 scan.html / calibrate.html 原样抽取，口径完全一致 */
+/* 以下引擎块从 scan.html / calibrate.html / guide.html 原样抽取，口径完全一致 */
 (function(){
 "use strict";
 var PAGE_MODE='comm';
@@ -771,6 +771,67 @@ async function srcSina(rc,lmt){
   if(!rows.length) throw new Error('K线为空');
   if(rows.length>lmt) rows=rows.slice(-lmt);
   return {name:(rc.cname||rc.sym), rows, hasVol:rows.some(r=>r.v>0)};
+}
+
+const DCAPI='https://datacenter-web.eastmoney.com/api/data/v1/get';
+let jdc=0;
+/* 东财的回调参数名是 callback（不是 cb）—— 实测 cb 只会返回裸 JSON */
+function jsonpEP(url){
+  return new Promise((res,rej)=>{
+    const cb='__dc'+(++jdc); let done=false;
+    const s=document.createElement('script');
+    const fin=(ok,d)=>{ if(done) return; done=true;
+      try{ delete window[cb]; }catch(_){ window[cb]=undefined; }
+      s.remove(); ok? res(d) : rej(d); };
+    window[cb]=d=>fin(true,d);
+    s.onerror=()=>fin(false,new Error('网络失败'));
+    s.src=url+(url.indexOf('?')>=0?'&':'?')+'callback='+cb;
+    document.head.appendChild(s);
+    setTimeout(()=>fin(false,new Error('超时 20s')),20000);
+  });
+}
+/* 两条通道取同一个 URL：
+   ① fetch —— 首选。实测该接口**在请求带 Origin 时**返回 Access-Control-Allow-Origin: *，
+      且是简单 GET（不带自定义头）→ 连预检都不触发，最稳。
+      ⚠ 探测 CORS 必须带 Origin 头，否则服务器不返回该响应头，会误判成「无 CORS」。
+   ② JSONP —— 兜底。该接口的 Content-Type 是 text/plain 且没有 X-Content-Type-Options: nosniff，
+      浏览器因此仍会执行 <script>；但这条依赖 quirks 行为，所以只当备胎。 */
+async function dcGet(base){
+  try{
+    const r=await fetch(base, {method:'GET'});
+    if(r.ok){
+      const d=await r.json();
+      if(d && d.success!==undefined) return d;
+    }
+  }catch(e){ /* 落到 JSONP */ }
+  return await jsonpEP(base);
+}
+/* 取一张报表。sort 传 null 表示不排序（部分报表没有 REPORT_DATE 列，排了会报错） */
+async function dc(rn, secucode, o){
+  o=o||{};
+  let u=DCAPI+'?reportName='+encodeURIComponent(rn)
+    +'&columns=ALL&filter='+encodeURIComponent('(SECUCODE="'+secucode+'")')
+    +'&pageSize='+(o.size||60)+'&pageNumber=1';
+  if(o.sort) u+='&sortColumns='+o.sort+'&sortTypes=-1';
+  const d=await dcGet(u);
+  if(!d || !d.success) return null;
+  return (d.result && d.result.data) || [];
+}
+/* 只取一条报价（名称/现价/PE/PB/市值），要的根数很少，所以不能走 getKline */
+async function quoteOf(rc){
+  const variants=(rc.us && rc.needSuffix)? [rc.sym+'.OQ', rc.sym+'.N'] : [rc.sym];
+  for(let i=0;i<variants.length;i++){
+    const v=variants[i];
+    try{
+      const rc2=Object.assign({},rc,{sym:v, usedSuffix:v.slice(rc.sym.length)});
+      const g=await srcTencent(rc2, 130);
+      if(g && g.rows && g.rows.length){
+        return {name:g.name, px:g.rows[g.rows.length-1].c,
+                pe:g.pe, pb:g.pb, mcap:g.mcap, usedSuffix:rc2.usedSuffix};
+      }
+    }catch(e){ /* 试下一个后缀 */ }
+  }
+  return null;
 }
 
 function chipLevelsC(rows, A, B, baseTurn){
