@@ -220,6 +220,32 @@ footer.credit{ margin-top:52px; padding-top:16px; border-top:1px solid var(--lin
 .src{ font-size:.72rem; color:var(--faint); padding:.5rem .9rem; border-top:1px solid var(--line);
   background:var(--bg); line-height:1.7; }
 
+/* ══════ 结论区（每块的 T1）—— 数据退到它后面 ══════ */
+.verdict{ font-family:var(--serif); font-size:1.08rem; line-height:1.95; color:var(--fg);
+  background:linear-gradient(90deg,color-mix(in srgb,var(--seed-gold) 17%,var(--seed-surface)),transparent 94%);
+  border-left:3px solid var(--seed-gold); border-radius:0 9px 9px 0;
+  padding:.85rem 1.15rem; margin:0 0 1rem; letter-spacing:.01em; }
+.verdict b{ font-family:var(--sans); font-size:1.34rem; font-weight:800; line-height:1;
+  color:var(--seed-primary); font-variant-numeric:tabular-nums; padding:0 .08em; }
+.verdict b.dn{ color:#0f7a52; }
+.verdict b.n{ color:var(--seed-accent); }
+.verdict b.warn{ color:var(--seed-primary); text-decoration:underline; text-decoration-thickness:2px; text-underline-offset:3px; }
+.verdict em{ font-style:normal; font-weight:700; color:var(--seed-accent); }
+.verdict .sep{ color:var(--faint); padding:0 .3em; }
+/* 数据：可读，但不抢戏 */
+.dlab{ font-size:.68rem; letter-spacing:.18em; color:var(--faint); margin:.9rem 0 .35rem; }
+.blk .tw{ margin:0; background:transparent; border-color:color-mix(in srgb,var(--seed-fg) 9%,transparent); }
+.blk .tw table{ font-size:.79rem; }
+.blk .tw th{ font-size:.67rem; font-weight:400; letter-spacing:.05em; color:var(--faint);
+  background:transparent; padding:.34rem .5rem; border-bottom:1px solid var(--line); }
+.blk .tw td{ padding:.42rem .5rem; color:var(--muted);
+  border-bottom:1px solid color-mix(in srgb,var(--seed-fg) 6%,transparent); }
+.blk .tw td b{ color:var(--fg); font-weight:600; }
+.blk .tw tbody tr:hover{ background:color-mix(in srgb,var(--seed-gold) 5%,transparent); }
+.blk .tw tbody tr:last-child td{ border-bottom:none; }
+.blk .tw td.num{ font-variant-numeric:tabular-nums; }
+.source-line{ font-size:.72rem; color:var(--faint); margin-top:.7rem; line-height:1.7; }
+
 </style>
 </head>
 <body>
@@ -529,6 +555,22 @@ async function dc(rn, secucode, o){
   if(!d || !d.success) return null;
   return (d.result && d.result.data) || [];
 }
+/* 只取一条报价（名称/现价/PE/PB/市值），要的根数很少，所以不能走 getKline */
+async function quoteOf(rc){
+  const variants=(rc.us && rc.needSuffix)? [rc.sym+'.OQ', rc.sym+'.N'] : [rc.sym];
+  for(let i=0;i<variants.length;i++){
+    const v=variants[i];
+    try{
+      const rc2=Object.assign({},rc,{sym:v, usedSuffix:v.slice(rc.sym.length)});
+      const g=await srcTencent(rc2, 130);
+      if(g && g.rows && g.rows.length){
+        return {name:g.name, px:g.rows[g.rows.length-1].c,
+                pe:g.pe, pb:g.pb, mcap:g.mcap, usedSuffix:rc2.usedSuffix};
+      }
+    }catch(e){ /* 试下一个后缀 */ }
+  }
+  return null;
+}
 /* 代码 → 东财 SECUCODE */
 function secucodeOf(rc){
   if(rc.mk==='hk') return rc.digits+'.HK';
@@ -616,60 +658,209 @@ function normFin(rows, mk){
     cq:r.NCO_NETPROFIT }; });
 }
 
-/* ── ① 主营构成 ── */
+/* ══════ 结论生成器：每块先给一句人话，数据放它后面 ══════ */
+function hi(x, cls){ return '<b'+(cls?(' class="'+cls+'"'):'')+'>'+x+'</b>'; }
+
+/* ① 主营构成 —— 钱从哪来、集不集中、赚不赚钱 */
+function concMainop(rows){
+  if(!rows||!rows.length) return null;
+  const cur=stripDate(rows[0].REPORT_DATE);
+  const t={};
+  rows.forEach(function(r){ if(stripDate(r.REPORT_DATE)===cur){ const k=String(r.MAINOP_TYPE); (t[k]=t[k]||[]).push(r); } });
+  const prods=(t['2']||[]).slice().sort(function(a,b){ return (b.MAIN_BUSINESS_INCOME||0)-(a.MAIN_BUSINESS_INCOME||0); });
+  const regs =(t['3']||[]).slice().sort(function(a,b){ return (b.MAIN_BUSINESS_INCOME||0)-(a.MAIN_BUSINESS_INCOME||0); });
+  const base = prods.length? prods : (t['1']||[]);
+  if(!base.length) return null;
+
+  let inc=0, prof=0;
+  base.forEach(function(r){ inc+=(r.MAIN_BUSINESS_INCOME||0); prof+=(r.MAIN_BUSINESS_RPOFIT||0); });
+  const gm = inc>0? prof/inc*100 : null;
+
+  const top=base[0], rt=(top.MBI_RATIO||0)*100;
+  let s='钱主要来自 '+hi(esc(top.ITEM_NAME))+'：'+hi(yi(top.MAIN_BUSINESS_INCOME),'n')
+       +'，占主营收入 '+hi(rt.toFixed(1)+'%')+'。';
+  if(rt>=70)      s+=' <em>产品高度集中</em> —— 一条腿走路：壁垒深，但这条腿出事就是全部。';
+  else if(rt>=40) s+=' <em>产品比较集中</em>，但仍有多条线支撑。';
+  else            s+=' <em>产品分散</em>，没有单一产品说了算。';
+
+  if(gm!=null){
+    s+=' 主营毛利率 '+hi(gm.toFixed(1)+'%')+'，'
+      +(gm>=50? '属于<em>高毛利生意</em>。' : (gm>=20? '属于中等水平。' : '<em>薄利</em>，靠量不靠价。'));
+  }
+  if(regs.length){
+    const r0=regs[0], rr=(r0.MBI_RATIO||0)*100;
+    if(rr>=90)      s+=' 收入 '+hi(rr.toFixed(0)+'%')+' 来自'+hi(esc(r0.ITEM_NAME))+' —— <em>几乎全押在一个市场</em>。';
+    else if(rr>=70) s+=' 收入 '+hi(rr.toFixed(0)+'%')+' 来自'+hi(esc(r0.ITEM_NAME))+'，其余分散在境外。';
+    else            s+=' 地区分布较均衡，'+hi(esc(r0.ITEM_NAME))+'占 '+hi(rr.toFixed(0)+'%')+'。';
+  }
+  if(prods.length>1){
+    const second=prods[1], r2=(second.MBI_RATIO||0)*100;
+    if(r2>=20) s+=' 第二块是「'+esc(second.ITEM_NAME)+'」'+hi(r2.toFixed(1)+'%')+'。';
+  }
+  return s;
+}
+
+/* ② 竞争力 —— 行业 + 最能说明护城河的那条题材 */
+function concTheme(o, rows, rc){
+  const info=(o.org&&o.org[0])||null;
+  const list=(rows||[]).filter(function(r){ return String(r.SELECTED_BOARD_REASON||'').trim().length>20; });
+  if(!info && !list.length) return null;
+  let s='';
+  const ind = info && (info.EM2016 || info.BELONG_INDUSTRY);
+  if(ind) s+='处在 '+hi(esc(info.EM2016||info.BELONG_INDUSTRY))+'。';
+  if(list.length){
+    /* 挑「理由最硬」的一条：优先含护城河关键词的，否则取最长的 */
+    const KW=['核心竞争力','护城河','龙头','第一','首位','领先','壁垒','唯一','垄断','稀缺','独家','不可替代','金奖','非物质文化'];
+    let best=null, bestScore=-1;
+    list.forEach(function(r){
+      const tx=String(r.SELECTED_BOARD_REASON);
+      let sc=0; KW.forEach(function(k){ if(tx.indexOf(k)>=0) sc+=10; });
+      sc += Math.min(20, tx.length/25);          /* 长一点也更可能说清楚 */
+      if(sc>bestScore){ bestScore=sc; best=r; }
+    });
+    /* 从这条里摘一句最能打的 */
+    const tx=String(best.SELECTED_BOARD_REASON);
+    let sent=tx.split(/[。；;]/).filter(function(x){ return x.trim().length>8; });
+    let pick=sent[0]||tx;
+    sent.forEach(function(x){ if(!pick || (KW.some(function(k){ return x.indexOf(k)>=0; }) && !KW.some(function(k){ return pick.indexOf(k)>=0; }))) pick=x; });
+    pick=pick.trim(); if(pick.length>96) pick=pick.slice(0,96)+'…';
+    s+= ' 共 '+hi(list.length+' 条')+'题材，最能说明护城河的是 '+hi(esc(best.BOARD_NAME))+' —— 「'+esc(pick)+'」。';
+  } else if(!s) return null;
+  if(rc.mk!=='us') s+=' <span class="sep">·</span> <span style="font-size:.8rem;color:var(--faint)">题材文字是行情商整理的公开资料原文，未经核实</span>';
+  return s;
+}
+
+/* ③ 财务与现金流 —— 增收还是增利、钱有没有收到、毛利在涨还是在跌 */
+function concFin(fin){
+  if(!fin||!fin.length) return null;
+  const c=fin[0], out=[];
+  if(c.revY!=null && c.npY!=null){
+    const rv=c.revY, np=c.npY;
+    let tag;
+    if(rv>0 && np>0)      tag = np>=rv? '营收增 '+hi(rv.toFixed(1)+'%','n')+'、净利增 '+hi(np.toFixed(1)+'%','n')+' —— <em>利润跑得比收入快</em>，在变好。'
+                          : '营收增 '+hi(rv.toFixed(1)+'%','n')+'、净利只增 '+hi(np.toFixed(1)+'%','n')+' —— <em>增收不增利</em>，成本或费用在吃利润。';
+    else if(rv>0 && np<=0) tag = '营收增 '+hi(rv.toFixed(1)+'%','n')+'、净利却降 '+hi(np.toFixed(1)+'%','dn')+' —— <em>增收不增利</em>，这是最需要查的一种。';
+    else if(rv<=0 && np>0) tag = '营收降 '+hi(rv.toFixed(1)+'%','dn')+'、净利反增 '+hi(np.toFixed(1)+'%','n')+' —— 靠省钱或非经常性损益撑的，要看现金流。';
+    else                   tag = '营收降 '+hi(rv.toFixed(1)+'%','dn')+'、净利降 '+hi(np.toFixed(1)+'%','dn')+' —— <em>两头都在退</em>。';
+    out.push(tag);
+  }
+  if(c.cq!=null){
+    const q=c.cq;
+    if(q>=1.2)      out.push('经营现金流是净利润的 '+hi(q.toFixed(2)+' 倍')+' —— <em>利润有现金撑着，是真钱</em>。');
+    else if(q>=0.8) out.push('经营现金流约为净利润的 '+hi(q.toFixed(2)+' 倍')+' —— 基本匹配。');
+    else if(q>=0)   out.push('经营现金流只有净利润的 '+hi(q.toFixed(2)+' 倍')+' —— <em>利润没变成钱</em>，要看应收和存货。');
+    else            out.push('经营现金流为 '+hi('负','warn')+' 而净利润为正 —— <em>这是最该盯的组合</em>。');
+  }
+  if(c.gm!=null && fin.length>=5 && fin[4].gm!=null){
+    const a=fin[4].gm, b=c.gm, d=b-a;
+    out.push('毛利率 '+hi(a.toFixed(1)+'%')+' → '+hi(b.toFixed(1)+'%')
+      +(d>0.5? '，<em>在改善</em>。' : (d<-0.5? '，<em>在下滑</em> —— 这是最该警惕的方向。' : '，基本持平。')));
+  }
+  if(c.dar!=null)
+    out.push('资产负债率 '+hi(c.dar.toFixed(1)+'%')
+      +(c.dar>=70? '，<em>偏高，杠杆重</em>。' : (c.dar<=40? '，<em>负债轻</em>。' : '，中等。')));
+  if(c.ocf!=null && c.ocf<0) out.push('经营现金流为负 —— 主业本身在失血。');
+  if(!out.length) return null;
+  return out.join(' ');
+}
+
+/* ④ 股东与主力 —— 在集中还是分散、主力在加还是在减 */
+function concHold(o, rc){
+  if(rc.mk!=='sh' && rc.mk!=='sz' && rc.mk!=='bj') return null;
+  const num=(o.num||[]).slice(0,6), out=[];
+  if(num.length>=2 && num[0].HOLDER_TOTAL_NUM && num[1].HOLDER_TOTAL_NUM){
+    const d=(num[0].HOLDER_TOTAL_NUM/num[1].HOLDER_TOTAL_NUM-1)*100;
+    out.push('股东户数 '+hi(num[1].HOLDER_TOTAL_NUM.toLocaleString())+' → '+hi(num[0].HOLDER_TOTAL_NUM.toLocaleString())
+      +'（'+hi((d>0?'+':'')+d.toFixed(1)+'%', d>0?'':'dn')+'）'
+      +(d>3? '，<em>筹码在分散</em> —— 散户进场、人均持股变少，通常不是好信号。'
+          : (d<-3? '，<em>筹码在集中</em> —— 人均持股变多。' : '，基本没动。')));
+    const last=num[num.length-1];
+    if(last.HOLDER_TOTAL_NUM && num[0].HOLDER_TOTAL_NUM){
+      const tot=(num[0].HOLDER_TOTAL_NUM/last.HOLDER_TOTAL_NUM-1)*100;
+      if(Math.abs(tot)>20) out.push('拉长看这 '+num.length+' 期是 '+hi((tot>0?'+':'')+tot.toFixed(0)+'%', tot>0?'':'dn')+'。');
+    }
+  }
+  const og=(o.org2||[]);
+  if(og.length){
+    const cur=stripDate(og[0].REPORT_DATE);
+    const rows=og.filter(function(r){ return stripDate(r.REPORT_DATE)===cur; });
+    let total=null, parts=[];
+    rows.forEach(function(r){ if(String(r.ORG_TYPE)==='00') total=r; });
+    rows.forEach(function(r){ if(String(r.ORG_TYPE)!=='00' && (r.FREESHARES_RATIO||0)>0.3) parts.push(r); });
+    parts.sort(function(a,b){ return (b.FREESHARES_RATIO||0)-(a.FREESHARES_RATIO||0); });
+    if(total){
+      const ch=total.HOLDCHA_RATIO;
+      out.push('机构合计持股占流通 '+hi((total.FREESHARES_RATIO||0).toFixed(2)+'%')
+        +(ch==null? '。' : ('，较上期 '+hi((ch>0?'+':'')+ch.toFixed(1)+'%', ch>0?'n':'dn')
+          +(ch<-5? ' —— <em>主力在明显减</em>。' : (ch>5? ' —— <em>主力在明显加</em>。' : '，变化不大。')))));
+    }
+    const nm={'01':'基金','02':'QFII','03':'社保','04':'券商','05':'保险','06':'信托','07':'其他','08':'财务公司','09':'银行'};
+    if(parts.length){
+      out.push('占比最大的是 '+hi(esc(nm[String(parts[0].ORG_TYPE)]||('类型'+parts[0].ORG_TYPE)))
+        +'（'+(parts[0].HOULD_NUM!=null? parts[0].HOULD_NUM.toLocaleString()+' 家 · ' : '')
+        +hi((parts[0].FREESHARES_RATIO||0).toFixed(2)+'%')+'）。');
+    }
+  }
+  const fr=(o.free||[]);
+  if(fr.length){
+    const cur=stripDate(fr[0].END_DATE);
+    const list=fr.filter(function(r){ return stripDate(r.END_DATE)===cur; });
+    let nin=0, outn=0, up=0, dn=0;
+    list.forEach(function(r){
+      const t=String(r.HOLD_NUM_CHANGE||'').trim();
+      if(t==='新进') nin++;
+      else { const v=parseFloat(t.replace(/,/g,'')); if(isFinite(v)){ if(v>0) up++; else if(v<0) dn++; } }
+    });
+    const bits=[];
+    if(nin) bits.push(hi(nin+' 家新进'));
+    if(up)  bits.push(up+' 家增持');
+    if(dn)  bits.push(dn+' 家减持');
+    if(bits.length) out.push('十大流通股东里 '+bits.join('、')+'。');
+  }
+  if(!out.length) return null;
+  return out.join(' ');
+}
+
+/* ══════ 各块组装：结论在前，数据在后 ══════ */
 function blkMainop(rows){
-  if(!rows||!rows.length)
-    return '<div class="blk"><h3 class="blk-h">① 主营构成</h3><div class="na">该市场不提供主营构成数据。</div></div>';
-  const cur=stripDate(rows[0].REPORT_DATE), prev=stripDate(rows[rows.length-1].REPORT_DATE);
+  const v=concMainop(rows);
+  if(v===null) return null;                 /* 拿不到就不渲染这一块，不留「不提供」占位 */
+  const cur=stripDate(rows[0].REPORT_DATE);
   const TY={1:'按行业',2:'按产品',3:'按地区',4:'按销售模式'};
   const byType={};
-  rows.forEach(function(r){
-    if(stripDate(r.REPORT_DATE)!==cur) return;
-    const t=String(r.MAINOP_TYPE);
-    (byType[t]=byType[t]||[]).push(r);
-  });
-  let h='';
-  const order=['2','3','1','4'].filter(function(t){ return byType[t]; });
-  order.forEach(function(t){
-    const list=byType[t];
-    /* ⚠ MBI_RATIO 是分数不是百分数 —— 实测四家公司 Σ 均 = 1.0000 */
-    let totRatio=0; list.forEach(function(r){ totRatio+=(r.MBI_RATIO||0); });
-    h+='<div class="sub">'+TY[t]+'　<span style="color:var(--faint)">占比合计 '+
-       (totRatio*100).toFixed(1)+'%</span></div>';
-    h+='<div class="tw"><table><thead><tr><th>项目</th><th style="text-align:right">主营收入</th>'+
-       '<th>占比</th><th style="text-align:right">毛利率</th><th style="text-align:right">主营成本</th></tr></thead><tbody>';
-    list.sort(function(a,b){ return (b.MAIN_BUSINESS_INCOME||0)-(a.MAIN_BUSINESS_INCOME||0); });
+  rows.forEach(function(r){ if(stripDate(r.REPORT_DATE)===cur){ const k=String(r.MAINOP_TYPE); (byType[k]=byType[k]||[]).push(r); } });
+  let b='';
+  ['2','3','1','4'].filter(function(k){ return byType[k]; }).forEach(function(k){
+    const list=byType[k].slice().sort(function(a,c){ return (c.MAIN_BUSINESS_INCOME||0)-(a.MAIN_BUSINESS_INCOME||0); });
+    b+='<div class="dlab">'+TY[k]+'</div><div class="tw"><table><thead><tr><th>项目</th>'
+      +'<th style="text-align:right">主营收入</th><th>占比</th>'
+      +'<th style="text-align:right">毛利率</th><th style="text-align:right">主营成本</th></tr></thead><tbody>';
     list.forEach(function(r){
-      const rt=(r.MBI_RATIO||0)*100, w=Math.max(2,Math.min(100,rt));
-      h+='<tr><td><b>'+esc(r.ITEM_NAME)+'</b></td>'
+      const rt=(r.MBI_RATIO||0)*100;
+      b+='<tr><td><b>'+esc(r.ITEM_NAME)+'</b></td>'
         +'<td class="num">'+yi(r.MAIN_BUSINESS_INCOME)+'</td>'
-        +'<td><span class="bar-cell"><s style="width:'+w.toFixed(1)+'px;max-width:120px"></s>'
-        +'<u>'+rt.toFixed(1)+'%</u></span></td>'
+        +'<td><span class="bar-cell"><s style="width:'+Math.max(2,Math.min(110,rt)).toFixed(1)+'px"></s><u>'+rt.toFixed(1)+'%</u></span></td>'
         +'<td class="num">'+pct((r.GROSS_RPOFIT_RATIO||0)*100,1)+'</td>'
         +'<td class="num">'+yi(r.MAIN_BUSINESS_COST)+'</td></tr>';
     });
-    h+='</tbody></table></div>';
+    b+='</tbody></table></div>';
   });
-  if(prev!==cur) h+='<div class="src">最新报告期 '+fmtDate(cur)+'；表内数据均取自该期。</div>';
-  return '<div class="blk"><h3 class="blk-h">① 主营构成 <em>cf E</em></h3>'+h+'</div>';
+  return {t:'主营构成', cf:'E', v:v, b:b, note:'报告期 '+fmtDate(cur)};
 }
 
-/* ── ② 竞争力 ── */
 function blkTheme(o, rows, rc){
-  const info = o.org && o.org[0] ? o.org[0] : null;
-  let ind='';
+  const v=concTheme(o, rows, rc);
+  if(v===null) return null;
+  const info=(o.org&&o.org[0])||null;
+  let b='';
   if(info){
     const items=[];
+    if(info.EM2016) items.push(['东财行业', info.EM2016]);
     if(info.BELONG_INDUSTRY) items.push(['所属行业', info.BELONG_INDUSTRY]);
     if(info.INDUSTRYCSRC1) items.push(['证监会行业', info.INDUSTRYCSRC1]);
-    if(info.EM2016) items.push(['东财行业', info.EM2016]);
     if(info.TRADE_MARKET) items.push(['交易市场', info.TRADE_MARKET]);
     if(info.LISTING_DATE) items.push(['上市日期', fmtDate(info.LISTING_DATE)]);
-    /* ⚠ REG_CAPITAL 这个字段名一样、含义三个市场完全不同：
-         A股：数字，单位「万元」   → 125008.16 即 12.50 亿元
-         港股：字符串「1000000 HKD」，是金额+币种的原文，不是数字
-         美股：没有这个字段
-       直接 (v/10000) 会在港股得到 NaN。 */
+    /* REG_CAPITAL 同名不同义：A股数字(万元) / 港股字符串「1000000 HKD」/ 美股无 —— 必须分开处理 */
     if(rc.mk==='hk'){
       if(info.HK_SHARES) items.push(['已发行股本', Number(info.HK_SHARES).toLocaleString()+' 股']);
       if(info.REG_CAPITAL) items.push(['注册股本', String(info.REG_CAPITAL)]);
@@ -677,209 +868,157 @@ function blkTheme(o, rows, rc){
       if(info.REG_PLACE) items.push(['注册地', info.REG_PLACE]);
     } else if(rc.mk==='us'){
       if(info.REG_PLACE) items.push(['注册地', info.REG_PLACE]);
-      if(info.ORG_EN_ABBR) items.push(['英文简称', info.ORG_EN_ABBR]);
     } else {
       const rcv=parseFloat(info.REG_CAPITAL);
-      if(isFinite(rcv) && rcv>0) items.push(['注册资本', (rcv/10000).toFixed(2)+' 亿元']);
+      if(isFinite(rcv)&&rcv>0) items.push(['注册资本', (rcv/10000).toFixed(2)+' 亿元']);
       if(info.REG_NUM) items.push(['统一社会信用代码', info.REG_NUM]);
       if(info.REG_ADDRESS) items.push(['注册地址', info.REG_ADDRESS]);
-      if(info.EMP_NUM) items.push(['员工人数', info.EMP_NUM]);
+      if(info.EMP_NUM) items.push(['员工人数', Number(info.EMP_NUM).toLocaleString()]);
     }
     if(info.ORG_NAME) items.push(['公司全称', info.ORG_NAME]);
     if(info.ORG_EN_ABBR && rc.mk!=='us') items.push(['英文名称', info.ORG_EN_ABBR]);
     if(items.length){
-      ind='<div class="tw"><table><tbody>'+items.map(function(p){
-        return '<tr><th style="width:110px">'+esc(p[0])+'</th><td>'+esc(p[1])+'</td></tr>';
-      }).join('')+'</tbody></table></div>';
+      b+='<div class="dlab">公司概况</div><div class="tw"><table><tbody>'
+        + items.map(function(p){ return '<tr><th style="width:150px">'+esc(p[0])+'</th><td>'+esc(p[1])+'</td></tr>'; }).join('')
+        +'</tbody></table></div>';
     }
-    if(info.BUSINESS_SCOPE)
-      ind+='<div class="sub">经营范围</div><div class="na">'+esc(info.BUSINESS_SCOPE)+'</div>';
+    if(info.BUSINESS_SCOPE) b+='<div class="dlab">经营范围</div><div class="na">'+esc(info.BUSINESS_SCOPE)+'</div>';
   }
-  let th='';
   const list=(rows||[]).filter(function(r){ return String(r.SELECTED_BOARD_REASON||'').trim().length>20; });
-  list.sort(function(a,b){ return (a.BOARD_RANK||999)-(b.BOARD_RANK||999); });
-  list.slice(0,8).forEach(function(r){
-    const y=String(r.BOARD_YIELD||'').trim();
-    th+='<div class="theme"><div class="theme-h"><b>'+esc(r.BOARD_NAME)+'</b>'
-      + (r.BOARD_RANK? '<span>板块排名 '+esc(r.BOARD_RANK)+'</span>':'')
-      + (y&&y!=='-'? '<span>板块涨幅 '+esc(y)+'</span>':'')
-      + (r.IS_PRECISE? '<span>精确</span>':'')
-      +'</div><p>'+esc(String(r.SELECTED_BOARD_REASON).trim())+'</p></div>';
-  });
-  if(!th) th='<div class="na">'+(rc.mk==='us'? '美股不提供核心题材数据。' : '该公司暂无可用的题材说明。')+'</div>';
-  return '<div class="blk"><h3 class="blk-h">② 竞争力 <em>cf I</em></h3>'
-    + (ind? '<div class="sub">公司概况</div>'+ind : '')
-    + '<div class="sub">核心题材与入选理由（原文照录）</div>'+th
-    + '<div class="src">题材文字为行情商整理的公开资料原文，未经核实 —— 标 cf I。'
-    + '公司概况取自 F10 基础信息表。</div></div>';
+  list.sort(function(a,c){ return (a.BOARD_RANK||999)-(c.BOARD_RANK||999); });
+  if(list.length){
+    b+='<div class="dlab">核心题材与入选理由（原文照录）</div>';
+    list.slice(0,8).forEach(function(r){
+      const y=String(r.BOARD_YIELD||'').trim();
+      b+='<div class="theme"><div class="theme-h"><b>'+esc(r.BOARD_NAME)+'</b>'
+        +(r.BOARD_RANK? '<span>板块序号 '+esc(r.BOARD_RANK)+'</span>':'')
+        +(y&&y!=='-'? '<span>板块涨幅 '+esc(y)+'</span>':'')
+        +'</div><p>'+esc(String(r.SELECTED_BOARD_REASON).trim())+'</p></div>';
+    });
+  }
+  return {t:'竞争力', cf:'I', v:v, b:b};
 }
 
-/* ── ③ 财务与现金流 ── */
 function blkFin(fin, rc){
-  if(!fin.length)
-    return '<div class="blk"><h3 class="blk-h">③ 财务与现金流</h3><div class="na">'
-      + (rc.mk==='us'? '美股 F10 只提供公司概况与原始报表科目，拿不到与 A 股同口径的整理结果。'
-                     : '该市场不提供财务指标数据。')+'</div></div>';
-  let h='<div class="tw"><table class="fin-tbl"><thead><tr>'
-    + '<th>报告期</th><th style="text-align:right">营业总收入</th><th style="text-align:right">同比</th>'
-    + '<th style="text-align:right">归母净利</th><th style="text-align:right">同比</th>'
-    + '<th style="text-align:right">毛利率</th><th style="text-align:right">ROE</th>'
-    + '<th style="text-align:right">资产负债率</th>'
-    + '<th style="text-align:right">经营现金流</th><th style="text-align:right">投资</th>'
-    + '<th style="text-align:right">筹资</th><th style="text-align:right">现金流/净利</th>'
-    + '</tr></thead><tbody>';
-  fin.forEach(function(r,i){
-    h+='<tr'+(i===0?' class="now"':'')+'>'
-      +'<td><b>'+fmtDate(r.d)+'</b></td>'
+  const v=concFin(fin);
+  if(v===null) return null;
+  const show=fin.slice(0,8);
+  let b='<div class="dlab">近 '+show.length+' 期财务与现金流</div>'
+    +'<div class="tw"><table><thead><tr><th>报告期</th>'
+    +'<th style="text-align:right">营业总收入</th><th style="text-align:right">同比</th>'
+    +'<th style="text-align:right">归母净利</th><th style="text-align:right">同比</th>'
+    +'<th style="text-align:right">毛利率</th><th style="text-align:right">ROE</th>'
+    +'<th style="text-align:right">资产负债率</th><th style="text-align:right">经营现金流</th>'
+    +'<th style="text-align:right">投资</th><th style="text-align:right">筹资</th>'
+    +'<th style="text-align:right">现金流/净利</th></tr></thead><tbody>';
+  show.forEach(function(r,i){
+    b+='<tr'+(i===0?' class="now"':'')+'><td><b>'+fmtDate(r.d)+'</b></td>'
       +'<td class="num">'+yi(r.rev)+'</td><td class="num">'+yoy(r.revY)+'</td>'
       +'<td class="num">'+yi(r.np)+'</td><td class="num">'+yoy(r.npY)+'</td>'
-      +'<td class="num">'+pct(r.gm,1)+'</td>'
-      +'<td class="num">'+pct(r.roe,2)+'</td>'
+      +'<td class="num">'+pct(r.gm,1)+'</td><td class="num">'+pct(r.roe,2)+'</td>'
       +'<td class="num">'+pct(r.dar,1)+'</td>'
       +'<td class="num'+((r.ocf||0)<0?' neg':'')+'">'+yi(r.ocf)+'</td>'
       +'<td class="num">'+yi(r.icf)+'</td>'
       +'<td class="num'+(r.fcf>0?' pos':'')+'">'+yi(r.fcf)+'</td>'
       +'<td class="num">'+(r.cq==null? '—' : r.cq.toFixed(2))+'</td></tr>';
   });
-  h+='</tbody></table></div>';
-  /* 读法 */
-  const c0=fin[0];
-  let read='';
-  if(c0.cq!=null){
-    const q=c0.cq;
-    read = q>=1.2? '经营现金流是净利润的 '+q.toFixed(2)+' 倍 —— 利润有现金撑着，是真钱。'
-         : q>=0.8? '经营现金流约为净利润的 '+q.toFixed(2)+' 倍 —— 基本匹配。'
-         : q>=0?   '经营现金流只有净利润的 '+q.toFixed(2)+' 倍 —— 利润没变成钱，要看应收和存货。'
-         :          '经营现金流为负而净利润为正 —— 这是最需要盯的一种组合。';
-  }
-  if(c0.fcf!=null && c0.fcf>0)
-    read += (read?'　':'')+'筹资现金流为正（'+yi(c0.fcf)+'），说明当期在净融入资金。';
-  if(c0.dar!=null)
-    read += (read?'　':'')+'资产负债率 '+pct(c0.dar,1)+
-      (c0.dar>=70? '，偏高，杠杆重。' : (c0.dar<=40? '，负债轻。' : '，中等。'));
-  if(fin.length>=5){
-    const a=fin[4], b=fin[0];
-    if(a.gm!=null&&b.gm!=null) read += '　毛利率从 '+pct(a.gm,1)+' 变到 '+pct(b.gm,1)+
-      (b.gm>a.gm+0.5? '，在改善。' : (b.gm<a.gm-0.5? '，在下滑 —— 这是最该警惕的方向。' : '，基本持平。'));
-  }
-  return '<div class="blk"><h3 class="blk-h">③ 财务与现金流 <em>cf E</em></h3>'+h
-    + (read? '<div class="na" style="margin-top:.75rem;border-style:solid">'+esc(read)+'</div>' : '')
-    + '<div class="src">同比为该期对上年同期的增长率（累计口径）。ROE 为加权净资产收益率，'
-    + '<b>年内各期是累计值，季报之间不可直接比大小，要比就比同比那一列</b>。'
-    + '「现金流/净利」＝经营现金流净额 ÷ 归母净利润，是利润含金量的常用体检项。</div></div>';
+  b+='</tbody></table></div>';
+  return {t:'财务与现金流', cf:'E', v:v, b:b,
+    note:'同比＝对上年同期（累计口径）。ROE 年内各期是累计值，季报之间不可直接比大小。「现金流/净利」＝经营现金流净额 ÷ 归母净利润。'};
 }
 
-/* ── ④ 股东与主力 ── */
 function blkHold(o, rc){
-  if(rc.mk==='us')
-    return '<div class="blk"><h3 class="blk-h">④ 股东与主力</h3><div class="na">美股不提供股东与机构持仓数据。</div></div>';
-  if(rc.mk==='hk')
-    return '<div class="blk"><h3 class="blk-h">④ 股东与主力</h3><div class="na">'
-      + '港股 F10 不提供股东户数与机构持仓（东财港股报表族里没有对应表）。</div></div>';
-  let h='';
-  /* 股东户数 */
+  const v=concHold(o, rc);
+  if(v===null) return null;                 /* 港股/美股直接不渲染，不留占位 */
+  let b='';
   const num=(o.num||[]).slice(0,6);
   if(num.length){
-    h+='<div class="sub">股东户数 · 筹码集中度</div><div class="tw"><table class="hold-tbl"><thead><tr>'
+    b+='<div class="dlab">股东户数 · 筹码集中度</div><div class="tw"><table><thead><tr>'
       +'<th>报告期</th><th style="text-align:right">股东户数</th><th style="text-align:right">较上期</th>'
       +'<th style="text-align:right">户均持股(股)</th><th>集中度</th></tr></thead><tbody>';
     num.forEach(function(r,i){
-      const nx=num[i+1];
-      let chg='—';
+      const nx=num[i+1]; let chg='—';
       if(nx && r.HOLDER_TOTAL_NUM && nx.HOLDER_TOTAL_NUM){
         const d=(r.HOLDER_TOTAL_NUM/nx.HOLDER_TOTAL_NUM-1)*100;
         chg=(d>0?'<span class="pos">+':'<span class="neg">')+d.toFixed(1)+'%</span>';
       }
-      h+='<tr><td><b>'+fmtDate(r.END_DATE)+'</b></td>'
+      b+='<tr><td><b>'+fmtDate(r.END_DATE)+'</b></td>'
         +'<td class="num">'+(r.HOLDER_TOTAL_NUM!=null? r.HOLDER_TOTAL_NUM.toLocaleString():'—')+'</td>'
         +'<td class="num">'+chg+'</td>'
         +'<td class="num">'+(r.AVG_FREE_SHARES!=null? Math.round(r.AVG_FREE_SHARES).toLocaleString():'—')+'</td>'
         +'<td>'+esc(r.HOLD_FOCUS||'—')+'</td></tr>';
     });
-    h+='</tbody></table></div>'
-      +'<div class="na" style="border-style:solid;margin-top:.5rem">股东户数<b>增加＝筹码在分散</b>（散户进场、'
-      +'人均持股变少）；<b>减少＝筹码在集中</b>。这是方向性提示，不是买卖信号。</div>';
-  } else h+='<div class="na">暂无股东户数数据。</div>';
-
-  /* 十大流通股东 */
+    b+='</tbody></table></div>';
+  }
   const fr=(o.free||[]);
   if(fr.length){
     const cur=stripDate(fr[0].END_DATE);
     const list=fr.filter(function(r){ return stripDate(r.END_DATE)===cur; })
-                 .sort(function(a,b){ return (a.HOLDER_RANK||99)-(b.HOLDER_RANK||99); }).slice(0,10);
+                 .sort(function(a,c){ return (a.HOLDER_RANK||99)-(c.HOLDER_RANK||99); }).slice(0,10);
     if(list.length){
-      h+='<div class="sub">十大流通股东（'+fmtDate(cur)+'）</div>'
-        +'<div class="tw"><table class="hold-tbl"><thead><tr><th>#</th><th>股东名称</th>'
-        +'<th style="text-align:right">持股数</th><th style="text-align:right">占流通</th>'
-        +'<th style="text-align:right">较上期</th><th>性质</th></tr></thead><tbody>';
+      b+='<div class="dlab">十大流通股东（'+fmtDate(cur)+'）</div><div class="tw"><table><thead><tr>'
+        +'<th>#</th><th>股东名称</th><th style="text-align:right">持股数</th>'
+        +'<th style="text-align:right">占流通</th><th style="text-align:right">较上期</th><th>性质</th></tr></thead><tbody>';
       list.forEach(function(r){
-        h+='<tr><td>'+(r.HOLDER_RANK||'')+'</td><td>'+esc(r.HOLDER_NAME)+'</td>'
-          +'<td class="num">'+yi(r.HOLD_NUM)+'</td>'
-          +'<td class="num">'+pct(r.FREE_HOLDNUM_RATIO,2)+'</td>'
+        b+='<tr><td>'+(r.HOLDER_RANK||'')+'</td><td>'+esc(r.HOLDER_NAME)+'</td>'
+          +'<td class="num">'+yi(r.HOLD_NUM)+'</td><td class="num">'+pct(r.FREE_HOLDNUM_RATIO,2)+'</td>'
           +'<td class="num">'+holdChg(r.HOLD_NUM_CHANGE)+'</td>'
-          /* IS_HOLDORG 是字符串 '1'/'0' —— '0' 在 JS 里是真值，不能直接当布尔用 */
           +'<td>'+(String(r.IS_HOLDORG)==='1'? '<b>机构</b>':'个人')+'</td></tr>';
       });
-      h+='</tbody></table></div>';
+      b+='</tbody></table></div>';
     }
   }
-
-  /* 机构持仓（按类型） */
   const og=(o.org2||[]);
   if(og.length){
     const cur=stripDate(og[0].REPORT_DATE);
-    /* ⚠ ORG_TYPE 是代码不是名称。00=合计（已用家数相加验证：茅台 1697+8+1+15=1721），
-       其余为东财惯例推断 —— 标 cf I */
-    const TY={'00':'合计','01':'基金','02':'QFII','03':'社保','04':'券商','05':'保险',
-              '06':'信托','07':'其他','08':'财务公司','09':'银行'};
+    const TY={'00':'合计','01':'基金','02':'QFII','03':'社保','04':'券商','05':'保险','06':'信托','07':'其他','08':'财务公司','09':'银行'};
     const rows=og.filter(function(r){ return stripDate(r.REPORT_DATE)===cur; })
-                 .sort(function(a,b){
+                 .sort(function(a,c){
                    if(String(a.ORG_TYPE)==='00') return 1;
-                   if(String(b.ORG_TYPE)==='00') return -1;
-                   return (b.FREESHARES_RATIO||0)-(a.FREESHARES_RATIO||0); });
-    h+='<div class="sub">机构持仓（'+fmtDate(cur)+' · 按机构类型）</div>'
-      +'<div class="tw"><table class="hold-tbl"><thead><tr><th>机构类型</th>'
-      +'<th style="text-align:right">家数</th><th style="text-align:right">持股合计</th>'
+                   if(String(c.ORG_TYPE)==='00') return -1;
+                   return (c.FREESHARES_RATIO||0)-(a.FREESHARES_RATIO||0); });
+    b+='<div class="dlab">机构持仓（'+fmtDate(cur)+' · 按机构类型）</div><div class="tw"><table><thead><tr>'
+      +'<th>机构类型</th><th style="text-align:right">家数</th><th style="text-align:right">持股合计</th>'
       +'<th style="text-align:right">占流通</th><th style="text-align:right">较上期</th>'
       +'<th style="text-align:right">持仓市值</th></tr></thead><tbody>';
     rows.forEach(function(r){
       const t=String(r.ORG_TYPE);
-      h+='<tr><td>'+(t==='00'? '<b>合计</b>' : esc(TY[t]||('类型'+t)))+'</td>'
+      b+='<tr><td>'+(t==='00'?'<b>合计</b>':esc(TY[t]||('类型'+t)))+'</td>'
         +'<td class="num">'+(r.HOULD_NUM!=null? r.HOULD_NUM.toLocaleString():'—')+'</td>'
-        +'<td class="num">'+yi(r.TOTAL_SHARES)+'</td>'
-        +'<td class="num">'+pct(r.FREESHARES_RATIO,2)+'</td>'
-        +'<td class="num">'+yoy(r.HOLDCHA_RATIO)+'</td>'
-        +'<td class="num">'+yi(r.HOLD_VALUE)+'</td></tr>';
+        +'<td class="num">'+yi(r.TOTAL_SHARES)+'</td><td class="num">'+pct(r.FREESHARES_RATIO,2)+'</td>'
+        +'<td class="num">'+yoy(r.HOLDCHA_RATIO)+'</td><td class="num">'+yi(r.HOLD_VALUE)+'</td></tr>';
     });
-    h+='</tbody></table></div>'
-      +'<div class="src">机构类型代码取自行情商字段，除「合计」经家数相加验证外，其余为惯例推断（cf I）。'
-      +'「占流通」＝该类型持股占流通股比例。</div>';
+    b+='</tbody></table></div>';
   }
-  if(!h) h='<div class="na">暂无股东数据。</div>';
-  return '<div class="blk"><h3 class="blk-h">④ 股东与主力 <em>cf E</em></h3>'+h+'</div>';
+  return {t:'股东与主力', cf:'E', v:v, b:b,
+    note:'机构类型代码取自行情商字段：「合计」经家数相加验证，其余为惯例推断（cf I）。'};
 }
 
-/* ── 整卡渲染 ── */
+/* ── 整卡：编号跟着实际渲染的块走 ── */
+const NUMC=['①','②','③','④','⑤','⑥'];
 function f10card(r, rc){
   const o=r.f10||{};
-  return '<div class="f10">'
-    +'<div class="f10-h">'
-      +'<span class="nm">'+nm(r.name)+'</span>'
-      +'<span class="cd">'+esc(rc.digits)+' · '+esc(rc.market)+' · '+esc(secucodeOf(rc))+'</span>'
-      +'<span class="px">'
-        +'<span><i>现价</i><b class="big">'+F(r.px,2)+'</b></span>'
-        +'<span><i>市盈率</i><b>'+(r.pe==null?'—':F(r.pe,1))+'</b></span>'
-        +'<span><i>市净率</i><b>'+(r.pb==null?'不提供':F(r.pb,2))+'</b></span>'
-        +'<span><i>流通市值</i><b>'+(r.mcap==null?'—':(r.mcap>=10000?F(r.mcap/10000,2)+' 万亿':Math.round(r.mcap)+' 亿'))+'</b></span>'
-      +'</span>'
-    +'</div>'
-    + blkMainop(o.mainop)
-    + blkTheme(o,o.theme,rc)
-    + blkFin(normFin(o.fin,rc.mk), rc)
-    + blkHold(o,rc)
-    +'<div class="src">数据来源：东方财富数据中心 F10（'+esc(rc.market)+'）· '
-      +'行情与估值来自腾讯行情 · 全部计算在本地浏览器完成</div>'
-  +'</div>';
+  const blks=[blkMainop(o.mainop), blkTheme(o,o.theme,rc), blkFin(normFin(o.fin,rc.mk), rc), blkHold(o,rc)]
+              .filter(function(x){ return !!x; });
+  const nmTxt = (r.name && r.name!==rc.digits)? r.name : (r.name||rc.digits);
+  let h='<div class="f10"><div class="f10-h">'
+    +'<span class="nm">'+nm(nmTxt)+'</span>'
+    +'<span class="cd">'+esc(rc.digits)+' · '+esc(rc.market)+'</span>'
+    +'<span class="px">'
+      +'<span><i>现价</i><b class="big">'+(r.px==null?'—':F(r.px,2))+'</b></span>'
+      +'<span><i>市盈率</i><b>'+(r.pe==null?'—':F(r.pe,1))+'</b></span>'
+      +'<span><i>市净率</i><b>'+(r.pb==null?'—':F(r.pb,2))+'</b></span>'
+      +'<span><i>流通市值</i><b>'+(r.mcap==null?'—':(r.mcap>=10000?F(r.mcap/10000,2)+' 万亿':Math.round(r.mcap)+' 亿'))+'</b></span>'
+    +'</span></div>';
+  blks.forEach(function(x,i){
+    h+='<div class="blk"><h3 class="blk-h">'+NUMC[i]+' '+esc(x.t)+' <em>cf '+esc(x.cf)+'</em></h3>'
+      +'<div class="verdict">'+x.v+'</div>'+x.b
+      +(x.note? '<div class="source-line">'+esc(x.note)+'</div>' : '')
+      +'</div>';
+  });
+  if(!blks.length) h+='<div class="blk"><div class="na">该代码没有取到任何基本面数据。</div></div>';
+  h+='<div class="src">数据来源：东方财富数据中心 F10（'+esc(rc.market)+'）· 行情与估值来自腾讯行情 · 全部计算在本地浏览器完成</div></div>';
+  return h;
 }
 function nm(x){ return esc(String(x==null?'':x).replace(/\s+/g,'')); }
 
@@ -895,13 +1034,14 @@ async function run(){
     const rc=codes[i];
     $('prog').textContent='抓取 '+rc.raw+'（'+rc.market+'）…（'+(i+1)+' / '+codes.length+'）';
     let name=rc.digits, px=null, pe=null, pb=null, mcap=null, used=rc;
-    /* 行情：腾讯（美股逐个试探交易所后缀） */
+    /* 行情：直接调 srcTencent，不走 getKline ——
+       getKline 内部有 rows.length>=120 的准入，而这里只要几根报价，用它会永远失败。
+       这正是「代码旁边没有名称」的根因。 */
     try{
-      const g=await getKline(rc, 40);
-      name=g.name||rc.digits; used=Object.assign({},rc,{usedSuffix:g.usedSuffix||rc.usedSuffix});
-      const last=g.rows[g.rows.length-1];
-      px=last? last.c : null; pe=g.pe; pb=g.pb; mcap=g.mcap;
-    }catch(e){ /* 行情失败不致命，F10 仍可取 */ }
+      const q=await quoteOf(rc);
+      if(q){ name=q.name||rc.digits; px=q.px; pe=q.pe; pb=q.pb; mcap=q.mcap;
+             used=Object.assign({},rc,{usedSuffix:q.usedSuffix||rc.usedSuffix}); }
+    }catch(e){ /* 行情失败不致命，F10 仍可取，名称退回代码 */ }
     try{
       const f10=await loadF10(used, secucodeOf(used));
       const okAny=['org','mainop','fin','num','free','org2','theme'].some(function(k){ return f10[k]&&f10[k].length; });
