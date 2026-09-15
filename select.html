@@ -126,6 +126,13 @@ button:disabled{ opacity:.5; cursor:default; }
 .kl-bar{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:8px; }
 .kl-legend{ flex:1 1 260px; white-space:normal; line-height:1.75; font-size:.68rem; }
 .kl-legend b{ font-weight:700; }
+/* ══════ 数据新鲜度标记 ══════ */
+.fresh{ display:inline-block; font-size:.7rem; padding:.14rem .5rem; border-radius:4px;
+  letter-spacing:.02em; white-space:nowrap; }
+.fresh.ok{ color:var(--accent); background:var(--accent-soft);
+  border:1px solid var(--accent-line); }
+.fresh.warn{ color:var(--seed-primary); background:var(--primary-soft);
+  border:1px solid var(--primary-line); font-weight:700; }
 .kl-pos{ color:var(--faint); font-variant-numeric:tabular-nums; white-space:nowrap; font-size:.68rem; }
 .kl-btn{ font:inherit; font-size:.7rem; padding:3px 10px; border-radius:6px; line-height:1.5;
          border:1px solid var(--line); background:var(--surface); color:var(--muted); cursor:pointer; }
@@ -903,10 +910,33 @@ function kScore(b, ma20v, vRank, peak, avgCost){
   return s;
 }
 function kColor(sc){ return sc>=5? KC.hi : (sc>=3? KC.mid : (sc>=1? KC.low : KC.weak)); }
+
+/* ══════ 数据新鲜度 ══════
+   正常情况下最后一根 K 线就是今天或上一交易日。若距今超过 5 天，
+   多半是该股停牌、或行情源没有更新 —— **必须显式说出来**，
+   否则用户看着一张停在旧日期的图，只会以为工具在骗他。 */
+function freshOf(r){
+  if(!r.bars || !r.bars.length) return null;
+  const last=String(r.bars[r.bars.length-1].d).slice(0,10);
+  const t=new Date(last+'T00:00:00');
+  if(isNaN(t.getTime())) return null;
+  const n=new Date();
+  const days=Math.max(0, Math.round((new Date(n.getFullYear(),n.getMonth(),n.getDate())-t)/86400000));
+  return {last:last, days:days, stale:(days>=5)};
+}
+function freshHTML(r){
+  const f=freshOf(r); if(!f) return '';
+  if(!f.stale)
+    return '<span class="fresh ok">数据截至 '+esc(f.last)
+      +(f.days===0? '（今日）' : (f.days<=3? '（最近交易日）':''))+'</span>';
+  return '<span class="fresh warn">⚠ 最后一根 K 线是 '+esc(f.last)+'，距今 '+f.days
+    +' 天没有新数据 —— 该股可能停牌，或行情源未更新</span>';
+}
+
 function klineSVG(bars, R, vRankArr, W, H, opt){
   opt = opt || {}; const showChip=(opt.chip!==false);
   const m=bars.length; if(m<5) return '<svg viewBox="0 0 '+W+' '+H+'"></svg>';
-  const padR=showChip?152:44, padT=12, padB=10, gap=10;
+  const padR=showChip?152:44, padT=12, padB=24, gap=10;   /* padB 加高，给横轴日期留位 */
   const cw=W-padR, volH=76, priceH=H-padT-padB-volH-gap, volTop=padT+priceH+gap;
   let lo=Infinity,hi=-Infinity,vmax=0;
   for(const b of bars){ if(b.l<lo)lo=b.l; if(b.h>hi)hi=b.h; if(b.v>vmax)vmax=b.v; }
@@ -923,10 +953,12 @@ function klineSVG(bars, R, vRankArr, W, H, opt){
       const p=R.PX[i], w=R.den[i]/dmax*bwid;
       if(w<0.5 || p>hi2 || p<lo2) continue;
       const yy=yP(p);
-      o+='<rect x="'+(cw+6).toFixed(1)+'" y="'+(yy-1.3).toFixed(1)+'" width="'+w.toFixed(1)+'" height="2.6" fill="'+(p>last?KC.up:KC.dn)+'" opacity="0.8"/>';
+      o+='<rect x="'+(cw+6).toFixed(1)+'" y="'+(yy-1.3).toFixed(1)+'" width="'+w.toFixed(1)+'" height="2.6" fill="'+(p>last?KC.dn:KC.up)+'" opacity="0.8"/>';
     }
-    o+='<text x="'+(cw+6)+'" y="'+(padT+9)+'" font-size="9" fill="'+KC.up+'">上方套牢</text>';
-    o+='<text x="'+(cw+6)+'" y="'+(padT+20)+'" font-size="9" fill="'+KC.dn+'">下方获利</text>';
+    /* A股惯例：红＝赚 绿＝亏。所以上方套牢用绿、下方获利用红 ——
+       之前写反了（上方套牢用了红）。 */
+    o+='<text x="'+(cw+6)+'" y="'+(padT+9)+'" font-size="9" fill="'+KC.dn+'">上方套牢</text>';
+    o+='<text x="'+(cw+6)+'" y="'+(padT+20)+'" font-size="9" fill="'+KC.up+'">下方获利</text>';
   }
   for(let i=0;i<m;i++){
     const b=bars[i], x=i*bw;
@@ -953,6 +985,22 @@ function klineSVG(bars, R, vRankArr, W, H, opt){
   o+='<line x1="0" y1="'+yP(last).toFixed(1)+'" x2="'+cw+'" y2="'+yP(last).toFixed(1)+'" stroke="#1b1813" stroke-width="1" opacity="0.55"/>';
   o+='<text x="3" y="'+(padT+10)+'" font-size="9.5" fill="#8a8375">'+hi.toFixed(2)+'</text>';
   o+='<text x="3" y="'+(padT+priceH-3)+'" font-size="9.5" fill="#8a8375">'+lo.toFixed(2)+'</text>';
+  /* ── 横轴日期：让人一眼看出这段图到哪天为止 ── */
+  const ay=H-6;
+  let _lm='';
+  for(let _i=0;_i<m;_i++){
+    const _mo=String(bars[_i].d).slice(0,7);
+    if(_mo!==_lm){
+      _lm=_mo;
+      const _x=_i*bw+bw/2;
+      if(_x>36 && _x<cw-70)
+        o+='<text x="'+_x.toFixed(1)+'" y="'+ay+'" font-size="9" fill="#a89f8c" text-anchor="middle">'+
+           _mo.slice(5)+'月</text>';
+    }
+  }
+  o+='<text x="3" y="'+ay+'" font-size="9.5" fill="#8a8375">'+String(bars[0].d).slice(5)+'</text>';
+  o+='<text x="'+(cw-2)+'" y="'+ay+'" font-size="10.5" fill="#1b1813" text-anchor="end" font-weight="700">'+
+     String(bars[m-1].d)+'</text>';
   return '<svg viewBox="0 0 '+W+' '+H+'" width="100%" height="auto" preserveAspectRatio="none" style="display:block">'+o+'</svg>';
 }
 function wireCharts(sorted){
@@ -1488,9 +1536,9 @@ function chartBox(r){
       +'<b style="color:#1565d8">蓝</b>偏弱 · <b style="color:#0f9d58">绿</b>最弱<br>'
       +'<span style="color:#a3823c">金虚线</span>压力位　<span style="color:#0f9d58">绿虚线</span>支撑位　'
       +'<span style="color:#8a8375">灰虚线</span>平均成本　<span style="color:#7b4bb7">紫线</span>MA20　'
-      +'<b>下副图</b>=成交量　<b>右侧</b>=筹码分布（<span style="color:#d92b2b">红</span>上方套牢 / '
-      +'<span style="color:#0f9d58">绿</span>下方获利）</span>'
-      +'<span class="kl-pos t3"></span>'
+      +'<b>下副图</b>=成交量　<b>右侧</b>=筹码分布（<span style="color:#d92b2b">红</span>下方获利 / '
+      +'<span style="color:#0f9d58">绿</span>上方套牢）　<b>底部</b>=日期</span>'
+      +'<span class="kl-pos t3"></span>'+freshHTML(r)
       +'<button class="kl-btn kl-out" title="缩小">−</button>'
       +'<button class="kl-btn kl-in" title="放大">+</button>'
       +'<button class="kl-btn kl-reset" title="回到最近 120 根">复位</button>'

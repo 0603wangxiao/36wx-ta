@@ -125,6 +125,13 @@ button:disabled{ opacity:.5; cursor:default; }
 .kl-bar{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:8px; }
 .kl-legend{ flex:1 1 260px; white-space:normal; line-height:1.75; font-size:.68rem; }
 .kl-legend b{ font-weight:700; }
+/* ══════ 数据新鲜度标记 ══════ */
+.fresh{ display:inline-block; font-size:.7rem; padding:.14rem .5rem; border-radius:4px;
+  letter-spacing:.02em; white-space:nowrap; }
+.fresh.ok{ color:var(--accent); background:var(--accent-soft);
+  border:1px solid var(--accent-line); }
+.fresh.warn{ color:var(--seed-primary); background:var(--primary-soft);
+  border:1px solid var(--primary-line); font-weight:700; }
 .kl-pos{ color:var(--faint); font-variant-numeric:tabular-nums; white-space:nowrap; font-size:.68rem; }
 .kl-btn{ font:inherit; font-size:.7rem; padding:3px 10px; border-radius:6px; line-height:1.5;
          border:1px solid var(--line); background:var(--surface); color:var(--muted); cursor:pointer; }
@@ -253,7 +260,7 @@ footer.credit{ margin-top:52px; padding-top:16px; border-top:1px solid var(--lin
       <strong>② 再看「入场 / 止损 / 目标 / 盈亏比」四列</strong>——<strong>入场用现价</strong>（不假设"回踩一定会来"）；<strong>止损放在支撑位下方一个波动缓冲</strong>（＝近 20 日平均振幅 × 2.5，下限 3%，否则会被日常噪音打掉）；<strong>目标只认筹码压力位</strong>。盈亏比 &lt; 2 : 1 的通常不值得做；<strong>上方没有压力位时不给目标、也不给盈亏比</strong>——不硬造数字。<br>
       <strong>③ 「协调强度」0~1</strong>——衡量这个价位有没有形成共识。越接近 1，说明筹码越集中、有人在交易、支撑越明确，<strong>这种焦点一旦破了才走得远</strong>。<br>
       <strong>三个价位都是价格，不带百分比</strong>：压力位＝上方堆着最多筹码处（涨到这里会遇到解套抛压）；支撑位＝下方堆着最多筹码处（跌到这里有人接）；「无支撑」＝脚下没有成本承接，跌下去没有拦截。<br>
-      位阶图里 <span style="color:#2e4b52">青柱＝下方筹码</span>、<span style="color:#b23a26">红柱＝上方筹码</span>、实线＝现价、金虚线＝压力位、青虚线＝支撑位。
+      筹码分布图里 <span style="color:#d92b2b">红柱＝现价下方的筹码（获利盘）</span>、<span style="color:#0f9d58">绿柱＝现价上方的筹码（套牢盘）</span> —— 按 A 股惯例，红赚绿亏。实线＝现价，金虚线＝压力位，绿虚线＝支撑位。
     </div>
 
     <h2>三、结构分组与合并敞口 <span class="cf cf-i">cf I</span></h2>
@@ -815,10 +822,33 @@ function kScore(b, ma20v, vRank, peak, avgCost){
   return s;
 }
 function kColor(sc){ return sc>=5? KC.hi : (sc>=3? KC.mid : (sc>=1? KC.low : KC.weak)); }
+
+/* ══════ 数据新鲜度 ══════
+   正常情况下最后一根 K 线就是今天或上一交易日。若距今超过 5 天，
+   多半是该股停牌、或行情源没有更新 —— **必须显式说出来**，
+   否则用户看着一张停在旧日期的图，只会以为工具在骗他。 */
+function freshOf(r){
+  if(!r.bars || !r.bars.length) return null;
+  const last=String(r.bars[r.bars.length-1].d).slice(0,10);
+  const t=new Date(last+'T00:00:00');
+  if(isNaN(t.getTime())) return null;
+  const n=new Date();
+  const days=Math.max(0, Math.round((new Date(n.getFullYear(),n.getMonth(),n.getDate())-t)/86400000));
+  return {last:last, days:days, stale:(days>=5)};
+}
+function freshHTML(r){
+  const f=freshOf(r); if(!f) return '';
+  if(!f.stale)
+    return '<span class="fresh ok">数据截至 '+esc(f.last)
+      +(f.days===0? '（今日）' : (f.days<=3? '（最近交易日）':''))+'</span>';
+  return '<span class="fresh warn">⚠ 最后一根 K 线是 '+esc(f.last)+'，距今 '+f.days
+    +' 天没有新数据 —— 该股可能停牌，或行情源未更新</span>';
+}
+
 function klineSVG(bars, R, vRankArr, W, H, opt){
   opt = opt || {}; const showChip=(opt.chip!==false);
   const m=bars.length; if(m<5) return '<svg viewBox="0 0 '+W+' '+H+'"></svg>';
-  const padR=showChip?152:44, padT=12, padB=10, gap=10;
+  const padR=showChip?152:44, padT=12, padB=24, gap=10;   /* padB 加高，给横轴日期留位 */
   const cw=W-padR, volH=76, priceH=H-padT-padB-volH-gap, volTop=padT+priceH+gap;
   let lo=Infinity,hi=-Infinity,vmax=0;
   for(const b of bars){ if(b.l<lo)lo=b.l; if(b.h>hi)hi=b.h; if(b.v>vmax)vmax=b.v; }
@@ -835,10 +865,12 @@ function klineSVG(bars, R, vRankArr, W, H, opt){
       const p=R.PX[i], w=R.den[i]/dmax*bwid;
       if(w<0.5 || p>hi2 || p<lo2) continue;
       const yy=yP(p);
-      o+='<rect x="'+(cw+6).toFixed(1)+'" y="'+(yy-1.3).toFixed(1)+'" width="'+w.toFixed(1)+'" height="2.6" fill="'+(p>last?KC.up:KC.dn)+'" opacity="0.8"/>';
+      o+='<rect x="'+(cw+6).toFixed(1)+'" y="'+(yy-1.3).toFixed(1)+'" width="'+w.toFixed(1)+'" height="2.6" fill="'+(p>last?KC.dn:KC.up)+'" opacity="0.8"/>';
     }
-    o+='<text x="'+(cw+6)+'" y="'+(padT+9)+'" font-size="9" fill="'+KC.up+'">上方套牢</text>';
-    o+='<text x="'+(cw+6)+'" y="'+(padT+20)+'" font-size="9" fill="'+KC.dn+'">下方获利</text>';
+    /* A股惯例：红＝赚 绿＝亏。所以上方套牢用绿、下方获利用红 ——
+       之前写反了（上方套牢用了红）。 */
+    o+='<text x="'+(cw+6)+'" y="'+(padT+9)+'" font-size="9" fill="'+KC.dn+'">上方套牢</text>';
+    o+='<text x="'+(cw+6)+'" y="'+(padT+20)+'" font-size="9" fill="'+KC.up+'">下方获利</text>';
   }
   for(let i=0;i<m;i++){
     const b=bars[i], x=i*bw;
@@ -865,6 +897,22 @@ function klineSVG(bars, R, vRankArr, W, H, opt){
   o+='<line x1="0" y1="'+yP(last).toFixed(1)+'" x2="'+cw+'" y2="'+yP(last).toFixed(1)+'" stroke="#1b1813" stroke-width="1" opacity="0.55"/>';
   o+='<text x="3" y="'+(padT+10)+'" font-size="9.5" fill="#8a8375">'+hi.toFixed(2)+'</text>';
   o+='<text x="3" y="'+(padT+priceH-3)+'" font-size="9.5" fill="#8a8375">'+lo.toFixed(2)+'</text>';
+  /* ── 横轴日期：让人一眼看出这段图到哪天为止 ── */
+  const ay=H-6;
+  let _lm='';
+  for(let _i=0;_i<m;_i++){
+    const _mo=String(bars[_i].d).slice(0,7);
+    if(_mo!==_lm){
+      _lm=_mo;
+      const _x=_i*bw+bw/2;
+      if(_x>36 && _x<cw-70)
+        o+='<text x="'+_x.toFixed(1)+'" y="'+ay+'" font-size="9" fill="#a89f8c" text-anchor="middle">'+
+           _mo.slice(5)+'月</text>';
+    }
+  }
+  o+='<text x="3" y="'+ay+'" font-size="9.5" fill="#8a8375">'+String(bars[0].d).slice(5)+'</text>';
+  o+='<text x="'+(cw-2)+'" y="'+ay+'" font-size="10.5" fill="#1b1813" text-anchor="end" font-weight="700">'+
+     String(bars[m-1].d)+'</text>';
   return '<svg viewBox="0 0 '+W+' '+H+'" width="100%" height="auto" preserveAspectRatio="none" style="display:block">'+o+'</svg>';
 }
 function wireCharts(sorted){
@@ -956,7 +1004,7 @@ function gcard(r){
       '<span class="px"><span class="t1 xl">'+P2(r.px)+'</span><span class="t3">现价</span></span>'+
     '</div>'+
   /* ── 主图：彩色 K 线仪表盘（视觉中心）── */
-    (r.bars? '<div class="ck-kl"><div class="kl-bar">'+'<span class="t3 kl-legend">'+'<b>日K</b>（股票为前复权）　<b>实心</b>=阳线(收≥开)　<b>空心</b>=阴线(收&lt;开)　｜　'+'颜色=<b>量·换手·筹码</b>强度：<b style="color:#e8a800">黄</b> 共振 · <b style="color:#d92b2b">红</b> 中强 · '+'<b style="color:#1565d8">蓝</b> 偏弱 · <b style="color:#0f9d58">绿</b> 最弱<br>'+'<span style="color:#a3823c">金虚线</span>压力位　<span style="color:#0f9d58">绿虚线</span>支撑位　'+'<span style="color:#8a8375">灰虚线</span>平均成本　<span style="color:#7b4bb7">紫线</span>MA20　'+'<b>下副图</b>=成交量(同色)　<b>右侧</b>=筹码分布（<span style="color:#d92b2b">红</span>上方套牢 / <span style="color:#0f9d58">绿</span>下方获利）</span>'+'<span class="kl-pos t3"></span>'+'<button class="kl-btn kl-out" title="缩小">−</button>'+'<button class="kl-btn kl-in" title="放大">+</button>'+'<button class="kl-btn kl-reset" title="回到最近120根">复位</button>'+'<button class="kl-btn kl-chip" title="显示/隐藏筹码">筹码 开</button>'+'</div><div class="kl-host" data-k="'+r.kidx+'"><div class="kl-xline"></div><div class="kl-svg"></div><div class="kl-tip"></div></div></div>' : '')+
+    (r.bars? '<div class="ck-kl"><div class="kl-bar">'+'<span class="t3 kl-legend">'+'<b>日K</b>（股票为前复权）　<b>实心</b>=阳线(收≥开)　<b>空心</b>=阴线(收&lt;开)　｜　'+'颜色=<b>量·换手·筹码</b>强度：<b style="color:#e8a800">黄</b> 共振 · <b style="color:#d92b2b">红</b> 中强 · '+'<b style="color:#1565d8">蓝</b> 偏弱 · <b style="color:#0f9d58">绿</b> 最弱<br>'+'<span style="color:#a3823c">金虚线</span>压力位　<span style="color:#0f9d58">绿虚线</span>支撑位　'+'<span style="color:#8a8375">灰虚线</span>平均成本　<span style="color:#7b4bb7">紫线</span>MA20　'+'<b>下副图</b>=成交量(同色)　<b>右侧</b>=筹码分布（<span style="color:#d92b2b">红</span>下方获利 / <span style="color:#0f9d58">绿</span>上方套牢）　<b>底部</b>=日期</span>'+'<span class="kl-pos t3"></span>'+freshHTML(r)+''+'<button class="kl-btn kl-out" title="缩小">−</button>'+'<button class="kl-btn kl-in" title="放大">+</button>'+'<button class="kl-btn kl-reset" title="回到最近120根">复位</button>'+'<button class="kl-btn kl-chip" title="显示/隐藏筹码">筹码 开</button>'+'</div><div class="kl-host" data-k="'+r.kidx+'"><div class="kl-xline"></div><div class="kl-svg"></div><div class="kl-tip"></div></div></div>' : '')+
   /* ── 交易计划：全是 T1 ── */
     '<div class="ck-plan">'+
       '<div><span class="t3">入场</span><span class="t1">'+
@@ -1013,7 +1061,7 @@ function gcard(r){
     '</ul><p style="margin:.6rem 0 0;font-size:.84rem;color:var(--muted)">'+
     '<strong>怎么读：</strong>「墙」是从现价往上累加筹码到 20%（压力位1）/ 50%（压力位2）的价位——那是要吃掉多少筹码才能过去的度量；'+
     '「撑」是从现价往下累加 10% 的价位，<strong>不足 10% 即判无支撑</strong>（说明现价已经在筹码区的底部之外）。'+
-    '筹码位阶图里：<span style="color:#2e4b52">青柱＝现价下方的筹码（支撑）</span>，<span style="color:#b23a26">红柱＝现价上方的筹码（套牢）</span>，实线＝现价，金虚线＝压力位1，青虚线＝支撑。</p></div>';
+    '筹码分布图里：<span style="color:#d92b2b">红柱＝现价下方的筹码（获利盘）</span>，<span style="color:#0f9d58">绿柱＝现价上方的筹码（套牢盘）</span> —— 按 A 股惯例，红赚绿亏。实线＝现价，金虚线＝压力位1，绿虚线＝支撑。</p></div>';
 
   $('exp').value=exportTxt(sorted);
 }
