@@ -135,6 +135,16 @@ button:disabled{ opacity:.5; cursor:default; }
 .kl-host.kl-drag{ cursor:grabbing; }
 .kl-host svg{ pointer-events:none; }
 
+
+/* ── K线日期跟随标注 ── */
+.kl-host{ position:relative; }
+.kl-tip{ position:absolute; bottom:-2px; display:none; pointer-events:none;
+         background:var(--seed-fg); color:var(--surface); font-size:.68rem;
+         padding:2px 7px; border-radius:4px; white-space:nowrap; z-index:5;
+         font-variant-numeric:tabular-nums; letter-spacing:.02em; }
+.kl-xline{ position:absolute; top:0; width:1px; display:none; pointer-events:none;
+           background:color-mix(in srgb, var(--seed-fg) 45%, transparent); z-index:4; }
+
 .ck-empty{ padding:28px 16px; text-align:center; color:var(--faint); font-size:.88rem;
            border:1px dashed var(--line); border-radius:10px; }
 @media (max-width:860px){
@@ -878,13 +888,29 @@ function wireCharts(sorted){
       st.count=nc; draw();
     }, {passive:false});
     let drag=null;
+    const tip=host.querySelector('.kl-tip'), xln=host.querySelector('.kl-xline');
+    function hover(e){
+      const rect=host.getBoundingClientRect();
+      const x=e.clientX-rect.left;
+      const i=Math.floor(x/rect.width*st.count);
+      if(i<0||i>=st.count||!r.bars[st.start+i]){ if(tip) tip.style.display='none'; if(xln) xln.style.display='none'; return; }
+      const b=r.bars[st.start+i];
+      if(tip){
+        tip.textContent=b.d+'　开'+b.o.toFixed(2)+' 高'+b.h.toFixed(2)+' 低'+b.l.toFixed(2)+' 收'+b.c.toFixed(2)+'　量'+Math.round(b.v);
+        tip.style.display='block';
+        const w=tip.offsetWidth||210;
+        tip.style.left=Math.max(0,Math.min(rect.width-w, x-w/2))+'px';
+      }
+      if(xln){ xln.style.display='block'; xln.style.left=(x)+'px'; xln.style.height=host.clientHeight+'px'; }
+    }
     host.addEventListener('mousedown', function(e){ drag={x:e.clientX,s:st.start}; host.classList.add('kl-drag'); e.preventDefault(); });
     host.addEventListener('mousemove', function(e){
-      if(!drag) return;
+      if(!drag){ hover(e); return; }
       const per=st.count/host.clientWidth;
-      st.start=Math.max(0,Math.min(total-st.count,Math.round(drag.s-(e.clientX-drag.x)*per))); draw();
+      st.start=Math.max(0,Math.min(total-st.count,Math.round(drag.s-(e.clientX-drag.x)*per))); draw(); hover(e);
     });
-    ['mouseup','mouseleave'].forEach(function(ev){ host.addEventListener(ev,function(){ drag=null; host.classList.remove('kl-drag'); }); });
+    ['mouseup','mouseleave'].forEach(function(ev){ host.addEventListener(ev,function(){ drag=null; host.classList.remove('kl-drag');
+      if(ev==='mouseleave'){ if(tip) tip.style.display='none'; if(xln) xln.style.display='none'; } }); });
     const wrap=host.closest('.ck-kl');
     const btn=wrap&&wrap.querySelector('.kl-chip');
     if(btn) btn.addEventListener('click', function(e){
@@ -929,7 +955,7 @@ function gcard(r){
       '<span class="px"><span class="t1 xl">'+P2(r.px)+'</span><span class="t3">现价</span></span>'+
     '</div>'+
   /* ── 主图：彩色 K 线仪表盘（视觉中心）── */
-    (r.bars? '<div class="ck-kl"><div class="kl-bar">'+'<span class="t3 kl-legend">'+'<b>日K</b>（股票为前复权）　<b>实心</b>=阳线(收≥开)　<b>空心</b>=阴线(收&lt;开)　｜　'+'颜色=<b>量·换手·筹码</b>强度：<b style="color:#e8a800">黄</b> 共振 · <b style="color:#d92b2b">红</b> 中强 · '+'<b style="color:#1565d8">蓝</b> 偏弱 · <b style="color:#0f9d58">绿</b> 最弱<br>'+'<span style="color:#a3823c">金虚线</span>压力位　<span style="color:#0f9d58">绿虚线</span>支撑位　'+'<span style="color:#8a8375">灰虚线</span>平均成本　<span style="color:#7b4bb7">紫线</span>MA20　'+'<b>下副图</b>=成交量(同色)　<b>右侧</b>=筹码分布（<span style="color:#d92b2b">红</span>上方套牢 / <span style="color:#0f9d58">绿</span>下方获利）</span>'+'<span class="kl-pos t3"></span>'+'<button class="kl-btn kl-out" title="缩小">−</button>'+'<button class="kl-btn kl-in" title="放大">+</button>'+'<button class="kl-btn kl-reset" title="回到最近120根">复位</button>'+'<button class="kl-btn kl-chip" title="显示/隐藏筹码">筹码 开</button>'+'</div><div class="kl-host" data-k="'+r.kidx+'"><div class="kl-svg"></div></div></div>' : '')+
+    (r.bars? '<div class="ck-kl"><div class="kl-bar">'+'<span class="t3 kl-legend">'+'<b>日K</b>（股票为前复权）　<b>实心</b>=阳线(收≥开)　<b>空心</b>=阴线(收&lt;开)　｜　'+'颜色=<b>量·换手·筹码</b>强度：<b style="color:#e8a800">黄</b> 共振 · <b style="color:#d92b2b">红</b> 中强 · '+'<b style="color:#1565d8">蓝</b> 偏弱 · <b style="color:#0f9d58">绿</b> 最弱<br>'+'<span style="color:#a3823c">金虚线</span>压力位　<span style="color:#0f9d58">绿虚线</span>支撑位　'+'<span style="color:#8a8375">灰虚线</span>平均成本　<span style="color:#7b4bb7">紫线</span>MA20　'+'<b>下副图</b>=成交量(同色)　<b>右侧</b>=筹码分布（<span style="color:#d92b2b">红</span>上方套牢 / <span style="color:#0f9d58">绿</span>下方获利）</span>'+'<span class="kl-pos t3"></span>'+'<button class="kl-btn kl-out" title="缩小">−</button>'+'<button class="kl-btn kl-in" title="放大">+</button>'+'<button class="kl-btn kl-reset" title="回到最近120根">复位</button>'+'<button class="kl-btn kl-chip" title="显示/隐藏筹码">筹码 开</button>'+'</div><div class="kl-host" data-k="'+r.kidx+'"><div class="kl-xline"></div><div class="kl-svg"></div><div class="kl-tip"></div></div></div>' : '')+
   /* ── 交易计划：全是 T1 ── */
     '<div class="ck-plan">'+
       '<div><span class="t3">入场</span><span class="t1">'+
