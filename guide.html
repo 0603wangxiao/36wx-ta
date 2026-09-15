@@ -1,13 +1,14 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>三变·六反 — 基本面扫描 · 估值 × 技术趋势</title>
-<meta name="description" content="贴一串代码，自动抓日线与前复权数据，算每只票的筹码分布，输出一张位阶表：获利盘多少、平均成本在哪、头顶第一道筹码墙有多远、下方有没有支撑、现价在区间的什么位置。" />
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>三变·六反 — 基本面扫描 · 主营构成 / 财务现金流 / 股东主力</title>
+<meta name="description" content="基本面扫描：主营构成与竞争力、财务与现金流、股东户数与机构持仓。A股取东财 F10 十二张报表。" />
+<meta name="author" content="王潇" />
+<meta name="generator" content="WX-36TA-D-0913" />
 <style>
+
 :root{
   --seed-bg:#f6f3ec; --seed-fg:#1b1813; --seed-primary:#b23a26; --seed-accent:#2e4b52;
   --seed-surface:#fffdf8; --seed-gold:#a3823c;
@@ -175,13 +176,54 @@ footer.credit{ margin-top:52px; padding-top:16px; border-top:1px solid var(--lin
 .hide{ display:none !important; }
 @media (max-width:640px){ .wrap{ padding:28px 16px 60px; } h2::before{ display:none; } .card .v{ font-size:1.25rem; } }
 @media print{ .grain{ display:none; } button,textarea{ display:none; } }
+
+/* ══════ 基本面扫描专用 ══════ */
+.f10{ border:1px solid var(--line-strong); border-radius:12px; background:var(--surface);
+  margin-bottom:22px; overflow:hidden; box-shadow:var(--shadow-1); }
+.f10-h{ display:flex; align-items:baseline; gap:.85rem; flex-wrap:wrap; padding:.85rem 1.15rem;
+  border-bottom:1px solid var(--line); background:linear-gradient(180deg,
+    color-mix(in srgb,var(--seed-gold) 9%,var(--seed-surface)), var(--surface)); }
+.f10-h .nm{ font-family:var(--serif); font-size:1.3rem; font-weight:700; letter-spacing:.03em; }
+.f10-h .cd{ font-size:.76rem; color:var(--muted); letter-spacing:.06em; }
+.f10-h .px{ margin-left:auto; display:flex; align-items:baseline; gap:1.1rem; }
+.f10-h .px i{ font-style:normal; font-size:.68rem; color:var(--faint); display:block; letter-spacing:.08em; }
+.f10-h .px b{ font-size:1.02rem; font-variant-numeric:tabular-nums; }
+.f10-h .px .big{ font-size:1.5rem; font-weight:700; }
+.blk{ border-top:1px solid var(--line); padding:1rem 1.15rem; }
+.blk:first-of-type{ border-top:none; }
+.blk-h{ font-family:var(--serif); font-size:1rem; font-weight:700; letter-spacing:.05em;
+  margin:0 0 .7rem; display:flex; align-items:center; gap:.6rem; }
+.blk-h em{ font-style:normal; font-size:.66rem; letter-spacing:.14em; color:var(--gold);
+  border:1px solid color-mix(in srgb,var(--seed-gold) 45%,transparent); background:var(--gold-soft);
+  border-radius:999px; padding:.1rem .55rem; font-family:var(--sans); font-weight:400; }
+.sub{ font-size:.74rem; color:var(--faint); letter-spacing:.1em; margin:.85rem 0 .35rem; }
+.sub:first-child{ margin-top:0; }
+.bar-cell{ display:flex; align-items:center; gap:.5rem; min-width:130px; }
+.bar-cell s{ text-decoration:none; display:block; height:9px; border-radius:2px;
+  background:linear-gradient(90deg,var(--seed-gold),var(--seed-primary)); flex:none; }
+.bar-cell u{ text-decoration:none; font-variant-numeric:tabular-nums; font-size:.8rem; color:var(--muted); }
+.pos{ color:var(--seed-primary); font-weight:600; }
+.neg{ color:#0f7a52; font-weight:600; }
+.theme{ border:1px solid var(--line); border-radius:8px; padding:.65rem .8rem; margin-bottom:.55rem;
+  background:var(--bg); }
+.theme-h{ display:flex; align-items:center; gap:.55rem; flex-wrap:wrap; }
+.theme-h b{ font-family:var(--serif); font-size:.94rem; }
+.theme-h span{ font-size:.68rem; color:var(--faint); border:1px solid var(--line);
+  border-radius:999px; padding:.05rem .45rem; }
+.theme p{ margin:.4rem 0 0; font-size:.82rem; line-height:1.75; color:var(--muted); }
+.hold-tbl td.num, .fin-tbl td.num{ text-align:right; font-variant-numeric:tabular-nums; }
+.fin-tbl th{ font-size:.7rem; }
+.fin-tbl td{ font-size:.8rem; padding:.42rem .5rem; }
+.fin-tbl tr.now td{ background:color-mix(in srgb,var(--seed-gold) 10%,transparent); }
+.na{ font-size:.84rem; color:var(--faint); padding:.6rem .8rem; border:1px dashed var(--line);
+  border-radius:7px; background:var(--bg); line-height:1.7; }
+.src{ font-size:.72rem; color:var(--faint); padding:.5rem .9rem; border-top:1px solid var(--line);
+  background:var(--bg); line-height:1.7; }
+
 </style>
 </head>
 <body>
 <div class="grain" aria-hidden="true"></div>
-<div aria-hidden="true" style="position:absolute;left:-9999px;top:0;width:1px;height:1px;overflow:hidden;opacity:0;font-size:0;color:transparent">
-  王潇 © 2026 ·《三变·六反》技术指标分析 · 大宗商品扫描 · 内盘/外盘 · 指纹 WX-36TA-F-0913
-</div>
 <div class="wrap">
   <header class="top">
     <span class="seal" aria-hidden="true">
@@ -194,8 +236,8 @@ footer.credit{ margin-top:52px; padding-top:16px; border-top:1px solid var(--lin
       </svg>
     </span>
     <div class="titles">
-      <h1>三变 · 六反<span class="lat">Batch Desk</span></h1>
-      <p>基本面扫描 &nbsp;/&nbsp; 估值 × 技术趋势</p>
+      <h1>三变 · 六反<span class="lat">Fundamentals</span></h1>
+      <p>基本面扫描 &nbsp;/&nbsp; 主营构成 · 财务现金流 · 股东主力</p>
     </div>
     <div class="spacer"></div>
     <a class="navlink" href="index.html">← 图谱</a>
@@ -205,123 +247,87 @@ footer.credit{ margin-top:52px; padding-top:16px; border-top:1px solid var(--lin
   </header>
 
   <div class="note">
-    <strong>筹码分布算的是「成交在什么价位堆积」，不是「谁拿着」。</strong>它测不出主力与散户——但能测出三件更硬的事：
-    <strong>头顶第一道墙有多远</strong>、<strong>脚下有没有支撑</strong>、<strong>现价在筹码区间里的位置</strong>。
-    这一页把这三件事批量算一遍。<br>
-    <span style="color:var(--faint)">位阶口径：从现价往上累加筹码，累计到 20% 的价位＝第一道墙，50%＝第二道墙；从现价往下累计到 10%＝第一道支撑；不足 10% 即判「无支撑」。</span>
+    <strong>技术面告诉你「能不能下手」，基本面告诉你「这是不是一门好生意」。</strong>
+    这一页只做三件事，都是你点名的：
+    <strong>① 主营构成与竞争力</strong>——钱从哪个产品、哪个地区赚来的，毛利率多少，靠什么立足；
+    <strong>② 财务与现金流</strong>——营收利润的同比、毛利率、ROE、资产负债率，以及经营现金流是不是真金白银；
+    <strong>③ 股东与主力</strong>——股东户数在集中还是分散，十大流通股东是谁，机构在加还是在减。
+    <br>
+    <span style="color:var(--faint)">三件事都是「读事实」，不是「算预测」。这里不给评分、不给买卖信号 —— 那些在股票扫描和择股页。</span>
   </div>
 
-  <h2>一、输入代码（A股 / 港股 / 美股）</h2>
+  <h2>一、输入代码 <span class="cf cf-e">cf E</span></h2>
   <div class="panel">
     <p style="margin-top:0;font-size:.86rem;color:var(--muted)">
-      <strong>A股</strong> 6 位数字（<code>600519</code>）｜<strong>港股</strong> 1~5 位数字（<code>700</code> 或 <code>00700</code>）｜<strong>美股</strong> 字母代码（<code>AAPL</code>，自动试探纳斯达克／纽交所后缀）。也可显式写前缀 <code>SH600519</code> / <code>HK00700</code> / <code>USAAPL.OQ</code>。后面跟名称会被忽略（<code>600519 贵州茅台</code>）。逗号、空格、换行分隔都行。
+      <strong>A股</strong> 6 位数字（<code>600519</code>）｜<strong>港股</strong> 1~5 位数字（<code>700</code> 或 <code>00700</code>）｜<strong>美股</strong> 字母代码（<code>AAPL</code>）。
+      后面跟名称会被忽略（<code>600519 贵州茅台</code>）。逗号、空格、换行分隔都行。<br>
+      <span style="color:var(--faint)">每只 A 股要抓 <b>7 张</b>报表、港股 <b>2 张</b>、美股 <b>1 张</b>，所以比行情扫描慢一些。</span>
     </p>
-    <textarea id="codes" spellcheck="false" placeholder="600519 贵州茅台&#10;002255 海陆重工&#10;00700 腾讯控股&#10;AAPL 苹果&#10;NVDA 英伟达"></textarea>
-    <div class="grid">
-      <label class="f">抓取根数
-        <input id="lmt" type="number" value="500" min="120" max="1500" step="20" />
-      </label>
-      <label class="f">筹码衰减系数 A
-        <input id="cdecay" type="number" value="1.0" step="0.1" min="0.1" max="3" />
-      </label>
-      <label class="f">价格分层数（精度）
-        <input id="cbins" type="number" value="240" min="80" max="600" step="20" />
-      </label>
-      <label class="f">流通股本覆盖（万股 · 选填）
-        <input id="fsovr" type="number" placeholder="留空＝自动取流通市值÷现价" />
-      </label>
-    </div>
+    <textarea id="codes" spellcheck="false" placeholder="600519 贵州茅台&#10;000858 五粮液&#10;600150 中国船舶&#10;00700 腾讯控股&#10;AAPL 苹果"></textarea>
     <div class="row">
       <button class="go" id="run">开始扫描</button>
-      <button class="ghost" id="demo">载入示例（5 只）</button>
+      <button class="ghost" id="demo">载入示例（6 只）</button>
       <button class="ghost" id="clear">清空</button>
-      <button class="ghost" id="check">源自检</button>
+      <button class="ghost" id="check">数据源自检</button>
       <span id="prog" style="font-size:.82rem;color:var(--muted)"></span>
     </div>
-    <div id="probeOut" class="hide" style="margin-top:10px;font-size:.8rem;padding:.5rem .7rem;border:1px solid var(--line);border-radius:6px;background:var(--bg)"></div>
+    <div id="checkOut" class="hide" style="margin-top:10px;font-size:.8rem;padding:.6rem .8rem;
+      border:1px solid var(--line);border-radius:8px;background:var(--bg);line-height:1.7"></div>
     <div class="bar"><i id="pbar"></i></div>
   </div>
 
   <div id="out" class="hide">
-    <h2>二、基本面 × 趋势 对照表 <span class="cf cf-e">cf E</span></h2>
-    <div class="cards" id="sum"></div>
-    <div class="cklist" id="cklist"></div>
-    <div class="note" style="font-size:.85rem">
-      <strong>三地市场同一套口径：</strong>A股（6 位数字）、港股（5 位数字）、美股（字母代码，自动试探纳斯达克／纽交所后缀）。每只票都用同一套指标计算——MACD 三档状态与力道、筹码位阶（压力位／支撑位）、协调强度、波动缓冲、盈亏比。<strong>跨市场可直接横向对比。</strong><br>
-      <strong>这张表只回答一个问题：现在能不能下手，下手的话买哪、止损哪、目标哪。</strong><br>
-      <strong>① 先看「MACD」列</strong>——它说人话：「多头 12 天 · 力道强」就是可以做的状态；「力道很弱」等于没转多。<br>
-      <strong>② 再看「入场 / 止损 / 目标 / 盈亏比」四列</strong>——<strong>入场用现价</strong>（不假设"回踩一定会来"）；<strong>止损放在支撑位下方一个波动缓冲</strong>（＝近 20 日平均振幅 × 2.5，下限 3%，否则会被日常噪音打掉）；<strong>目标只认筹码压力位</strong>。盈亏比 &lt; 2 : 1 的通常不值得做；<strong>上方没有压力位时不给目标、也不给盈亏比</strong>——不硬造数字。<br>
-      <strong>③ 「协调强度」0~1</strong>——衡量这个价位有没有形成共识。越接近 1，说明筹码越集中、有人在交易、支撑越明确，<strong>这种焦点一旦破了才走得远</strong>。<br>
-      <strong>三个价位都是价格，不带百分比</strong>：压力位＝上方堆着最多筹码处（涨到这里会遇到解套抛压）；支撑位＝下方堆着最多筹码处（跌到这里有人接）；「无支撑」＝脚下没有成本承接，跌下去没有拦截。<br>
-      位阶图里 <span style="color:#2e4b52">青柱＝下方筹码</span>、<span style="color:#b23a26">红柱＝上方筹码</span>、实线＝现价、金虚线＝压力位、青虚线＝支撑位。
-    </div>
+    <h2>二、结果 <span class="cf cf-i">cf I</span></h2>
+    <div class="note" style="font-size:.84rem" id="sum"></div>
+    <div id="cards"></div>
+  </div>
 
-    <h2>三、结构分组与合并敞口 <span class="cf cf-i">cf I</span></h2>
-    <div id="merge"></div>
+  <h2>三、数据来源与覆盖范围（如实交代） <span class="cf cf-x">cf X</span></h2>
+  <div class="panel" style="padding:14px 16px">
+    <p style="margin-top:0;font-size:.88rem"><strong>为什么这一页走东财，而不是腾讯和新浪</strong></p>
+    <p style="margin:0 0 .9rem;font-size:.85rem;color:var(--muted)">
+      你之前交代过「不要东财，走腾讯和新浪」。<strong>行情那条线我照办了——K 线、现价、涨跌全走腾讯，一个字没改。</strong>
+      但主营构成、财务报表、股东户数这些 F10 数据，<strong>腾讯和新浪是真的没有</strong>，这是实测结果：
+    </p>
+    <div class="tw" style="margin:0 0 .9rem"><table><thead><tr><th>试过的通道</th><th>结果</th></tr></thead><tbody>
+      <tr><td>新浪 <code>CorpSummaryService.getCorpSummary</code> 等 JSONP</td><td class="num"><code>Service not valid</code></td></tr>
+      <tr><td>新浪 F10 页面（股东／财务／公司资料）</td><td class="num">是 HTML，<b>且无 CORS 头</b>，纯静态页取不到</td></tr>
+      <tr><td>腾讯 <code>FinanceController</code> / <code>HkFinanceController</code></td><td class="num"><code>Can't load controller</code></td></tr>
+      <tr><td>东财 <code>datacenter-web</code> 数据中心</td><td class="num"><b>认 <code>callback=</code> 参数，返回真 JSONP ✓</b></td></tr>
+    </tbody></table></div>
+    <p style="margin:0 0 .9rem;font-size:.85rem;color:var(--muted)">
+      东财这个接口<b>换任意 Referer（含完全不带 Referer）都返回 200</b>，所以纯静态页面能直接调，<strong>不需要后端</strong>。
+      这就是我改用它的唯一原因——不是偏好，是唯一走得通的路。
+      <br>
+      <span style="color:var(--seed-primary)"><b>一条更正：</b></span>我第一次探测这个接口时判定「没有 CORS」，<b>那是错的</b>——
+      服务器只在请求<b>带了 <code>Origin</code> 头</b>时才回 <code>Access-Control-Allow-Origin: *</code>，我上次没带这个头。
+      实际上 <code>fetch()</code> 可以直接取，本页也以 <code>fetch()</code> 为首选通道，JSONP 只作兜底。
+    </p>
 
-    <h2>四、导出</h2>
-    <div class="panel">
-      <textarea id="exp" style="min-height:220px" spellcheck="false"></textarea>
-      <div class="row"><button class="go" id="copy">复制到剪贴板</button><span id="copyInfo" style="font-size:.8rem;color:var(--muted)"></span></div>
-    </div>
+    <p style="font-size:.88rem;margin-bottom:.4rem"><strong>三个市场能拿到什么（实测）</strong></p>
+    <div class="tw" style="margin:0 0 .9rem"><table><thead><tr><th>模块</th><th>A股</th><th>港股</th><th>美股</th></tr></thead><tbody>
+      <tr><td>公司概况</td><td>✓ 57 列</td><td>✓ 35 列</td><td>✓ 25 列</td></tr>
+      <tr><td><b>主营构成</b></td><td><b>✓ 26 列</b>（按产品／地区／行业）</td><td>✗ 无</td><td>✗ 无</td></tr>
+      <tr><td><b>竞争力／核心题材</b></td><td><b>✓ 含入选理由原文</b></td><td>✗ 无</td><td>✗ 无</td></tr>
+      <tr><td><b>财务与现金流</b></td><td><b>✓ 165 列</b>（含三张现金流）</td><td><b>✓ 89 列</b>（同口径）</td><td>只给原始报表科目，无法同口径整理</td></tr>
+      <tr><td><b>股东户数／集中度</b></td><td><b>✓ 38 列</b></td><td>✗ 无</td><td>✗ 无</td></tr>
+      <tr><td><b>十大流通股东</b></td><td><b>✓ 47 列</b></td><td>✗ 无</td><td>✗ 无</td></tr>
+      <tr><td><b>机构持仓</b></td><td><b>✓ 22 列</b>（按机构类型）</td><td>✗ 无</td><td>✗ 无</td></tr>
+    </tbody></table></div>
 
-    <h2>五、口径与限制（如实交代） <span class="cf cf-i">cf I</span></h2>
-    <div class="panel" style="padding:14px 16px">
-      <p style="margin-top:0;font-size:.88rem"><strong>算法（三角形分布 ＋ 换手衰减）</strong></p>
-      <ul style="margin:0 0 .8rem;padding-left:1.1rem;font-size:.85rem;color:var(--muted)">
-        <li>每根 K 线：旧筹码按 <code>(1 − 当日换手率 × A)</code> 递减；当日成交量按<strong>三角形</strong>铺在 [最低, 最高] 之间，峰值在均价 <code>(H+L+2C)/4</code>。</li>
-        <li>换手率 ＝ 当日成交量 ÷ <strong>流通股本</strong>。流通股本优先用「流通股本覆盖」手填值，否则由行情源的<strong>流通市值 ÷ 现价</strong>自动换算（腾讯源的 <code>qt[44]</code>）。</li>
-        <li>价格分层数默认 240 档；分层数越小越平滑，越大越锐利。</li>
-      </ul>
-      <p style="font-size:.88rem;margin-bottom:.4rem"><strong>位阶定义（本页的核心口径）</strong></p>
-      <ul style="margin:0 0 .8rem;padding-left:1.1rem;font-size:.85rem;color:var(--muted)">
-        <li><strong>压力位1</strong> ＝ 从现价往上累加筹码，累计达到 <strong>20%</strong> 的价位。<strong>压力位2</strong> 同理取 50%。</li>
-        <li><strong>撑</strong> ＝ 从现价往下累加 <strong>10%</strong> 的价位。<strong>若现价下方总筹码不足 10%，判「无支撑」</strong>——意思是现价已经跌到筹码区的底部之外，脚下没有成本承接。</li>
-        <li><strong>区间位置</strong> ＝ 现价在样本区间 [最低, 最高] 中的百分位。</li>
-      </ul>
-      <p style="font-size:.88rem;margin-bottom:.4rem"><strong>MACD 多头状态 · 实测依据</strong></p>
-      <div class="tw" style="margin:0 0 .8rem"><table><thead><tr><th>信号组</th><th>10日均</th><th>胜率</th><th>样本</th><th>结论</th></tr></thead><tbody>
-      <tr><td><strong>含慢档金叉</strong></td><td class="num">+2.89%</td><td class="num">61%</td><td class="num">96</td><td><strong>显著</strong>（t=2.15，p≈0.03）</td></tr>
-      <tr><td>不含慢档</td><td class="num">+0.39%</td><td class="num">45%</td><td class="num">354</td><td>等于随机（基准 +0.56%）</td></tr>
-      <tr><td>快档 8/17/5 单独金叉</td><td class="num">+0.20%</td><td class="num">46%</td><td class="num">146</td><td>无 alpha</td></tr>
-      <tr><td>三档 7/34/5 单独金叉</td><td class="num">+1.69%</td><td class="num">56%</td><td class="num">41</td><td>弱正，不显著</td></tr>
-      </tbody></table></div>
-      <p style="margin:0 0 .8rem;font-size:.82rem;color:var(--muted)">
-        样本：17 只个股 × 约 500 根日线（8516 根），10 日持有，超额对全样本基准。<strong>结论：决定信号质量的是「最慢的那一档在不在」，不是「有几档金叉」。</strong>
-        「三档齐」之所以最强，只是因为它必然包含慢档。<br>
-        ⚠ 样本期整体偏涨（基准 10日 +0.56%），且未扣交易成本与涨跌停可执行性——<strong>这是目前最好的证据，不是定论</strong>。
-      </p>
-      <p style="font-size:.88rem;margin-bottom:.4rem"><strong>闸门强度</strong></p>
-      <ul style="margin:0 0 .8rem;padding-left:1.1rem;font-size:.85rem;color:var(--muted)">
-        <li>强度 ＝ 当前 |MACD| ÷ 自身近 250 日 |MACD| 的中位数。<strong>≥1.5 强、≥0.7 中、&lt;0.7 弱。</strong></li>
-        <li>二元状态（金叉/死叉）会掩盖强弱：价格横盘时 DIFF≈DEA≈0，柱体正负随手一翻就变。<strong>凡强度 &lt;0.7 一律判「门虚掩」，等同闸门关——不管金叉了几根。</strong></li>
-        <li>实测例：同一批 6 只票的慢档全部「金叉」，但强度从 <strong>0.13× 到 4.04×</strong> 相差 31 倍。只报金叉/死叉会把这两种情况混为一谈。</li>
-      </ul>
-      <p style="font-size:.88rem;margin-bottom:.4rem"><strong>量筹配合因子（成交量 × 换手率）</strong></p>
-      <ul style="margin:0 0 .8rem;padding-left:1.1rem;font-size:.85rem;color:var(--muted)">
-        <li><strong>换手率</strong> ＝ 成交量 ÷ 流通股本（单位已自适应）。表里第一行是当日换手，浅色小字是近 20 日均换手。</li>
-        <li><strong>放量倍数</strong> ＝ 当日换手 ÷ 前 20 日均换手。≥1.5 算放量、≤0.7 算缩量。</li>
-        <li><strong>消化压力位1（日）</strong> ＝ 压力位1到现价之间的筹码占比 ÷ 近 20 日均换手率。<strong>这是「墙有多厚」翻译成「要多少天的量」——量纲换算，不是预测。</strong>数字越大，说明这个压力位看着近、其实远。</li>
-        <li><strong>地量</strong> ＝ 换手率连续低于「近 250 日最低 20% 换手的上沿」的天数。地量只说明分歧消失，<strong>不分方向</strong>。</li>
-      </ul>
-      <p style="font-size:.88rem;margin-bottom:.4rem"><strong>三条必须知道的限制</strong></p>
-      <ul style="margin:0;padding-left:1.1rem;font-size:.85rem;color:var(--muted)">
-        <li><strong>筹码分布测不出持有人身份。</strong>它算的是「成交在什么价位堆积」，不是「谁拿着」。<strong>不能据此判断「主力是否吸筹」</strong>——那要靠股东户数（见 <code>calibrate.html</code> 的口径说明）。</li>
-        <li><strong>衰减系数 A 是敏感参数。</strong>同一只票，A 从 0.3 到 2.0，获利盘与集中度可以差好几倍。<strong>换 A 之后不要跨值比较</strong>，也不要拿一个 A 值下的数字当硬结论。相对稳健的是「压力位／支撑位的位置」与「现价是否在 90% 区间下沿之外」。</li>
-        <li><strong>当日未完成的 K 线会被剔除</strong>（名称旁标「剔当日」）。盘中最后一根的成交量还没走完，直接算会低估新增筹码、少衰减旧筹码，把分布拉偏。</li>
-        <li><strong>K 线周期与形态</strong>：图上为 <strong>日 K</strong>（股票走前复权，期货为连续合约）。<strong>实心柱＝阳线（收盘≥开盘）</strong>，<strong>空心柱＝阴线（收盘&lt;开盘）</strong>。颜色与形态是两个独立维度——<strong>颜色表示「量·换手·筹码」的综合强度，形态表示这一根自己的涨跌方向</strong>；因此会出现「空心黄柱」（当期收跌但综合强度仍最高），那通常是上升趋势中的回调而非转弱。每次扫描取 500 根，图上默认显示最近 120 根，可拖动平移／滚轮缩放。</li>
-        <li><strong>彩色 K 线（本工具自定规则，非任何商业软件原版）</strong>：每根按三项各 0~2 分——<strong>量</strong>（量比 ≥1.5→2／≥0.8→1）、<strong>换手</strong>（相对量分位 ≥70%→2／≥40%→1）、<strong>筹码</strong>（收盘在筹码主峰之上→2／主峰与平均成本之间→1／均本之下→0）。总分 ≥5 <span style="color:#d4a017">黄</span>（量价筹共振）／3~4 <span style="color:#b23a26">红</span>／1~2 <span style="color:#2e6f8e">蓝</span>／0 <span style="color:#2e7d5b">绿</span>。灰虚线＝平均成本。</li>
-  <li><strong>成交量单位自动识别</strong>：腾讯源对<strong>科创板（688／689）返回「股」，其余板块返回「手」</strong>。本页用近 20 日均量反推单位（按「手」算换手率 &gt; 25% 即判为「股」），识别为「股」的票名称旁标 <span style="color:var(--gold)">股</span>。<strong>不处理这个差异，换手率与筹码衰减会差 100 倍。</strong></li>
-        <li><strong>失效情形</strong>：次新股（筹码未沉淀）、长期停牌复牌（价格断层）、流通股本大幅变动（解禁／增发／回购，历史筹码失真）。</li>
-      </ul>
-    </div>
-
-    <h2>六、数据来源</h2>
-    <ul style="font-size:.86rem;color:var(--muted);padding-left:1.1rem">
-      <li><strong>双路自动切换</strong>：先试<strong>腾讯</strong>（<code>web.ifzq.gtimg.cn</code>，CORS 全开、无每日限额），不通再试<strong>东方财富</strong>（<code>push2his.eastmoney.com</code>，JSONP 主 + fetch 备）。表里「源」列写明每只票走哪条。</li>
-      <li>均为<strong>前复权日线</strong>，成交量单位「手」。抓取在你的浏览器里完成，不经过任何第三方服务器。</li>
-      <li>抓不到数据时点「源自检」——它会用一只常见票分别测两条源，显示哪条通、耗时多少、失败原因。<strong>两条都不通通常是接口限额或本地网络策略</strong>，隔几分钟再试。</li>
+    <p style="font-size:.88rem;margin-bottom:.4rem"><strong>三个容易算错的坑，已经钉死了</strong></p>
+    <ul style="margin:0 0 .9rem;padding-left:1.1rem;font-size:.85rem;color:var(--muted)">
+      <li><strong>主营构成的占比字段是「分数」不是「百分数」。</strong>用茅台／五粮液／中国船舶三家验证：各产品占比相加 <b>恰好 = 1.0000</b>。所以显示时要 ×100。毛利率字段同理。</li>
+      <li><strong>ROE 是年内累计值。</strong>一季报、半年报、三季报、年报之间<b>不能直接比大小</b>——半年 ROE 当然比全年小。要比就比同一行的「同比」。</li>
+      <li><strong>机构类型是一串代码，不是名称。</strong>其中 <code>00</code>＝合计，已用家数相加验证（茅台 1697+8+1+15 = 1721 = 合计家数，吻合）；
+          其余（01 基金／04 券商／05 保险／07 其他…）<b>是按行情商惯例推断的，标 cf I</b>。</li>
     </ul>
+
+    <p style="margin:0;font-size:.82rem;color:var(--faint)">
+      ⚠ 本页只呈现公开披露的事实，<strong>不做任何估值判断或买卖建议</strong>。财务数据以公司公告为准，
+      接口可能滞后或有误；<strong>下单前请以交易所与公司原始公告核对</strong>。全部计算在本地浏览器完成。
+    </p>
+  </div>
 
   <footer class="credit">
     <span>© 2026 王潇 · 自由使用，请注明来处；禁止商用</span>
@@ -343,7 +349,6 @@ const rankOf=(a,x)=>{ const b=a.filter(q=>q!=null&&isFinite(q)); if(b.length<20|
 const emaOf=(a,n)=>{ const k=2/(n+1); const o=[]; let p=null;
   for(let i=0;i<a.length;i++){ p=(p===null)? a[i] : a[i]*k+p*(1-k); o.push(p); } return o; };
 
-/* ---------- JSONP 抓取 ---------- */
 let jn=0;
 function jsonp(url){
   return new Promise((res,rej)=>{
@@ -408,14 +413,10 @@ async function srcTencent(rc,lmt){
   const arr=node.qfqday||node.day; if(!arr||!arr.length) throw new Error('无K线（停牌或代码不存在）');
   const qt=node.qt&&node.qt[sym];
   const rows=_toRows(arr);
-  let floatWan=null, pe=null, pb=null, mcap=null;
+  let floatWan=null;
   if(qt && qt[44]!=null && rows.length){ const px=rows[rows.length-1].c, fmv=parseFloat(qt[44]);
-    if(fmv>0 && px>0) floatWan=fmv*1e8/px/1e4;
-    if(fmv>0) mcap=fmv; }
-  if(qt && qt[39]!=null){ const v=parseFloat(qt[39]); if(isFinite(v) && v!==0) pe=v; }
-  /* PB 只有 A 股在 qt[46] 可靠；港美股该位是英文名，须为纯数字才采信 */
-  if(qt && qt[46]!=null){ const v=parseFloat(qt[46]); if(isFinite(v) && v>0 && String(qt[46]).trim()===String(v)) pb=v; }
-  return {name:(qt&&qt[1])||rc.digits, rows, floatWan, pe, pb, mcap};
+    if(fmv>0 && px>0) floatWan=fmv*1e8/px/1e4; }
+  return {name:(qt&&qt[1])||rc.digits, rows, floatWan};
 }
 /* 源二：东方财富（JSONP 主 + fetch 备；会被限流） */
 async function srcEastmoney(rc,lmt){
@@ -447,7 +448,7 @@ async function getKline(rc,lmt){
   }
   throw new Error(errs.join('　|　'));
 }
-async function probe(code){
+async function __unusedProbe(code){
   const out=[];
   for(const pair of SOURCES){
     const t0=Date.now();
@@ -458,188 +459,7 @@ async function probe(code){
   return out;
 }
 
-/* ---------- 引擎：筹码分布 + 累计阶梯（位阶） ---------- */
-/* 成交量单位自适应：腾讯源对科创板(688/689)返回「股」，其余板块返回「手」。
-   用近 20 日均量反推：若按「手」算出的换手率 > 25%（不可能），即判为「股」。 */
-function volFactor(rows, fsShares){
-  const v=rows.slice(-20).map(r=>r.v).sort((a,b)=>a-b);
-  if(!v.length) return 100;
-  const mv=v[Math.floor(v.length/2)];
-  return (mv*100/fsShares > 0.25) ? 1 : 100;
-}
-/* ===== MACD 多头状态（12/26/9）=====
-   实测依据（17 只 × 8516 根 K 线，10 日持有）：
-     含慢档金叉的信号：10日均 +2.89%、胜率 61%、n=96   ← 显著（t=2.15，p≈0.03）
-     不含慢档：        +0.39%、胜率 45%、n=354          ← 等于随机
-     快档 8/17/5 单独金叉：+0.20%、胜率 46%、n=146       ← 无 alpha
-   结论：决定信号质量的是「最慢的那一档在不在」，不是「有几档金叉」。 */
-function macdGate(c, f, s2, g){
-  const e1=emaOf(c,f), e2=emaOf(c,s2);
-  const dif=c.map((_,i)=>e1[i]-e2[i]);
-  const dea=emaOf(dif,g);
-  const m=c.map((_,i)=>dif[i]-dea[i]);
-  const N=m.length-1;
-  const on = m[N]>0;
-  let sinceUp=null, sinceDn=null;
-  for(let i=N;i>=1;i--){
-    if(sinceUp==null && m[i-1]<=0 && m[i]>0) sinceUp=N-i;
-    if(sinceDn==null && m[i-1]>=0 && m[i]<0) sinceDn=N-i;
-    if(sinceUp!=null && sinceDn!=null) break;
-  }
-  /* 强度：当前 |MACD| 相对自身近 250 日 |MACD| 中位数的倍数。贴着零轴的"金叉"是虚掩的门。 */
-  const ab=[];
-  for(let i=Math.max(0,N-250);i<=N;i++) ab.push(Math.abs(m[i]));
-  ab.sort((a,b)=>a-b);
-  const med=ab[Math.floor(ab.length/2)]||0;
-  const strength=(med>0? Math.abs(m[N])/med : 0);
-  const sk = strength>=1.5? '强' : (strength>=0.7? '中' : '弱');
-  return {on, sinceUp, sinceDn, v:m[N], strength, sk};
-}
-function gateOf(c){
-  const G1=macdGate(c,12,26,9);   // 慢档＝闸门
-  const G2=macdGate(c,8,17,5);    // 快档
-  const G3=macdGate(c,7,34,5);    // 第三档
-  const res=[G1,G2,G3].filter(g=>g.on).length;
-  let gtag, kind;
-  if(!G1.on){ gtag='闸门关'; kind='off'; }
-  else if(G1.sinceUp!=null && G1.sinceUp<=5){ gtag='开·新鲜'; kind='fresh'; }
-  else { gtag='开·'+(G1.sinceUp==null?'>250':G1.sinceUp)+'根'; kind='on'; }
-  /* 强度弱独立于新鲜度：不管金叉多少根，强度弱就是虚掩 */
-  if(kind!=='off' && G1.sk==='弱'){ kind='weak'; gtag=(G1.sinceUp!=null&&G1.sinceUp<=5?'开·新鲜但弱':'开·已走'+G1.sinceUp+'根但弱'); }
-  return {G1,G2,G3,res,gtag,kind};
-}
-/* ===== 协调强度（0~1）：这个稳定状态是"有共识的焦点"还是"没人交易的惰性" =====
-   三项平均：
-     ① 筹码单峰程度  (30 − 集中度) / 20      越集中越高
-     ② 交易活跃度    换手率的历史分位          地量 → 低
-     ③ 焦点清晰度    有明确支撑位 = 1，无支撑 = 0.3
-   用途：对应「稳态不追势、失衡下重手」——协调越强，破裂时才越值得下重手。 */
-function coordOf(R, ok){
-  const c1=Math.max(0,Math.min(1,(30-(R.conc||0))/20));
-  const c2=Math.max(0,Math.min(1,R.tRank||0));
-  const c3=(R.shelf1!=null)?1:(R.profit>=0.10?0.3:0.3);
-  return (c1+c2+c3)/3;
-}
-/* ===== 交易计划：入场 / 止损 / 目标 / 盈亏比 =====
-   三条纪律：
-     ① 入场用现价，不假设"回踩一定会来"——回踩是概率，不是前提
-     ② 止损放在支撑位下方，且缓冲 ≥ 该股近 20 日平均振幅的 2.5 倍（否则被噪音打掉）
-     ③ 目标只认筹码压力位；上方无压力位时不给目标、也不给盈亏比（不硬造数字） */
-function planOf(R, GT){
-  const px=R.px;
-  const sup = R.shelf1? R.shelf1.p : null;
-  const p1  = R.wall1? R.wall1.p : null;
-  const p2  = R.wall2? R.wall2.p : null;
-  const noShelf = (sup==null);
-  const canGo = (GT.kind==='fresh' || GT.kind==='on');
-  let entry=null, stop=null, note='';
-  if(!canGo){
-    note = (GT.kind==='off')? 'MACD 空头，不出手' : 'MACD 多头但力道很弱，不出手';
-  } else {
-    entry = px;
-    const anchor = (sup!=null? sup : px);
-    stop = anchor - px*R.buffer;                 // 支撑位下方一个"波动缓冲"
-    note = (GT.kind==='fresh')? '现价可入'
-         : (sup!=null? '已走一段，等回踩 '+anchor.toFixed(2)+' 再入' : '已走一段，脚下无支撑，轻仓');
-  }
-  const t1 = (p1!=null)? p1 : null;              // 目标只认压力位
-  const t2 = (p2!=null)? p2 : null;
-  let rr=null;
-  if(entry!=null && stop!=null && t1!=null && t1>entry) rr=(t1-entry)/(entry-stop);
-  return {entry, stop, t1, t2, rr, noShelf, noTarget:(t1==null), note,
-    risk: entry!=null? entry-stop : null,
-    riskPct: entry!=null? (entry-stop)/entry*100 : null};
-}
-function macdText(GT){
-  const g=GT.G1, sk=g.sk;
-  if(!g.on) return '空头'+(g.sinceDn!=null? ' '+g.sinceDn+' 天':'');
-  if(g.sinceUp==null) return '多头很久 · 力道'+sk;
-  if(sk==='弱') return '多头 '+g.sinceUp+' 天 · 力道很弱';
-  return (g.sinceUp<=5? '刚转多 ':'多头 ')+g.sinceUp+' 天 · 力道'+sk;
-}
-function chipLevels(rows, fsWan, A, B){
-  const n=rows.length, c=rows.map(r=>r.c), px=c[n-1];
-  if(!(fsWan>0) || n<120) return null;
-  let lo=Infinity, hi=-Infinity, mx=0;
-  for(const r of rows){ if(r.l<lo) lo=r.l; if(r.h>hi) hi=r.h; }
-  if(!(hi>lo)) return null;
-  const step=(hi-lo)/B, PX=new Array(B), CH=new Array(B);
-  for(let b=0;b<B;b++){ PX[b]=lo+step*(b+0.5); CH[b]=0; }
-  const fs=fsWan*10000;
-  const VF=volFactor(rows, fs);
-  const share=v=>v*VF;
-  for(let i2=0;i2<n;i2++){
-    const r=rows[i2];
-    const to=Math.min(1, share(r.v)/fs*A), k=1-to;
-    for(let b=0;b<B;b++) CH[b]*=k;
-    const rng=r.h-r.l;
-    if(rng<=1e-9){ const q=Math.max(0,Math.min(B-1,Math.floor((r.l-lo)/step))); CH[q]+=share(r.v); continue; }
-    let avg=(r.h+r.l+2*r.c)/4;
-    avg=Math.max(r.l+rng*0.001, Math.min(r.h-rng*0.001, avg));
-    const i0=Math.max(0,Math.floor((r.l-lo)/step)), i1=Math.min(B-1,Math.floor((r.h-lo)/step));
-    let sw=0; const w=[];
-    for(let b=i0;b<=i1;b++){ const p=PX[b];
-      const ww=(p<=avg)?(p-r.l)/(avg-r.l):(r.h-p)/(r.h-avg); w.push(ww); sw+=ww; }
-    const vol=share(r.v);
-    if(!(sw>1e-12)){ CH[i0]+=vol; continue; }
-    for(let q=0;q<w.length;q++) CH[i0+q]+=vol*w[q]/sw;
-  }
-  let tot=0; for(let b=0;b<B;b++) tot+=CH[b];
-  if(!(tot>0)) return null;
-  const den=CH.map(x=>x/tot);
-  const idxOf=p=>Math.max(0,Math.min(B-1,Math.floor((p-lo)/step)));
-  const qat=q=>{ let a=0; for(let b=0;b<B;b++){ a+=den[b]; if(a>=q) return PX[b]; } return PX[B-1]; };
-  const curB=idxOf(px);
-  let profit=0; for(let b=0;b<=curB;b++) profit+=den[b];
-  let avgCost=0; for(let b=0;b<B;b++) avgCost+=PX[b]*den[b];
-  const p5=qat(0.05), p95=qat(0.95);
-  /* 返回对象（与 calibrate.html 口径统一）：{p 价位, cum 累计占比, idx 档位} */
-  const upLad=t=>{ let a=0; for(let b=curB+1;b<B;b++){ a+=den[b]; if(a>=t) return {p:PX[b], cum:a, idx:b}; } return null; };
-  const dnLad=t=>{ let a=0; for(let b=curB;b>=0;b--){ a+=den[b]; if(a>=t) return {p:PX[b], cum:a, idx:b}; } return null; };
-  const wall1=upLad(0.20), wall2=upLad(0.50);
-  const shelf1=(profit>=0.10)? dnLad(0.10) : null;
-  let wallChip=0;
-  if(wall1) for(let b=curB+1;b<=wall1.idx;b++) wallChip+=den[b];
-  /* ---- 量筹配合因子：成交量 × 换手率 ---- */
-  const fsN=fs, tno=rows.map(r=>share(r.v)/fsN*100);       // 换手率 %
-  const curT=tno[n-1];
-  const seg=tno.slice(Math.max(0,n-250));
-  const srt=seg.slice().sort((a,b)=>a-b);
-  const lowLine=srt[Math.floor(srt.length*0.20)]||0;        // 地量线
-  let belowD=0; for(let i3=n-1;i3>=0;i3--){ if(tno[i3]<=lowLine) belowD++; else break; }
-  const ma5=tno.slice(-5).reduce((a,b)=>a+b,0)/5;
-  const ma20=tno.slice(-21,-1).reduce((a,b)=>a+b,0)/20;
-  const expand=(ma20>0)? curT/ma20 : null;                  // 放量倍数
-  const digest=(wallChip>0 && ma20>0)? (wallChip*100)/ma20 : null;   // 吃掉压力位1需几天
-  const rank=x=>seg.filter(y=>y<=x).length/seg.length;
-  /* 波动缓冲：近 20 日平均振幅 × 2.5，下限 3% */
-  let amp=0, cnt2=0;
-  for(let i4=Math.max(1,n-20);i4<n;i4++){ if(rows[i4].c>0){ amp+=(rows[i4].h-rows[i4].l)/rows[i4].c; cnt2++; } }
-  amp = cnt2? amp/cnt2 : 0.02;
-  const buffer = Math.max(0.03, amp*2.5);
-  const bw=(p95-p5)/10 || step*10, bands=[];
-  for(let a=px; a<p95+bw; a+=bw){
-    const b0=idxOf(a), b1=idxOf(a+bw); let sum=0;
-    for(let b=b0;b<=b1&&b<B;b++) sum+=den[b];
-    bands.push({lo:a, hi:a+bw, pct:sum});
-  }
-  return {px, profit, avgCost, p5, p95, width:p95-p5, conc:(p95-p5)/(p95+p5)*100, vunit:(VF===100?'手':'股'),
-    curT, tRank:rank(curT), ma20, expand, lowLine, belowD, wallChip, digest, amp, buffer,
-    wall1, wall2, shelf1, bands, PX, den, lo, hi, step, B,
-    rangeLo:lo, rangeHi:hi, rangePos:(px-lo)/(hi-lo)*100};
-}
-function structOf(R){
-  const upD = R.wall1!=null? (R.wall1/R.px-1)*100 : null;
-  const dnD = R.shelf1!=null? (R.shelf1/R.px-1)*100 : null;
-  let tag='结构中性';
-  if(dnD===null && upD!==null && upD<=8) tag='上压下空';
-  else if(dnD!==null && upD!==null && upD<=8) tag='上有压 · 下有撑';
-  else if(R.profit>=0.70) tag='多数浮盈';
-  else if(R.profit<=0.10) tag='几乎全被套';
-  return {tag, upD, dnD};
-}
 /* ---------- 主流程 ---------- */
-const RES=[];
 function parseCodes(t){
   const out=[], seen={};
   t.split(/[\s,，;；、|]+/).forEach(tok=>{
@@ -654,427 +474,512 @@ function parseCodes(t){
   });
   return out;
 }
+
+function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
+
+/* ══════════════════════════════════════════════════════════════════
+   东财数据中心 F10 —— 唯一能拿到主营构成／财务现金流／股东主力的通道
+   实测：
+     · 新浪：CorpSummaryService 等一律返回 Service not valid；F10 页面是 HTML 且无 CORS
+     · 腾讯：FinanceController / HkFinanceController 均 Can't load controller
+     · 东财：datacenter-web 认 callback= 参数，返回真 JSONP；换任意 Referer（含无 Referer）均 200
+   行情与 K 线仍走腾讯，不变。
+   ══════════════════════════════════════════════════════════════════ */
+const DCAPI='https://datacenter-web.eastmoney.com/api/data/v1/get';
+let jdc=0;
+/* 东财的回调参数名是 callback（不是 cb）—— 实测 cb 只会返回裸 JSON */
+function jsonpEP(url){
+  return new Promise((res,rej)=>{
+    const cb='__dc'+(++jdc); let done=false;
+    const s=document.createElement('script');
+    const fin=(ok,d)=>{ if(done) return; done=true;
+      try{ delete window[cb]; }catch(_){ window[cb]=undefined; }
+      s.remove(); ok? res(d) : rej(d); };
+    window[cb]=d=>fin(true,d);
+    s.onerror=()=>fin(false,new Error('网络失败'));
+    s.src=url+(url.indexOf('?')>=0?'&':'?')+'callback='+cb;
+    document.head.appendChild(s);
+    setTimeout(()=>fin(false,new Error('超时 20s')),20000);
+  });
+}
+/* 两条通道取同一个 URL：
+   ① fetch —— 首选。实测该接口**在请求带 Origin 时**返回 Access-Control-Allow-Origin: *，
+      且是简单 GET（不带自定义头）→ 连预检都不触发，最稳。
+      ⚠ 探测 CORS 必须带 Origin 头，否则服务器不返回该响应头，会误判成「无 CORS」。
+   ② JSONP —— 兜底。该接口的 Content-Type 是 text/plain 且没有 X-Content-Type-Options: nosniff，
+      浏览器因此仍会执行 <script>；但这条依赖 quirks 行为，所以只当备胎。 */
+async function dcGet(base){
+  try{
+    const r=await fetch(base, {method:'GET'});
+    if(r.ok){
+      const d=await r.json();
+      if(d && d.success!==undefined) return d;
+    }
+  }catch(e){ /* 落到 JSONP */ }
+  return await jsonpEP(base);
+}
+/* 取一张报表。sort 传 null 表示不排序（部分报表没有 REPORT_DATE 列，排了会报错） */
+async function dc(rn, secucode, o){
+  o=o||{};
+  let u=DCAPI+'?reportName='+encodeURIComponent(rn)
+    +'&columns=ALL&filter='+encodeURIComponent('(SECUCODE="'+secucode+'")')
+    +'&pageSize='+(o.size||60)+'&pageNumber=1';
+  if(o.sort) u+='&sortColumns='+o.sort+'&sortTypes=-1';
+  const d=await dcGet(u);
+  if(!d || !d.success) return null;
+  return (d.result && d.result.data) || [];
+}
+/* 代码 → 东财 SECUCODE */
+function secucodeOf(rc){
+  if(rc.mk==='hk') return rc.digits+'.HK';
+  if(rc.us){
+    /* 后缀可能来自三处：用户显式写的（digits 里带 .N）、getKline 试探出来的（usedSuffix）、都没有 */
+    const base=rc.digits.replace(/\..*$/,'');
+    const fromDigits=String(rc.digits).split('.')[1] || '';
+    const ex=(fromDigits || String(rc.usedSuffix||'').replace('.','')).toUpperCase();
+    return base+'.'+(ex==='N'? 'N' : 'O');   /* 东财：纳斯达克=.O，纽交所=.N */
+  }
+  return rc.digits+'.'+(rc.mk==='sh'? 'SH' : (rc.mk==='bj'? 'BJ' : 'SZ'));
+}
+const RP_A={org:'RPT_F10_BASIC_ORGINFO', mainop:'RPT_F10_FN_MAINOP', theme:'RPT_F10_CORETHEME_BOARDTYPE',
+  fin:'RPT_F10_FINANCE_MAINFINADATA', num:'RPT_F10_EH_HOLDERNUM',
+  free:'RPT_F10_EH_FREEHOLDERS', org2:'RPT_MAIN_ORGHOLD'};
+const RP_H={org:'RPT_HKF10_INFO_ORGPROFILE', fin:'RPT_HKF10_FN_MAININDICATOR'};
+const RP_U={org:'RPT_USF10_INFO_ORGPROFILE'};
+
+/* 各市场拉哪些表 */
+function planOf_(rc){
+  if(rc.mk==='hk') return [['org',RP_H.org,null,5],['fin',RP_H.fin,'REPORT_DATE',12]];
+  if(rc.mk==='us') return [['org',RP_U.org,null,5]];
+  return [['org',RP_A.org,null,5],['mainop',RP_A.mainop,'REPORT_DATE',200],
+          ['theme',RP_A.theme,null,60],['fin',RP_A.fin,'REPORT_DATE',12],
+          ['num',RP_A.num,'END_DATE',8],['free',RP_A.free,'END_DATE',200],
+          ['org2',RP_A.org2,'REPORT_DATE',80]];
+}
+async function loadF10(rc, sc){
+  const plan=planOf_(rc);
+  const got=await Promise.all(plan.map(function(p){
+    return dc(p[1], sc, {sort:p[2], size:p[3]}).catch(function(){ return null; });
+  }));
+  const o={};
+  plan.forEach(function(p,i){ o[p[0]]=got[i]; });
+  return o;
+}
+
+/* ── 单位与格式化 ── */
+function yi(v){
+  if(v==null||!isFinite(v)) return '—';
+  const a=Math.abs(v);
+  if(a>=1e8) return (v/1e8).toFixed(2)+' 亿';
+  if(a>=1e4) return (v/1e4).toFixed(1)+' 万';
+  return v.toFixed(0);
+}
+function pct(v,d){ return (v==null||!isFinite(v))? '—' : v.toFixed(d==null?2:d)+'%'; }
+function yoy(v){
+  if(v==null||!isFinite(v)) return '<span style="color:var(--faint)">—</span>';
+  const c = v>=0? 'pos':'neg';
+  return '<span class="'+c+'">'+(v>0?'+':'')+v.toFixed(1)+'%</span>';
+}
+/* 十大流通股东的「较上期」是混合字段：'新进' / '不变' / '-520897' 这种数字字符串。
+   直接 Math.round() 会得到 NaN —— 必须按文本分支处理。这三个状态本身就是重要信号。 */
+function holdChg(v){
+  if(v==null || v==='') return '<span style="color:var(--faint)">—</span>';
+  const t=String(v).trim();
+  if(t==='新进') return '<b style="color:var(--seed-primary)">新进</b>';
+  if(t==='不变') return '<span style="color:var(--faint)">不变</span>';
+  if(t==='退出') return '<b style="color:#0f7a52">退出</b>';
+  const num=parseFloat(t.replace(/,/g,''));
+  if(!isFinite(num)) return esc(t);
+  return (num>0? '<span class="pos">+':'<span class="neg">')+Math.round(num).toLocaleString()+'</span>';
+}
+function stripDate(s){ return String(s==null?'':s).slice(0,10); }
+function fmtDate(s){
+  const t=stripDate(s); if(!t) return '—';
+  return t.replace(/-/g,'/');
+}
+
+/* ── 各市场财务口径归一 ── */
+function normFin(rows, mk){
+  if(!rows||!rows.length) return [];
+  if(mk==='hk') return rows.map(function(r){ return {
+    d:stripDate(r.REPORT_DATE), rev:r.OPERATE_INCOME, revY:r.OPERATE_INCOME_YOY,
+    np:r.HOLDER_PROFIT, npY:r.HOLDER_PROFIT_YOY, gm:r.GROSS_PROFIT_RATIO, roe:r.ROE_AVG,
+    dar:r.DEBT_ASSET_RATIO, eps:r.BASIC_EPS,
+    ocf:r.NETCASH_OPERATE, icf:r.NETCASH_INVEST, fcf:r.NETCASH_FINANCE,
+    /* 港股这张表没有现成的「现金流/净利」，但两个分量都有 —— 自己算 */
+    cq: (r.NETCASH_OPERATE!=null && r.HOLDER_PROFIT) ? r.NETCASH_OPERATE/r.HOLDER_PROFIT : null }; });
+  return rows.map(function(r){ return {
+    d:stripDate(r.REPORT_DATE), rev:r.TOTALOPERATEREVE, revY:r.TOTALOPERATEREVETZ,
+    np:r.PARENTNETPROFIT, npY:r.PARENTNETPROFITTZ, gm:r.XSMLL, roe:r.ROEJQ,
+    dar:r.ZCFZL, eps:r.EPSJB,
+    ocf:r.NETCASH_OPERATE_PK, icf:r.NETCASH_INVEST_PK, fcf:r.NETCASH_FINANCE_PK,
+    cq:r.NCO_NETPROFIT }; });
+}
+
+/* ── ① 主营构成 ── */
+function blkMainop(rows){
+  if(!rows||!rows.length)
+    return '<div class="blk"><h3 class="blk-h">① 主营构成</h3><div class="na">该市场不提供主营构成数据。</div></div>';
+  const cur=stripDate(rows[0].REPORT_DATE), prev=stripDate(rows[rows.length-1].REPORT_DATE);
+  const TY={1:'按行业',2:'按产品',3:'按地区',4:'按销售模式'};
+  const byType={};
+  rows.forEach(function(r){
+    if(stripDate(r.REPORT_DATE)!==cur) return;
+    const t=String(r.MAINOP_TYPE);
+    (byType[t]=byType[t]||[]).push(r);
+  });
+  let h='';
+  const order=['2','3','1','4'].filter(function(t){ return byType[t]; });
+  order.forEach(function(t){
+    const list=byType[t];
+    /* ⚠ MBI_RATIO 是分数不是百分数 —— 实测四家公司 Σ 均 = 1.0000 */
+    let totRatio=0; list.forEach(function(r){ totRatio+=(r.MBI_RATIO||0); });
+    h+='<div class="sub">'+TY[t]+'　<span style="color:var(--faint)">占比合计 '+
+       (totRatio*100).toFixed(1)+'%</span></div>';
+    h+='<div class="tw"><table><thead><tr><th>项目</th><th style="text-align:right">主营收入</th>'+
+       '<th>占比</th><th style="text-align:right">毛利率</th><th style="text-align:right">主营成本</th></tr></thead><tbody>';
+    list.sort(function(a,b){ return (b.MAIN_BUSINESS_INCOME||0)-(a.MAIN_BUSINESS_INCOME||0); });
+    list.forEach(function(r){
+      const rt=(r.MBI_RATIO||0)*100, w=Math.max(2,Math.min(100,rt));
+      h+='<tr><td><b>'+esc(r.ITEM_NAME)+'</b></td>'
+        +'<td class="num">'+yi(r.MAIN_BUSINESS_INCOME)+'</td>'
+        +'<td><span class="bar-cell"><s style="width:'+w.toFixed(1)+'px;max-width:120px"></s>'
+        +'<u>'+rt.toFixed(1)+'%</u></span></td>'
+        +'<td class="num">'+pct((r.GROSS_RPOFIT_RATIO||0)*100,1)+'</td>'
+        +'<td class="num">'+yi(r.MAIN_BUSINESS_COST)+'</td></tr>';
+    });
+    h+='</tbody></table></div>';
+  });
+  if(prev!==cur) h+='<div class="src">最新报告期 '+fmtDate(cur)+'；表内数据均取自该期。</div>';
+  return '<div class="blk"><h3 class="blk-h">① 主营构成 <em>cf E</em></h3>'+h+'</div>';
+}
+
+/* ── ② 竞争力 ── */
+function blkTheme(o, rows, rc){
+  const info = o.org && o.org[0] ? o.org[0] : null;
+  let ind='';
+  if(info){
+    const items=[];
+    if(info.BELONG_INDUSTRY) items.push(['所属行业', info.BELONG_INDUSTRY]);
+    if(info.INDUSTRYCSRC1) items.push(['证监会行业', info.INDUSTRYCSRC1]);
+    if(info.EM2016) items.push(['东财行业', info.EM2016]);
+    if(info.TRADE_MARKET) items.push(['交易市场', info.TRADE_MARKET]);
+    if(info.LISTING_DATE) items.push(['上市日期', fmtDate(info.LISTING_DATE)]);
+    /* ⚠ REG_CAPITAL 这个字段名一样、含义三个市场完全不同：
+         A股：数字，单位「万元」   → 125008.16 即 12.50 亿元
+         港股：字符串「1000000 HKD」，是金额+币种的原文，不是数字
+         美股：没有这个字段
+       直接 (v/10000) 会在港股得到 NaN。 */
+    if(rc.mk==='hk'){
+      if(info.HK_SHARES) items.push(['已发行股本', Number(info.HK_SHARES).toLocaleString()+' 股']);
+      if(info.REG_CAPITAL) items.push(['注册股本', String(info.REG_CAPITAL)]);
+      if(info.CURRENCY) items.push(['货币单位', info.CURRENCY]);
+      if(info.REG_PLACE) items.push(['注册地', info.REG_PLACE]);
+    } else if(rc.mk==='us'){
+      if(info.REG_PLACE) items.push(['注册地', info.REG_PLACE]);
+      if(info.ORG_EN_ABBR) items.push(['英文简称', info.ORG_EN_ABBR]);
+    } else {
+      const rcv=parseFloat(info.REG_CAPITAL);
+      if(isFinite(rcv) && rcv>0) items.push(['注册资本', (rcv/10000).toFixed(2)+' 亿元']);
+      if(info.REG_NUM) items.push(['统一社会信用代码', info.REG_NUM]);
+      if(info.REG_ADDRESS) items.push(['注册地址', info.REG_ADDRESS]);
+      if(info.EMP_NUM) items.push(['员工人数', info.EMP_NUM]);
+    }
+    if(info.ORG_NAME) items.push(['公司全称', info.ORG_NAME]);
+    if(info.ORG_EN_ABBR && rc.mk!=='us') items.push(['英文名称', info.ORG_EN_ABBR]);
+    if(items.length){
+      ind='<div class="tw"><table><tbody>'+items.map(function(p){
+        return '<tr><th style="width:110px">'+esc(p[0])+'</th><td>'+esc(p[1])+'</td></tr>';
+      }).join('')+'</tbody></table></div>';
+    }
+    if(info.BUSINESS_SCOPE)
+      ind+='<div class="sub">经营范围</div><div class="na">'+esc(info.BUSINESS_SCOPE)+'</div>';
+  }
+  let th='';
+  const list=(rows||[]).filter(function(r){ return String(r.SELECTED_BOARD_REASON||'').trim().length>20; });
+  list.sort(function(a,b){ return (a.BOARD_RANK||999)-(b.BOARD_RANK||999); });
+  list.slice(0,8).forEach(function(r){
+    const y=String(r.BOARD_YIELD||'').trim();
+    th+='<div class="theme"><div class="theme-h"><b>'+esc(r.BOARD_NAME)+'</b>'
+      + (r.BOARD_RANK? '<span>板块排名 '+esc(r.BOARD_RANK)+'</span>':'')
+      + (y&&y!=='-'? '<span>板块涨幅 '+esc(y)+'</span>':'')
+      + (r.IS_PRECISE? '<span>精确</span>':'')
+      +'</div><p>'+esc(String(r.SELECTED_BOARD_REASON).trim())+'</p></div>';
+  });
+  if(!th) th='<div class="na">'+(rc.mk==='us'? '美股不提供核心题材数据。' : '该公司暂无可用的题材说明。')+'</div>';
+  return '<div class="blk"><h3 class="blk-h">② 竞争力 <em>cf I</em></h3>'
+    + (ind? '<div class="sub">公司概况</div>'+ind : '')
+    + '<div class="sub">核心题材与入选理由（原文照录）</div>'+th
+    + '<div class="src">题材文字为行情商整理的公开资料原文，未经核实 —— 标 cf I。'
+    + '公司概况取自 F10 基础信息表。</div></div>';
+}
+
+/* ── ③ 财务与现金流 ── */
+function blkFin(fin, rc){
+  if(!fin.length)
+    return '<div class="blk"><h3 class="blk-h">③ 财务与现金流</h3><div class="na">'
+      + (rc.mk==='us'? '美股 F10 只提供公司概况与原始报表科目，拿不到与 A 股同口径的整理结果。'
+                     : '该市场不提供财务指标数据。')+'</div></div>';
+  let h='<div class="tw"><table class="fin-tbl"><thead><tr>'
+    + '<th>报告期</th><th style="text-align:right">营业总收入</th><th style="text-align:right">同比</th>'
+    + '<th style="text-align:right">归母净利</th><th style="text-align:right">同比</th>'
+    + '<th style="text-align:right">毛利率</th><th style="text-align:right">ROE</th>'
+    + '<th style="text-align:right">资产负债率</th>'
+    + '<th style="text-align:right">经营现金流</th><th style="text-align:right">投资</th>'
+    + '<th style="text-align:right">筹资</th><th style="text-align:right">现金流/净利</th>'
+    + '</tr></thead><tbody>';
+  fin.forEach(function(r,i){
+    h+='<tr'+(i===0?' class="now"':'')+'>'
+      +'<td><b>'+fmtDate(r.d)+'</b></td>'
+      +'<td class="num">'+yi(r.rev)+'</td><td class="num">'+yoy(r.revY)+'</td>'
+      +'<td class="num">'+yi(r.np)+'</td><td class="num">'+yoy(r.npY)+'</td>'
+      +'<td class="num">'+pct(r.gm,1)+'</td>'
+      +'<td class="num">'+pct(r.roe,2)+'</td>'
+      +'<td class="num">'+pct(r.dar,1)+'</td>'
+      +'<td class="num'+((r.ocf||0)<0?' neg':'')+'">'+yi(r.ocf)+'</td>'
+      +'<td class="num">'+yi(r.icf)+'</td>'
+      +'<td class="num'+(r.fcf>0?' pos':'')+'">'+yi(r.fcf)+'</td>'
+      +'<td class="num">'+(r.cq==null? '—' : r.cq.toFixed(2))+'</td></tr>';
+  });
+  h+='</tbody></table></div>';
+  /* 读法 */
+  const c0=fin[0];
+  let read='';
+  if(c0.cq!=null){
+    const q=c0.cq;
+    read = q>=1.2? '经营现金流是净利润的 '+q.toFixed(2)+' 倍 —— 利润有现金撑着，是真钱。'
+         : q>=0.8? '经营现金流约为净利润的 '+q.toFixed(2)+' 倍 —— 基本匹配。'
+         : q>=0?   '经营现金流只有净利润的 '+q.toFixed(2)+' 倍 —— 利润没变成钱，要看应收和存货。'
+         :          '经营现金流为负而净利润为正 —— 这是最需要盯的一种组合。';
+  }
+  if(c0.fcf!=null && c0.fcf>0)
+    read += (read?'　':'')+'筹资现金流为正（'+yi(c0.fcf)+'），说明当期在净融入资金。';
+  if(c0.dar!=null)
+    read += (read?'　':'')+'资产负债率 '+pct(c0.dar,1)+
+      (c0.dar>=70? '，偏高，杠杆重。' : (c0.dar<=40? '，负债轻。' : '，中等。'));
+  if(fin.length>=5){
+    const a=fin[4], b=fin[0];
+    if(a.gm!=null&&b.gm!=null) read += '　毛利率从 '+pct(a.gm,1)+' 变到 '+pct(b.gm,1)+
+      (b.gm>a.gm+0.5? '，在改善。' : (b.gm<a.gm-0.5? '，在下滑 —— 这是最该警惕的方向。' : '，基本持平。'));
+  }
+  return '<div class="blk"><h3 class="blk-h">③ 财务与现金流 <em>cf E</em></h3>'+h
+    + (read? '<div class="na" style="margin-top:.75rem;border-style:solid">'+esc(read)+'</div>' : '')
+    + '<div class="src">同比为该期对上年同期的增长率（累计口径）。ROE 为加权净资产收益率，'
+    + '<b>年内各期是累计值，季报之间不可直接比大小，要比就比同比那一列</b>。'
+    + '「现金流/净利」＝经营现金流净额 ÷ 归母净利润，是利润含金量的常用体检项。</div></div>';
+}
+
+/* ── ④ 股东与主力 ── */
+function blkHold(o, rc){
+  if(rc.mk==='us')
+    return '<div class="blk"><h3 class="blk-h">④ 股东与主力</h3><div class="na">美股不提供股东与机构持仓数据。</div></div>';
+  if(rc.mk==='hk')
+    return '<div class="blk"><h3 class="blk-h">④ 股东与主力</h3><div class="na">'
+      + '港股 F10 不提供股东户数与机构持仓（东财港股报表族里没有对应表）。</div></div>';
+  let h='';
+  /* 股东户数 */
+  const num=(o.num||[]).slice(0,6);
+  if(num.length){
+    h+='<div class="sub">股东户数 · 筹码集中度</div><div class="tw"><table class="hold-tbl"><thead><tr>'
+      +'<th>报告期</th><th style="text-align:right">股东户数</th><th style="text-align:right">较上期</th>'
+      +'<th style="text-align:right">户均持股(股)</th><th>集中度</th></tr></thead><tbody>';
+    num.forEach(function(r,i){
+      const nx=num[i+1];
+      let chg='—';
+      if(nx && r.HOLDER_TOTAL_NUM && nx.HOLDER_TOTAL_NUM){
+        const d=(r.HOLDER_TOTAL_NUM/nx.HOLDER_TOTAL_NUM-1)*100;
+        chg=(d>0?'<span class="pos">+':'<span class="neg">')+d.toFixed(1)+'%</span>';
+      }
+      h+='<tr><td><b>'+fmtDate(r.END_DATE)+'</b></td>'
+        +'<td class="num">'+(r.HOLDER_TOTAL_NUM!=null? r.HOLDER_TOTAL_NUM.toLocaleString():'—')+'</td>'
+        +'<td class="num">'+chg+'</td>'
+        +'<td class="num">'+(r.AVG_FREE_SHARES!=null? Math.round(r.AVG_FREE_SHARES).toLocaleString():'—')+'</td>'
+        +'<td>'+esc(r.HOLD_FOCUS||'—')+'</td></tr>';
+    });
+    h+='</tbody></table></div>'
+      +'<div class="na" style="border-style:solid;margin-top:.5rem">股东户数<b>增加＝筹码在分散</b>（散户进场、'
+      +'人均持股变少）；<b>减少＝筹码在集中</b>。这是方向性提示，不是买卖信号。</div>';
+  } else h+='<div class="na">暂无股东户数数据。</div>';
+
+  /* 十大流通股东 */
+  const fr=(o.free||[]);
+  if(fr.length){
+    const cur=stripDate(fr[0].END_DATE);
+    const list=fr.filter(function(r){ return stripDate(r.END_DATE)===cur; })
+                 .sort(function(a,b){ return (a.HOLDER_RANK||99)-(b.HOLDER_RANK||99); }).slice(0,10);
+    if(list.length){
+      h+='<div class="sub">十大流通股东（'+fmtDate(cur)+'）</div>'
+        +'<div class="tw"><table class="hold-tbl"><thead><tr><th>#</th><th>股东名称</th>'
+        +'<th style="text-align:right">持股数</th><th style="text-align:right">占流通</th>'
+        +'<th style="text-align:right">较上期</th><th>性质</th></tr></thead><tbody>';
+      list.forEach(function(r){
+        h+='<tr><td>'+(r.HOLDER_RANK||'')+'</td><td>'+esc(r.HOLDER_NAME)+'</td>'
+          +'<td class="num">'+yi(r.HOLD_NUM)+'</td>'
+          +'<td class="num">'+pct(r.FREE_HOLDNUM_RATIO,2)+'</td>'
+          +'<td class="num">'+holdChg(r.HOLD_NUM_CHANGE)+'</td>'
+          /* IS_HOLDORG 是字符串 '1'/'0' —— '0' 在 JS 里是真值，不能直接当布尔用 */
+          +'<td>'+(String(r.IS_HOLDORG)==='1'? '<b>机构</b>':'个人')+'</td></tr>';
+      });
+      h+='</tbody></table></div>';
+    }
+  }
+
+  /* 机构持仓（按类型） */
+  const og=(o.org2||[]);
+  if(og.length){
+    const cur=stripDate(og[0].REPORT_DATE);
+    /* ⚠ ORG_TYPE 是代码不是名称。00=合计（已用家数相加验证：茅台 1697+8+1+15=1721），
+       其余为东财惯例推断 —— 标 cf I */
+    const TY={'00':'合计','01':'基金','02':'QFII','03':'社保','04':'券商','05':'保险',
+              '06':'信托','07':'其他','08':'财务公司','09':'银行'};
+    const rows=og.filter(function(r){ return stripDate(r.REPORT_DATE)===cur; })
+                 .sort(function(a,b){
+                   if(String(a.ORG_TYPE)==='00') return 1;
+                   if(String(b.ORG_TYPE)==='00') return -1;
+                   return (b.FREESHARES_RATIO||0)-(a.FREESHARES_RATIO||0); });
+    h+='<div class="sub">机构持仓（'+fmtDate(cur)+' · 按机构类型）</div>'
+      +'<div class="tw"><table class="hold-tbl"><thead><tr><th>机构类型</th>'
+      +'<th style="text-align:right">家数</th><th style="text-align:right">持股合计</th>'
+      +'<th style="text-align:right">占流通</th><th style="text-align:right">较上期</th>'
+      +'<th style="text-align:right">持仓市值</th></tr></thead><tbody>';
+    rows.forEach(function(r){
+      const t=String(r.ORG_TYPE);
+      h+='<tr><td>'+(t==='00'? '<b>合计</b>' : esc(TY[t]||('类型'+t)))+'</td>'
+        +'<td class="num">'+(r.HOULD_NUM!=null? r.HOULD_NUM.toLocaleString():'—')+'</td>'
+        +'<td class="num">'+yi(r.TOTAL_SHARES)+'</td>'
+        +'<td class="num">'+pct(r.FREESHARES_RATIO,2)+'</td>'
+        +'<td class="num">'+yoy(r.HOLDCHA_RATIO)+'</td>'
+        +'<td class="num">'+yi(r.HOLD_VALUE)+'</td></tr>';
+    });
+    h+='</tbody></table></div>'
+      +'<div class="src">机构类型代码取自行情商字段，除「合计」经家数相加验证外，其余为惯例推断（cf I）。'
+      +'「占流通」＝该类型持股占流通股比例。</div>';
+  }
+  if(!h) h='<div class="na">暂无股东数据。</div>';
+  return '<div class="blk"><h3 class="blk-h">④ 股东与主力 <em>cf E</em></h3>'+h+'</div>';
+}
+
+/* ── 整卡渲染 ── */
+function f10card(r, rc){
+  const o=r.f10||{};
+  return '<div class="f10">'
+    +'<div class="f10-h">'
+      +'<span class="nm">'+nm(r.name)+'</span>'
+      +'<span class="cd">'+esc(rc.digits)+' · '+esc(rc.market)+' · '+esc(secucodeOf(rc))+'</span>'
+      +'<span class="px">'
+        +'<span><i>现价</i><b class="big">'+F(r.px,2)+'</b></span>'
+        +'<span><i>市盈率</i><b>'+(r.pe==null?'—':F(r.pe,1))+'</b></span>'
+        +'<span><i>市净率</i><b>'+(r.pb==null?'不提供':F(r.pb,2))+'</b></span>'
+        +'<span><i>流通市值</i><b>'+(r.mcap==null?'—':(r.mcap>=10000?F(r.mcap/10000,2)+' 万亿':Math.round(r.mcap)+' 亿'))+'</b></span>'
+      +'</span>'
+    +'</div>'
+    + blkMainop(o.mainop)
+    + blkTheme(o,o.theme,rc)
+    + blkFin(normFin(o.fin,rc.mk), rc)
+    + blkHold(o,rc)
+    +'<div class="src">数据来源：东方财富数据中心 F10（'+esc(rc.market)+'）· '
+      +'行情与估值来自腾讯行情 · 全部计算在本地浏览器完成</div>'
+  +'</div>';
+}
+function nm(x){ return esc(String(x==null?'':x).replace(/\s+/g,'')); }
+
+/* ── 主流程 ── */
+const RES=[];
 async function run(){
   const codes=parseCodes($('codes').value);
   if(!codes.length){ $('prog').innerHTML='<span class="err">没解析出代码</span>'; return; }
-  const A=Math.max(0.1,parseFloat($('cdecay').value)||1.0);
-  const B=Math.max(80,Math.min(600,parseInt($('cbins').value)||240));
-  const ovr=parseFloat($('fsovr').value);
-  const lmt=Math.max(120,parseInt($('lmt').value)||500);
-  $('run').disabled=true; RES.length=0;
-  $('out').classList.add('hide'); $('pbar').style.width='0%'; $('prog').textContent='';
-  for(let i2=0;i2<codes.length;i2++){
-    const rc=codes[i2];
-    $('prog').textContent='抓取 '+rc.raw+'（'+rc.market+'）…（'+(i2+1)+' / '+codes.length+'）';
+  RES.length=0;
+  $('run').disabled=true; $('out').classList.add('hide');
+  $('pbar').style.width='0%';
+  for(let i=0;i<codes.length;i++){
+    const rc=codes[i];
+    $('prog').textContent='抓取 '+rc.raw+'（'+rc.market+'）…（'+(i+1)+' / '+codes.length+'）';
+    let name=rc.digits, px=null, pe=null, pb=null, mcap=null, used=rc;
+    /* 行情：腾讯（美股逐个试探交易所后缀） */
     try{
-      const {name,rows,src:dsrc,floatWan,pe,pb,mcap}=await getKline(rc,lmt);
-      /* 当日未完成的 K 线：成交量被低估，会扭曲筹码分布 —— 剔除 */
-      const now=new Date();
-      const today=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0');
-      let partial=false, use=rows;
-      if(rows.length>121 && rows[rows.length-1].d===today){ use=rows.slice(0,-1); partial=true; }
-      const fs0=(ovr>0? ovr : floatWan);
-      if(!(fs0>0)) RES.push({code:rc.digits,name,src:dsrc,mk:rc.mk,market:rc.market,
-          err:'拿不到流通股本（'+(rc.mk==='us'?'美股/A股均取流通市值÷现价；失败可在「流通股本覆盖」手填':'源未返回流通市值')+'）'});
-      else{
-        const R=chipLevels(use, fs0, A, B);
-        if(!R) RES.push({code:rc.digits,name,src:dsrc,mk:rc.mk,market:rc.market,err:'数据不足或分布为空'});
-        else {
-          const GT=gateOf(use.map(r=>r.c));
-          const o=Object.assign({code:rc.digits,name,src:dsrc,mk:rc.mk,market:rc.market,
-            fs0,n:use.length,partial},R,structOf(R),GT);
-          o.coord=coordOf(o);
-          /* ── 基本面（三地通用口径）── */
-          o.pe=pe; o.pb=pb; o.mcap=mcap;
-          (function(){
-            const n2=use.length, last=use[n2-1], prev=use[n2-2]||last;
-            const med=(function(){ var a=use.slice(-250).map(function(x){return x.v;}).sort(function(p,q){return p-q;});
-              return a.length? a[Math.floor(a.length/2)] : 0; })();
-            o.turn = (floatWan>0)? last.v*100/(floatWan*10000)*100 : null;     /* 换手率 % */
-            o.vr   = med>0? last.v/med : null;                                  /* 相对量 */
-            o.amp  = (prev.c>0)? (last.h-last.l)/prev.c*100 : null;             /* 振幅 % */
-            var amp5=[]; for(var i2=Math.max(1,n2-20);i2<n2;i2++){ if(use[i2-1].c>0) amp5.push((use[i2].h-use[i2].l)/use[i2-1].c*100); }
-            o.amp20 = amp5.length? amp5.reduce(function(p,q){return p+q;},0)/amp5.length : null;  /* 近20日均振幅 */
-          })();
-          o.bars=use.slice(-120).map(function(x){return {d:x.d,o:x.o,h:x.h,l:x.l,c:x.c,v:x.v};});
-          (function(){ var vv=use.map(function(x){return x.v;}).slice(-250).sort(function(p,q){return p-q;});
-            var mm=vv.length? vv[Math.floor(vv.length/2)] : 0;
-            o.ma20v = use.slice(-21,-1).reduce(function(p,q){return p+q.v;},0)/20;
-            o.vRankArr = use.slice(-120).map(function(x){ var rel= mm>0? x.v/mm : 1;
-              var cnt=0; for(var k=0;k<vv.length;k++) if(vv[k]<=x.v) cnt++; return vv.length? cnt/vv.length : 0.5; }); })();
-          o.plan=planOf(o,GT);
-          /* 估值 × 趋势 四象限 */
-          (function(){
-            var cheap = (pe!=null && pe>0)? (pe<20) : null;
-            var strong = (o.kind==='fresh'||o.kind==='on');
-            if(cheap===null){ o.verdict={t:'无法判定', s:'源未提供 PE', c:''}; }
-            else if(cheap && strong)  o.verdict={t:'便宜且在转强', s:'PE '+pe.toFixed(1)+' · 技术门开', c:'c-go'};
-            else if(cheap && !strong) o.verdict={t:'便宜但在走弱', s:'估值有底，等技术转多', c:'c-wait'};
-            else if(!cheap && strong) o.verdict={t:'偏贵但在走强', s:'PE '+pe.toFixed(1)+' · 靠趋势吃饭', c:'c-wait'};
-            else                      o.verdict={t:'贵且在走弱', s:'PE '+pe.toFixed(1)+' · 两头不占', c:'c-no'};
-            /* 敞口：市值 → 仓位上限 */
-            var mc=mcap||0, ex='标准', exs='按 10% 单标的上限';
-            if(mc>0 && mc<100){ ex='小仓'; exs='小盘(市值<100亿) 波动大，减半'; }
-            else if(mc>=3000){ ex='可略高'; exs='大盘(市值>3000亿) 波动小'; }
-            if(o.amp20!=null && o.amp20>6){ ex='小仓'; exs='20日均振幅 '+o.amp20.toFixed(1)+'%，波动过大'; }
-            o.expo=ex; o.expoS=exs;
-          })();
-          o.macdTxt=macdText(GT);
-          /* 一句话 */
-          const nearPress = (o.plan.t1!=null && o.plan.entry!=null && (o.plan.t1/o.plan.entry-1)<=0.05);
-          o.advice = (o.kind==='off') ? '闸门关，不参与'
-                   : (o.kind==='weak') ? 'MACD 多头但力道很弱，等同闸门关'
-                   : (o.kind==='fresh' && nearPress) ? '刚转多，但离压力位很近，空间小'
-                   : (o.kind==='fresh') ? '刚转多，可现价入'
-                   : (o.plan.noShelf) ? '多头已走一段，脚下无支撑，轻仓或等'
-                   : '多头已走一段，等回踩支撑再入';
-          RES.push(o);
-        }
-      }
-    }catch(e){ RES.push({code:rc.digits,name:'—',mk:rc.mk,market:rc.market,err:e.message||String(e)}); }
-    $('pbar').style.width=((i2+1)/codes.length*100).toFixed(0)+'%';
-    if(i2<codes.length-1) await new Promise(r=>setTimeout(r,140));
+      const g=await getKline(rc, 40);
+      name=g.name||rc.digits; used=Object.assign({},rc,{usedSuffix:g.usedSuffix||rc.usedSuffix});
+      const last=g.rows[g.rows.length-1];
+      px=last? last.c : null; pe=g.pe; pb=g.pb; mcap=g.mcap;
+    }catch(e){ /* 行情失败不致命，F10 仍可取 */ }
+    try{
+      const f10=await loadF10(used, secucodeOf(used));
+      const okAny=['org','mainop','fin','num','free','org2','theme'].some(function(k){ return f10[k]&&f10[k].length; });
+      RES.push({rc:used, name:name, px:px, pe:pe, pb:pb, mcap:mcap, f10:f10,
+                err: okAny? null : 'F10 没有返回任何数据（该代码可能不在行情商覆盖范围）'});
+    }catch(e){ RES.push({rc:used,name:name,px:px,pe:pe,pb:pb,mcap:mcap,err:(e&&e.message)||String(e)}); }
+    $('pbar').style.width=((i+1)/codes.length*100).toFixed(0)+'%';
+    if(i<codes.length-1) await new Promise(function(r){ setTimeout(r,120); });
   }
   render();
-  $('run').disabled=false; $('prog').textContent='完成：'+codes.length+' 只';
+  $('run').disabled=false;
+  $('prog').textContent='完成：'+codes.length+' 只';
   $('out').classList.remove('hide');
 }
-function spark(R,w,h){
-  const n=R.B; let mx=0;
-  for(let b=0;b<n;b++) if(R.den[b]>mx) mx=R.den[b];
-  let o='';
-  for(let b=0;b<n;b++){
-    const x=(b/n)*w, bw2=Math.max(0.6,w/n-0.15), bh=(R.den[b]/mx)*(h-4);
-    const p=R.PX[b];
-    o+='<rect x="'+x.toFixed(2)+'" y="'+(h-bh).toFixed(2)+'" width="'+bw2.toFixed(2)+'" height="'+bh.toFixed(2)+
-       '" fill="'+(p>R.px?'#b23a26':'#2e4b52')+'" opacity="'+(p>R.px?0.45:0.75)+'"/>';
-  }
-  const px=(R.px-R.lo)/(R.hi-R.lo)*w;
-  o+='<line x1="'+px.toFixed(1)+'" y1="0" x2="'+px.toFixed(1)+'" y2="'+h+'" stroke="#1b1813" stroke-width="1.2"/>';
-  if(R.wall1!=null){ const x=(R.wall1-R.lo)/(R.hi-R.lo)*w;
-    o+='<line x1="'+x.toFixed(1)+'" y1="0" x2="'+x.toFixed(1)+'" y2="'+h+'" stroke="#a3823c" stroke-width="1" stroke-dasharray="3 2"/>'; }
-  if(R.shelf1!=null){ const x=(R.shelf1-R.lo)/(R.hi-R.lo)*w;
-    o+='<line x1="'+x.toFixed(1)+'" y1="0" x2="'+x.toFixed(1)+'" y2="'+h+'" stroke="#2e4b52" stroke-width="1" stroke-dasharray="3 2"/>'; }
-  return '<svg viewBox="0 0 '+w+' '+h+'" width="'+w+'" height="'+h+'" style="display:block">'+o+'</svg>';
-}
-const TC={'上压下空':'b-none','上有压 · 下有撑':'b-both','多数浮盈':'b-bo','几乎全被套':'b-none','结构中性':'b-both'};
 function render(){
-  const ok=RES.filter(r=>!r.err);
-  const grp={};
-  ok.forEach(r=>{ (grp[r.tag]=grp[r.tag]||[]).push(r.name+'('+r.code+')'); });
-  const nGo=ok.filter(r=>r.plan.entry!=null).length;
-  const nRR=ok.filter(r=>r.plan.rr!=null&&r.plan.rr>=2).length;
-  const nNT=ok.filter(r=>r.plan.entry!=null&&r.plan.noTarget).length;
-  $('sum').innerHTML=[
-    ['可以出手', nGo, '只', 'MACD 多头且力道不弱 —— 实测这类信号胜率 61%、10日均 +2.89%（n=96）'],
-    ['盈亏比 ≥ 2:1', nRR, '只', '目标空间 / 止损空间 ≥ 2 —— 值得做的只有这些'],
-    ['上方无压力位', nNT, '只', '头顶没有筹码阻挡，但也给不出目标价与盈亏比 —— 只能跟随趋势'],
-    ['协调强（≥0.7）', ok.filter(r=>r.coord>=0.7).length, '只', '筹码集中 + 有人交易 + 支撑明确 —— 这种焦点破了才有大行情'],
-    ['不出手', ok.length-nGo, '只', 'MACD 空头 / 力道很弱 —— 不动手'],
-    ['抓取失败', RES.length-ok.length, '只', '停牌 / 代码错 / 网络 / 无股本']
-  ].map(([k,v,u,d])=>'<div class="card"><div class="k">'+k+'</div><div class="v">'+v+
-    '<small style="font-size:.6rem;color:var(--faint)"> '+u+'</small></div><div class="s">'+d+'</div></div>').join('');
-
-  const ko={fresh:0,on:1,weak:4,off:3};   /* 排序：新鲜 → 已走一段 → 闸门关 → 虚掩（最末） */
-  const ord={'上压下空':1,'几乎全被套':2,'上有压 · 下有撑':3,'结构中性':4,'多数浮盈':5};
-  const sorted=[...RES].sort((a,b)=>{
-    if(!!a.err!==!!b.err) return a.err?1:-1;
-    if(a.err) return 0;
-    const ka=ko[a.kind]||9, kb=ko[b.kind]||9;          // 闸门优先
-    if(ka!==kb) return ka-kb;
-    if(a.kind!=='off' && b.kind!=='off'){
-      const sa=a.G1.sinceUp==null?999:a.G1.sinceUp, sb=b.G1.sinceUp==null?999:b.G1.sinceUp;
-      if(sa!==sb) return sa-sb;                         // 越新鲜越前
-    }
-    const oa=ord[a.tag]||9, ob=ord[b.tag]||9;
-    if(oa!==ob) return oa-ob;
-    return (a.rangePos||0)-(b.rangePos||0);
+  const ok=RES.filter(function(r){ return !r.err; });
+  const bad=RES.filter(function(r){ return r.err; });
+  let h=ok.map(function(r){ return f10card(r, r.rc); }).join('');
+  bad.forEach(function(r){
+    h+='<div class="f10"><div class="f10-h"><span class="nm">'+nm(r.name)+'</span>'
+      +'<span class="cd">'+esc(r.rc.digits)+' · '+esc(r.rc.market)+'</span></div>'
+      +'<div class="blk"><div class="na">'+esc(r.err)+'</div></div></div>';
   });
-  const P2=x=> (x==null||!isFinite(x))?'—':Number(x).toFixed(2);
-  
-/* ══════ 彩色 K 线仪表盘（可拖动 · 可缩放 · 筹码可开关）══════
-   打分：量（量比≥1.5→2／≥0.8→1）＋换手（分位≥70%→2／≥40%→1）＋筹码（主峰上→2／均本上→1／其下→0）
-   配色（四色高对比）：≥5 黄 ｜ 3~4 红 ｜ 1~2 蓝 ｜ 0 绿
-   ⚠ 本工具自定配色，非任何商业软件原版指标 */
-const KC={ hi:'#e8a800', mid:'#d92b2b', low:'#1565d8', weak:'#0f9d58', up:'#d92b2b', dn:'#0f9d58' };
-function kScore(b, ma20v, vRank, peak, avgCost){
-  let s=0; const r = ma20v>0? b.v/ma20v : 1;
-  s += r>=1.5? 2 : (r>=0.8? 1 : 0);
-  s += vRank>=0.7? 2 : (vRank>=0.4? 1 : 0);
-  s += (peak!=null && avgCost!=null) ? (b.c>=peak? 2 : (b.c>=avgCost? 1 : 0)) : 1;
-  return s;
+  if(!h) h='<div class="na">没有结果。</div>';
+  $('cards').innerHTML=h;
+  $('sum').innerHTML = ok.length+ ' 只取到数据' + (bad.length? (' · '+bad.length+' 只失败') : '')
+    + '　｜　每只票 7 张 F10 报表（A股）／2 张（港股）／1 张（美股）';
 }
-function kColor(sc){ return sc>=5? KC.hi : (sc>=3? KC.mid : (sc>=1? KC.low : KC.weak)); }
-function klineSVG(bars, R, vRankArr, W, H, opt){
-  opt = opt || {}; const showChip=(opt.chip!==false);
-  const m=bars.length; if(m<5) return '<svg viewBox="0 0 '+W+' '+H+'"></svg>';
-  const padR=showChip?152:44, padT=12, padB=10, gap=10;
-  const cw=W-padR, volH=76, priceH=H-padT-padB-volH-gap, volTop=padT+priceH+gap;
-  let lo=Infinity,hi=-Infinity,vmax=0;
-  for(const b of bars){ if(b.l<lo)lo=b.l; if(b.h>hi)hi=b.h; if(b.v>vmax)vmax=b.v; }
-  if(!(hi>lo)) return '';
-  const padv=(hi-lo)*0.04, lo2=lo-padv, hi2=hi+padv, bw=cw/m;
-  const yP=v=> padT+(hi2-v)/(hi2-lo2)*priceH;
-  const yV=v=> volTop+volH-(vmax>0? v/vmax*volH : 0);
-  let peak=null,dmax=0;
-  if(R.PX&&R.den){ for(let i=0;i<R.PX.length;i++) if(R.den[i]>dmax){ dmax=R.den[i]; peak=R.PX[i]; } }
-  const last=bars[m-1].c; let o='';
-  if(showChip && R.PX && R.den && dmax>0){
-    const bwid=padR-20;
-    for(let i=0;i<R.PX.length;i++){
-      const p=R.PX[i], w=R.den[i]/dmax*bwid;
-      if(w<0.5 || p>hi2 || p<lo2) continue;
-      const yy=yP(p);
-      o+='<rect x="'+(cw+6).toFixed(1)+'" y="'+(yy-1.3).toFixed(1)+'" width="'+w.toFixed(1)+'" height="2.6" fill="'+(p>last?KC.up:KC.dn)+'" opacity="0.8"/>';
-    }
-    o+='<text x="'+(cw+6)+'" y="'+(padT+9)+'" font-size="9" fill="'+KC.up+'">上方套牢</text>';
-    o+='<text x="'+(cw+6)+'" y="'+(padT+20)+'" font-size="9" fill="'+KC.dn+'">下方获利</text>';
-  }
-  for(let i=0;i<m;i++){
-    const b=bars[i], x=i*bw;
-    const sc=kScore(b, R.ma20v||0, (vRankArr&&vRankArr[i]!=null)?vRankArr[i]:0.5, peak, R.avgCost);
-    const col=kColor(sc), up=b.c>=b.o;
-    const top=Math.min(yP(b.o),yP(b.c)), bh=Math.max(1,Math.abs(yP(b.c)-yP(b.o)));
-    const wdt=Math.max(1,bw-0.9);
-    o+='<line x1="'+(x+bw/2).toFixed(1)+'" y1="'+yP(b.h).toFixed(1)+'" x2="'+(x+bw/2).toFixed(1)+'" y2="'+yP(b.l).toFixed(1)+'" stroke="'+col+'" stroke-width="1" opacity="0.9"/>';
-    o+='<rect x="'+(x+0.45).toFixed(1)+'" y="'+top.toFixed(1)+'" width="'+wdt.toFixed(1)+'" height="'+bh.toFixed(1)+'" fill="'+(up?col:'#fffdf8')+'" stroke="'+col+'" stroke-width="1.2"/>';
-    o+='<rect x="'+(x+0.45).toFixed(1)+'" y="'+yV(b.v).toFixed(1)+'" width="'+wdt.toFixed(1)+'" height="'+Math.max(0.6,volTop+volH-yV(b.v)).toFixed(1)+'" fill="'+col+'" opacity="0.6"/>';
-  }
-  const hl=(v,col,dash,lab)=>{
-    if(v==null||!(v>=lo2&&v<=hi2)) return;
-    o+='<line x1="0" y1="'+yP(v).toFixed(1)+'" x2="'+cw+'" y2="'+yP(v).toFixed(1)+'" stroke="'+col+'" stroke-width="1.15" stroke-dasharray="'+dash+'" opacity="0.9"/>';
-    if(lab) o+='<text x="'+(cw-4)+'" y="'+(yP(v)-3).toFixed(1)+'" font-size="9.5" fill="'+col+'" text-anchor="end">'+lab+'</text>';
-  };
-  hl(R.wall1&&R.wall1.p,'#a3823c','6 4','压力 '+((R.wall1&&R.wall1.p)||0).toFixed(2));
-  hl(R.shelf1&&R.shelf1.p,'#0f9d58','6 4','支撑 '+((R.shelf1&&R.shelf1.p)||0).toFixed(2));
-  hl(R.avgCost,'#8a8375','2 3','均本 '+((R.avgCost||0)).toFixed(2));
-  let ma=''; const st0=Math.min(19,m-1);
-  for(let i=st0;i<m;i++){ let s=0,n2=0; for(let k=Math.max(0,i-19);k<=i;k++){ s+=bars[k].c; n2++; }
-    ma+=(i===st0?'M':'L')+(i*bw+bw/2).toFixed(1)+' '+yP(s/n2).toFixed(1)+' '; }
-  o+='<path d="'+ma+'" fill="none" stroke="#7b4bb7" stroke-width="1.5" opacity="0.85"/>';
-  o+='<line x1="0" y1="'+yP(last).toFixed(1)+'" x2="'+cw+'" y2="'+yP(last).toFixed(1)+'" stroke="#1b1813" stroke-width="1" opacity="0.55"/>';
-  o+='<text x="3" y="'+(padT+10)+'" font-size="9.5" fill="#8a8375">'+hi.toFixed(2)+'</text>';
-  o+='<text x="3" y="'+(padT+priceH-3)+'" font-size="9.5" fill="#8a8375">'+lo.toFixed(2)+'</text>';
-  return '<svg viewBox="0 0 '+W+' '+H+'" width="100%" height="auto" preserveAspectRatio="none" style="display:block">'+o+'</svg>';
+/* ── 数据源自检：在你自己的浏览器里跑一遍，看通道到底通不通 ── */
+async function selfCheck(){
+  const host=$('checkOut'); host.classList.remove('hide');
+  host.innerHTML='<b>正在自检…</b>';
+  const out=[];
+  const U=DCAPI+'?reportName=RPT_F10_BASIC_ORGINFO&columns=ALL&filter='
+    +encodeURIComponent('(SECUCODE="600519.SH")')+'&pageSize=1&pageNumber=1';
+  /* ① fetch（首选通道） */
+  let t0=Date.now();
+  try{
+    const r=await fetch(U,{method:'GET'});
+    const txt=await r.text();
+    let ok=false, n=0;
+    try{ const d=JSON.parse(txt); ok=!!d.success; n=((d.result||{}).data||[]).length; }catch(e){}
+    out.push(['① fetch（首选）', (r.ok&&ok)? '✓ 通' : '✗ 失败',
+      'HTTP '+r.status+' · '+txt.length+' 字节 · '+n+' 行 · '+(Date.now()-t0)+'ms'
+      + (r.ok&&ok? '' : '　返回片段：'+txt.slice(0,120))]);
+  }catch(e){ out.push(['① fetch（首选）','✗ 抛错', String((e&&e.message)||e)+'　（CORS 或网络被拦，下面看 JSONP 兜底）']); }
+  /* ② JSONP（兜底通道） */
+  t0=Date.now();
+  try{
+    const d=await jsonpEP(U);
+    const n=((d&&d.result&&d.result.data)||[]).length;
+    out.push(['② JSONP（兜底）', (d&&d.success)? '✓ 通' : '✗ 失败',
+      (d&&d.success? n+' 行 · ' : '返回 ')+((Date.now()-t0)+'ms')]);
+  }catch(e){ out.push(['② JSONP（兜底）','✗ 抛错', String((e&&e.message)||e)]); }
+  /* ③ 腾讯行情（对照：这一条一直是通的） */
+  t0=Date.now();
+  try{
+    const r=await fetch('https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param=sh600519,day,,,5,qfq');
+    const d=await r.json();
+    const k=((d.data||{}).sh600519||{}).qfqday||[];
+    out.push(['③ 腾讯行情（对照）', (r.ok&&k.length)? '✓ 通' : '✗ 失败', 'HTTP '+r.status+' · '+k.length+' 根 · '+(Date.now()-t0)+'ms']);
+  }catch(e){ out.push(['③ 腾讯行情（对照）','✗ 抛错', String((e&&e.message)||e)]); }
+  host.innerHTML='<b>数据源自检结果</b><div class="tw" style="margin:.5rem 0 0"><table><tbody>'
+    + out.map(function(p){ return '<tr><th style="width:170px">'+esc(p[0])+'</th><td style="width:80px"><b>'+esc(p[1])+'</b></td><td style="white-space:normal">'+esc(p[2])+'</td></tr>'; }).join('')
+    + '</tbody></table></div>'
+    + '<div style="font-size:.76rem;color:var(--faint);margin-top:.4rem">①② 任一通即可用；两条都挂说明你的网络到东财不通。'
+    + '把这张表截图给我，我就能判断问题在哪。</div>';
 }
-function wireCharts(sorted){
-  document.querySelectorAll('.kl-host').forEach(function(host){
-    const idx=+host.dataset.k, r=sorted[idx];
-    if(!r || !r.bars || r.bars.length<5) return;
-    const total=r.bars.length;
-    const st={ start: Math.max(0,total-120), count: Math.min(120,total), chip: true };
-    function draw(){
-      const bars=r.bars.slice(st.start, st.start+st.count);
-      const vr=(r.vRankArr||[]).slice(st.start, st.start+st.count);
-      const sv=host.querySelector('.kl-svg'); if(sv) sv.innerHTML=klineSVG(bars,r,vr,1100,430,st);
-      const pos=host.querySelector('.kl-pos');
-      if(pos) pos.textContent='第 '+(st.start+1)+'–'+(st.start+bars.length)+' 根 / 共 '+total;
-    }
-    host.addEventListener('wheel', function(e){
-      e.preventDefault();
-      const nc=Math.max(15,Math.min(total,Math.round(st.count*(e.deltaY>0?1.22:0.82))));
-      const rect=host.getBoundingClientRect();
-      const keep=Math.max(0,Math.min(1,(e.clientX-rect.left)/rect.width));
-      st.start=Math.max(0,Math.min(total-nc,Math.round(st.start+(st.count-nc)*keep)));
-      st.count=nc; draw();
-    }, {passive:false});
-    let drag=null;
-    const tip=host.querySelector('.kl-tip'), xln=host.querySelector('.kl-xline');
-    function hover(e){
-      const rect=host.getBoundingClientRect();
-      const x=e.clientX-rect.left;
-      const i=Math.floor(x/rect.width*st.count);
-      if(i<0||i>=st.count||!r.bars[st.start+i]){ if(tip) tip.style.display='none'; if(xln) xln.style.display='none'; return; }
-      const b=r.bars[st.start+i];
-      if(tip){
-        tip.textContent=b.d+'　开'+b.o.toFixed(2)+' 高'+b.h.toFixed(2)+' 低'+b.l.toFixed(2)+' 收'+b.c.toFixed(2)+'　量'+Math.round(b.v);
-        tip.style.display='block';
-        const w=tip.offsetWidth||210;
-        tip.style.left=Math.max(0,Math.min(rect.width-w, x-w/2))+'px';
-      }
-      if(xln){ xln.style.display='block'; xln.style.left=(x)+'px'; xln.style.height=host.clientHeight+'px'; }
-    }
-    host.addEventListener('mousedown', function(e){ drag={x:e.clientX,s:st.start}; host.classList.add('kl-drag'); e.preventDefault(); });
-    host.addEventListener('mousemove', function(e){
-      if(!drag){ hover(e); return; }
-      const per=st.count/host.clientWidth;
-      st.start=Math.max(0,Math.min(total-st.count,Math.round(drag.s-(e.clientX-drag.x)*per))); draw(); hover(e);
-    });
-    ['mouseup','mouseleave'].forEach(function(ev){ host.addEventListener(ev,function(){ drag=null; host.classList.remove('kl-drag');
-      if(ev==='mouseleave'){ if(tip) tip.style.display='none'; if(xln) xln.style.display='none'; } }); });
-    const wrap=host.closest('.ck-kl');
-    const btn=wrap&&wrap.querySelector('.kl-chip');
-    if(btn) btn.addEventListener('click', function(e){
-      e.stopPropagation(); st.chip=!st.chip;
-      btn.textContent=st.chip?'筹码 开':'筹码 关'; btn.classList.toggle('off',!st.chip); draw();
-    });
-    function zoom(f){ const nc=Math.max(15,Math.min(total,Math.round(st.count*f)));
-      st.start=Math.max(0,Math.min(total-nc,st.start+Math.round((st.count-nc)/2))); st.count=nc; draw(); }
-    const zi=wrap&&wrap.querySelector('.kl-in'), zo=wrap&&wrap.querySelector('.kl-out'), rs=wrap&&wrap.querySelector('.kl-reset');
-    if(zi) zi.addEventListener('click',function(e){ e.stopPropagation(); zoom(0.75); });
-    if(zo) zo.addEventListener('click',function(e){ e.stopPropagation(); zoom(1.35); });
-    if(rs) rs.addEventListener('click',function(e){ e.stopPropagation();
-      st.start=Math.max(0,total-120); st.count=Math.min(120,total); draw(); });
-    draw();
+function boot(){
+  $('run').addEventListener('click', function(){ run(); });
+  $('check').addEventListener('click', function(){ selfCheck(); });
+  $('demo').addEventListener('click', function(){
+    $('codes').value='600519 贵州茅台\n000858 五粮液\n600150 中国船舶\n002255 海陆重工\n00700 腾讯控股\nAAPL 苹果';
   });
+  $('clear').addEventListener('click', function(){ $('codes').value=''; });
 }
-/* ══════ 卡片渲染 · 三层次 ══════ */
-function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
-function gcard(r){
-  if(r.err){
-    return '<div class="ck" data-st="err"><div class="ck-h"><span class="nm">'+esc(r.name||'—')+'</span>'+
-      '<span class="t3 meta">'+esc(r.code)+' · '+esc(r.market||'')+'</span>'+
-      '<span class="px"><span class="t1 xl c-fnt">—</span></span></div>'+
-      '<div class="ck-foot"><span class="adv t2 c-no">'+esc(r.err)+'</span></div></div>';
-  }
-  const p=r.plan, g=r.G1;
-  const st = (p.entry==null)? 'no' : (r.kind==='fresh'||r.kind==='go'? 'go' : 'wait');
-  const macdC = !g.on? 'c-no' : (g.sk==='弱'? 'c-no' : (g.sk==='强'? 'c-go' : ''));
-  const ccHex = r.coord>=0.7? '#2e7d5b' : (r.coord>=0.4? '#a3823c' : '#b23a26');
-  const rrC = p.rr==null? 'c-fnt' : (p.rr>=2? 'c-go' : (p.rr>=1.2? 'c-wait' : 'c-no'));
-  const mt = r.macdTxt.split(' · ');
-  const volTxt = r.hasVol===false? '外盘无成交量' : ('换手 '+(r.curT||0).toFixed(2)+'%');
-  const oiTxt = (r.dOI!=null)? ('　持仓 '+(r.dOI>0?'+':'')+r.dOI.toFixed(1)+'%') : '';
-  const belowTxt = (r.belowD>=10)? ('　地量 '+r.belowD+' 天') : '';
-  return ''+
-  '<div class="ck" data-st="'+st+'">'+
-  /* ── 头部：名称(T1) + 现价(T1 最大) ── */
-    '<div class="ck-h">'+
-      '<span class="nm">'+esc(r.name)+'</span>'+
-      '<span class="t3 meta">'+esc(r.code)+' · '+esc(r.market||'')+(r.partial?' · 剔当日':'')+
-        (r.tag? ' · '+esc(r.tag) : '')+'</span>'+
-      '<span class="px"><span class="t1 xl">'+P2(r.px)+'</span><span class="t3">现价</span></span>'+
-    '</div>'+
-  /* ── 主图：彩色 K 线仪表盘（视觉中心）── */
-    (r.bars? '<div class="ck-kl"><div class="kl-bar">'+'<span class="t3 kl-legend">'+'<b>日K</b>（股票为前复权）　<b>实心</b>=阳线(收≥开)　<b>空心</b>=阴线(收&lt;开)　｜　'+'颜色=<b>量·换手·筹码</b>强度：<b style="color:#e8a800">黄</b> 共振 · <b style="color:#d92b2b">红</b> 中强 · '+'<b style="color:#1565d8">蓝</b> 偏弱 · <b style="color:#0f9d58">绿</b> 最弱<br>'+'<span style="color:#a3823c">金虚线</span>压力位　<span style="color:#0f9d58">绿虚线</span>支撑位　'+'<span style="color:#8a8375">灰虚线</span>平均成本　<span style="color:#7b4bb7">紫线</span>MA20　'+'<b>下副图</b>=成交量(同色)　<b>右侧</b>=筹码分布（<span style="color:#d92b2b">红</span>上方套牢 / <span style="color:#0f9d58">绿</span>下方获利）</span>'+'<span class="kl-pos t3"></span>'+'<button class="kl-btn kl-out" title="缩小">−</button>'+'<button class="kl-btn kl-in" title="放大">+</button>'+'<button class="kl-btn kl-reset" title="回到最近120根">复位</button>'+'<button class="kl-btn kl-chip" title="显示/隐藏筹码">筹码 开</button>'+'</div><div class="kl-host" data-k="'+r.kidx+'"><div class="kl-xline"></div><div class="kl-svg"></div><div class="kl-tip"></div></div></div>' : '')+
-  /* ── 交易计划：全是 T1 ── */
-    '<div class="ck-plan">'+
-      '<div><span class="t3">入场</span><span class="t1">'+
-        (p.entry!=null?P2(p.entry):'<span class="c-fnt">不出手</span>')+'</span>'+
-        '<span class="t3">'+(p.entry!=null?'按现价':'闸门未开')+'</span></div>'+
-      '<div><span class="t3">止损</span><span class="t1 '+(p.stop!=null?'c-no':'c-fnt')+'">'+
-        (p.stop!=null?P2(p.stop):'—')+'</span>'+
-        '<span class="t3">'+(p.riskPct!=null?('单笔亏 '+p.riskPct.toFixed(1)+'%'):'')+'</span></div>'+
-      '<div><span class="t3">目标</span><span class="t1 '+(p.t1!=null?'c-go':'c-fnt')+'">'+
-        (p.t1!=null?P2(p.t1):'跟随趋势')+'</span>'+
-        '<span class="t3">'+(p.t2!=null?('第二目标 '+P2(p.t2)):(p.noTarget?'上方无压力位':''))+'</span></div>'+
-      '<div><span class="t3">盈亏比</span><span class="t1 '+rrC+'">'+
-        (p.rr!=null?p.rr.toFixed(1)+' : 1':'—')+'</span>'+
-        '<span class="t3">'+(p.noTarget?'无目标不算比':(p.rr!=null&&p.rr<2?'低于 2:1，通常不值得':'目标空间 ÷ 止损空间'))+'</span></div>'+
-    '</div>'+
-  /* ── 基本面对照（估值 × 趋势）── */
-    '<div class="ck-grid ck-fund">'+
-      '<div><span class="t3">市盈率 PE</span><span class="t2">'+(r.pe!=null? r.pe.toFixed(2):'<span class="c-fnt">—</span>')+'</span>'+
-        '<span class="t3">'+(r.pe==null?'源未提供':(r.pe<0?'亏损':(r.pe<15?'偏低':(r.pe<30?'中性':'偏高'))))+'</span></div>'+
-      '<div><span class="t3">市净率 PB</span><span class="t2">'+(r.pb!=null? r.pb.toFixed(2):'<span class="c-fnt">—</span>')+'</span>'+
-        '<span class="t3">'+(r.pb==null?(r.mk==='sh'||r.mk==='sz'||r.mk==='bj'?'源未提供':'港美股不提供'):(r.pb<1?'破净':(r.pb<3?'偏低':'偏高')))+'</span></div>'+
-      '<div><span class="t3">流通市值</span><span class="t2">'+(r.mcap!=null? (r.mcap>=10000? (r.mcap/10000).toFixed(2)+' 万亿':r.mcap.toFixed(0)+' 亿'):'<span class="c-fnt">—</span>')+'</span>'+
-        '<span class="t3">'+(r.mcap==null?'—':(r.mcap<100?'小盘 · 波动大':(r.mcap<1000?'中盘':'大盘 · 波动小')))+'</span></div>'+
-      '<div><span class="t3">换手率</span><span class="t2">'+(r.turn!=null? r.turn.toFixed(2)+'%':'<span class="c-fnt">—</span>')+'</span>'+
-        '<span class="t3">'+(r.turn==null?'—':(r.turn<0.5?'清淡':(r.turn<3?'正常':(r.turn<8?'活跃':'过热'))))+'</span></div>'+
-      '<div><span class="t3">振幅</span><span class="t2">'+(r.amp!=null? r.amp.toFixed(2)+'%':'<span class="c-fnt">—</span>')+'</span>'+
-        '<span class="t3">'+(r.amp20!=null? ('20日均 '+r.amp20.toFixed(2)+'%'):'—')+'</span></div>'+
-      '<div><span class="t3">相对量</span><span class="t2">'+(r.vr!=null? r.vr.toFixed(2)+'×':'<span class="c-fnt">—</span>')+'</span>'+
-        '<span class="t3">'+(r.vr==null?'—':(r.vr>=1.5?'明显放量':(r.vr>=0.8?'正常':'缩量')))+'</span></div>'+
-      '<div><span class="t3">估值 × 趋势</span><span class="t2 '+(r.verdict && r.verdict.c? r.verdict.c:'')+'">'+(r.verdict? r.verdict.t:'—')+'</span>'+
-        '<span class="t3">'+(r.verdict? r.verdict.s:'')+'</span></div>'+
-      '<div><span class="t3">敞口建议</span><span class="t2">'+(r.expo||'—')+'</span><span class="t3">'+(r.expoS||'')+'</span></div>'+
-    '</div>'+
-  /* ── 指标：数值 T2，标签与说明 T3 ── */
-    '<div class="ck-grid">'+
-      '<div><span class="t3">MACD</span><span class="t2 '+macdC+'">'+esc(mt[0]||'')+'</span>'+
-        '<span class="t3">'+esc(mt.slice(1).join(' · ')||'')+'</span></div>'+
-      '<div><span class="t3">协调强度</span><span class="t2" style="color:'+ccHex+'">'+r.coord.toFixed(2)+'</span>'+
-        '<span class="ck-bar"><s style="width:'+(r.coord*100).toFixed(0)+'%;background:'+ccHex+'"></s></span></div>'+
-      '<div><span class="t3">获利盘</span><span class="t2 '+(r.profit<0.15?'c-no':(r.profit>0.7?'c-go':''))+'">'+
-        (r.profit*100).toFixed(0)+'%</span><span class="t3">套牢 '+((1-r.profit)*100).toFixed(0)+'%</span></div>'+
-      '<div><span class="t3">平均成本</span><span class="t2">'+P2(r.avgCost)+'</span>'+
-        '<span class="t3">'+(r.px>=r.avgCost?'现价在上':'现价在下')+'</span></div>'+
-      '<div><span class="t3">压力位</span><span class="t2">'+(r.wall1?P2(r.wall1.p):'<span class="c-fnt">无</span>')+'</span>'+
-        '<span class="t3">'+(r.wall1?('+'+((r.wall1.p/r.px-1)*100).toFixed(1)+'%'):'上方无压力')+'</span></div>'+
-      '<div><span class="t3">支撑位</span><span class="t2">'+(r.shelf1?P2(r.shelf1.p):'<span class="c-fnt">无</span>')+'</span>'+
-        '<span class="t3">'+(r.shelf1?(((r.shelf1.p/r.px-1)*100).toFixed(1)+'%'):'脚下无承接')+'</span></div>'+
-      '<div><span class="t3">量能</span><span class="t2">'+volTxt+'</span>'+
-        '<span class="t3">'+(r.belowD>=10?('地量 '+r.belowD+' 天'):(r.belowD>0?('缩量 '+r.belowD+' 天'):'正常'))+'</span></div>'+
-      '<div><span class="t3">区间位置</span><span class="t2">'+(r.rangePos!=null?(r.rangePos.toFixed(0)+'%'):'—')+'</span>'+
-        '<span class="t3">'+(r.rangeLo!=null?(P2(r.rangeLo)+' ~ '+P2(r.rangeHi)):'')+'</span></div>'+
-    '</div>'+
-  /* ── 底部：一句话(T2) + 量能细项(T3) ── */
-    '<div class="ck-foot">'+
-      '<span class="adv t2">'+esc(r.advice)+'</span>'+
-      (oiTxt? '<span class="t3">'+oiTxt.replace('　','')+'</span>' : '')+
-    '</div>'+
+if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', boot); else boot();
 
-  '</div>';
-}
-  sorted.forEach(function(r,i){ r.kidx=i; });
-  $('cklist').innerHTML = sorted.map(gcard).join('');
-  wireCharts(sorted);
-
-  sorted.forEach(function(r,i){ r.kidx=i; });
-  $('cklist').innerHTML = sorted.map(gcard).join('');
-  wireCharts(sorted);
-
-  $('merge').innerHTML='<div class="panel"><ul style="margin:0;padding-left:1.1rem;font-size:.88rem">'+
-    Object.keys(grp).map(k=>'<li><strong>'+k+'</strong>：'+grp[k].join('、')+
-      (grp[k].length>1?'　<span style="color:var(--faint)">—— 同一结构的多只票仍可能是<strong>同一个因子</strong>，合并计算敞口</span>':'')+'</li>').join('')+
-    '</ul><p style="margin:.6rem 0 0;font-size:.84rem;color:var(--muted)">'+
-    '<strong>怎么读：</strong>「墙」是从现价往上累加筹码到 20%（压力位1）/ 50%（压力位2）的价位——那是要吃掉多少筹码才能过去的度量；'+
-    '「撑」是从现价往下累加 10% 的价位，<strong>不足 10% 即判无支撑</strong>（说明现价已经在筹码区的底部之外）。'+
-    '筹码位阶图里：<span style="color:#2e4b52">青柱＝现价下方的筹码（支撑）</span>，<span style="color:#b23a26">红柱＝现价上方的筹码（套牢）</span>，实线＝现价，金虚线＝压力位1，青虚线＝支撑。</p></div>';
-
-  $('exp').value=exportTxt(sorted);
-}
-function exportTxt(sorted){
-  const A=parseFloat($('cdecay').value)||1.0;
-  const P2=x=>(x==null||!isFinite(x))?'—':Number(x).toFixed(2);
-  const L=['【批量交易计划表】'+new Date().toLocaleString('zh-CN')+'　衰减系数 A='+A,''];
-  L.push(['代码','名称','现价','MACD','协调强度','获利盘','平均成本','压力位','支撑位',
-          '入场价','入场方式','止损价','目标价1','目标价2','盈亏比','换手率','量能','怎么做'].join('\t'));
-  sorted.forEach(r=>{
-    if(r.err){ L.push([r.code,r.name,'—','—','—','—','—','—','—','—','—','—','—','—','—','—','—','失败：'+r.err].join('\t')); return; }
-    const p=r.plan;
-    L.push([r.code,r.name,P2(r.px),r.macdTxt,r.coord.toFixed(2),
-      (r.profit*100).toFixed(0)+'%',P2(r.avgCost),
-      [P2(r.wall1&&r.wall1.p),P2(r.wall2&&r.wall2.p)].filter(x=>x!=='—').join('/')||'上方无',
-      r.shelf1!=null?P2(r.shelf1.p):'无支撑',
-      p.entry!=null?P2(p.entry):'—', p.note,
-      p.stop!=null?P2(p.stop):'—',
-      p.t1!=null?P2(p.t1):'上方无压力', p.t2!=null?P2(p.t2):'—',
-      p.rr!=null?p.rr.toFixed(1)+':1':'—',
-      r.curT.toFixed(2)+'%',
-      (r.belowD>=10?'地量'+r.belowD+'天':(r.belowD>0?'接近地量':'正常')),
-      r.advice].join('\t'));
-  });
-  L.push('');
-  L.push('口径：三角形分布 ＋ 换手衰减；压力位＝现价上方累计 20%／50% 筹码处；支撑位＝现价下方累计 10% 筹码处。');
-  L.push('入场／止损：MACD 多头且刚转多时按现价入；已走一段则挂单等回踩支撑。有支撑→止损设支撑下方 2%；无支撑→按现价 5% 兜底。');
-  L.push('协调强度（0~1）＝ 筹码单峰程度、交易活跃度、支撑清晰度 三项平均。越高说明这个价位共识越强。');
-  L.push('MACD 实测（17 只 × 8516 根）：含慢档多头信号 10日均 +2.89%、胜率 61%（n=96，显著）；快档单独 +0.20%、胜率 46%（n=146，无 alpha）。');
-  L.push('⚠ 衰减系数 A 是敏感参数：A 越大分布越贴近近期，换 A 后结论会变，不要跨 A 值比较。');
-  return L.join('\n');
-}
-
-$('run').addEventListener('click',run);
-$('demo').addEventListener('click',()=>{ $('codes').value='600519 贵州茅台\n002255 海陆重工\n300008 天海防务\n00700 腾讯控股\n09988 阿里巴巴\nAAPL 苹果\nNVDA 英伟达\nBABA 阿里巴巴'; run(); });
-$('check').addEventListener('click',async()=>{
-  const btn=$('check'); btn.disabled=true;
-  const box=$('probeOut'); box.classList.remove('hide'); box.textContent='正在测两条数据源（用 600150 试）…';
-  const rows=await probe('600150');
-  const okAny=rows.some(r=>r.ok);
-  box.innerHTML='<strong>数据源自检</strong>　'+rows.map(r=> r.ok
-    ? '<span style="color:var(--accent)">'+r.src+' ✓ '+r.ms+' ms（'+r.name+'，'+r.n+' 根）</span>'
-    : '<span class="err">'+r.src+' ✗ '+r.ms+' ms — '+r.err+'</span>').join('　｜　')+
-    '<div style="margin-top:.35rem;color:var(--muted)">'+(okAny
-      ? '有源可用。若个别票仍抓不到，多半是该票停牌或代码写错。'
-      : '两条都不通：通常是接口限额或本地网络策略，隔几分钟再试；也可换网络（如手机热点）验证。')+'</div>';
-  btn.disabled=false;
-});
-$('clear').addEventListener('click',()=>{ $('codes').value=''; $('out').classList.add('hide'); $('prog').textContent=''; $('pbar').style.width='0%'; });
-$('copy').addEventListener('click',()=>{ const t=$('exp'); t.select();
-  const done=()=>{ $('copyInfo').textContent='已复制'; setTimeout(()=>$('copyInfo').textContent='',1600); };
-  if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(t.value).then(done,()=>{document.execCommand('copy');done();});
-  else { document.execCommand('copy'); done(); } });
 })();
 </script>
 </body>
