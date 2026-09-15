@@ -367,12 +367,42 @@ button{ font:inherit; color:inherit; background:none; border:none; cursor:pointe
 .case-btn{ font-size:.9rem; padding:.62rem .6rem; }
 .fig-wrap figcaption{ font-size:.6rem; letter-spacing:.05em; color:var(--faint); padding:.42rem .6rem; border-top:1px solid var(--line); text-align:center; }
 .figbox{ position:fixed; inset:0; z-index:40; display:grid; place-items:center; background:color-mix(in srgb,var(--seed-fg) 84%, transparent); padding:3vmin; cursor:zoom-out; }
-/* 放大视图：既要尽量大，又必须完整不裁切。
-   ⚠ 不能用 width:auto —— SVG 只有 viewBox、没有固有尺寸，auto 在 flex 里会塌成一点点。
-   ⚠ 也不能只给 width + max-height —— 高度被夹住而宽度不缩，比例就歪了。
-   正解：把「高 88vh 时对应的宽度」也算进 min()，两者取小，height:auto 自然等比。 */
-.figbox svg{ width:min(96vw, calc(88vh * 360 / 230), 1500px); height:auto;
-  border-radius:var(--r-sm); box-shadow:var(--shadow-2); background:var(--surface); display:block; }
+/* ══════ 放大视图 ══════
+   图与图注作为整体居中，图注的高度必须一起算进去。
+   ⚠ 尺寸三件事都要满足：尽量大、等比不歪、完整不裁。
+     · width:auto 不行 —— SVG 只有 viewBox、没有固有尺寸，在 flex 里会塌成一点点
+     · 只给 width + max-height 不行 —— 高度被夹住而宽度不缩，比例就歪了
+     · 用 72vh 估也不行 —— 那只算了图、没算图注，加一起照样溢出，底部被切
+     · 正解：高度由可用空间驱动。.fb-fig 用 flex:1 吃掉剩余高度，
+       SVG 用 height:100% 撑满该高度、aspect-ratio 给出固有比例（max-height 只能封顶、撑不大），
+       width:auto 自然等比；图注 flex:0 不参与伸缩，永远完整。 */
+.figbox{ display:flex; align-items:center; justify-content:center; padding:2vh 2vw; }
+.figbox-in{ display:flex; flex-direction:column; align-items:center;
+  height:96vh; max-width:96vw; min-height:0; }
+.fb-fig{ flex:1 1 auto; min-height:0; width:100%; display:flex;
+  align-items:center; justify-content:center; }
+.figbox svg{ height:100%; width:auto; max-width:96vw;
+  aspect-ratio:360 / 230; display:block;
+  background:var(--surface); border-radius:var(--r-sm) var(--r-sm) 0 0;
+  box-shadow:0 18px 50px rgba(0,0,0,.3); }
+/* 放大态里的图注：字号整体上调 —— 教学页的解释文字必须看得清 */
+.fb-cap{ flex:0 0 auto; width:auto; max-width:96vw; background:var(--surface);
+  border-radius:0 0 var(--r-sm) var(--r-sm); box-shadow:0 18px 50px rgba(0,0,0,.3);
+  overflow:hidden; }
+.fb-cap .case-hd{ display:flex; align-items:baseline; gap:.6rem; padding:.55rem 1rem;
+  border-bottom:1px solid var(--line); background:color-mix(in srgb,var(--seed-gold) 10%,var(--surface)); }
+.fb-cap .case-hd b{ font-family:var(--serif); font-size:1.1rem; font-weight:700; }
+.fb-cap .case-hd span{ font-size:.8rem; color:var(--faint); margin-left:auto; font-family:var(--mono); }
+.fb-cap figcaption{ padding:0; }
+.fb-cap .cap-top{ padding:.6rem 1rem .15rem; gap:.7rem; }
+.fb-cap .cap-tag{ font-size:.95rem; padding:.16rem .8rem; }
+.fb-cap .cap-date{ font-size:.88rem; }
+.fb-cap .cap-crit{ font-size:1.1rem; line-height:1.7; padding:.5rem 1rem .6rem; }
+.fb-cap .cap-res{ padding:.05rem 1rem .75rem; gap:.45rem; }
+.fb-cap .cap-res .cr{ min-width:92px; padding:.35rem .75rem; }
+.fb-cap .cap-res .cr i{ font-size:.72rem; }
+.fb-cap .cap-res .cr b{ font-size:1.15rem; }
+.fb-cap .cap-res .cr.no b{ font-size:.95rem; }
 .figbox[hidden]{ display:none; }
 .credit-line{ font-size:.6rem; line-height:1.7; letter-spacing:.06em; color:var(--faint); border-top:1px solid var(--line); padding-top:calc(1.2*var(--u)); }
 /* ===== 移动端：左栏转横向条，画布让位 ===== */
@@ -1059,11 +1089,19 @@ function closeCaseModal(){ document.getElementById('case-modal').hidden=true; }
    都展开成完整大图。原来的处理只挂在 panel 上、且只认 .fig-wrap，
    案例小图点不动 —— 这里改成 document 级、覆盖三种容器。
    ══════════════════════════════════════════════════════════════════ */
-function figboxOpen(svgEl, caption){
-  if(!svgEl) return;
+function figboxOpen(card){
+  if(!card) return;
+  const sv=card.querySelector('.figsvg'); if(!sv) return;
   const box=document.getElementById('figbox'); if(!box) return;
-  box.innerHTML='<div class="figbox-in">'+svgEl.outerHTML
-    +(caption? '<div class="figzoom-cap">'+caption+'</div>' : '')+'</div>';
+  /* ⚠ 别再拼一行字符串 —— 那样会把结构化图注（标签/日期/判据/四个数字块）
+     拍成一整句连排，等于把排版全毁了。直接把 case-hd 与 figcaption 原样搬过来。 */
+  const hdEl=card.querySelector('.case-hd'), capEl=card.querySelector('figcaption');
+  const hd=hdEl? hdEl.outerHTML : '';
+  const cap=capEl? capEl.outerHTML : '';
+  box.innerHTML='<div class="figbox-in">'
+    +'<div class="fb-fig">'+sv.outerHTML+'</div>'
+    +((hd||cap)? '<div class="fb-cap">'+hd+cap+'</div>' : '')
+    +'</div>';
   box.hidden=false;
 }
 document.addEventListener('click', function(e){
@@ -1072,9 +1110,8 @@ document.addEventListener('click', function(e){
   if(e.target.closest('#case-modal-x')) return;
   const w=e.target.closest('.fig-wrap, .case');
   if(!w) return;
-  const sv=w.querySelector('.figsvg'); if(!sv) return;
-  const hd=w.querySelector('.case-hd b'), cap=w.querySelector('figcaption');
-  figboxOpen(sv, hd? hd.textContent+(cap? '　'+cap.textContent.replace(/\s+/g,' ').slice(0,90) : '') : '');
+  if(!w.querySelector('.figsvg')) return;
+  figboxOpen(w);
 });
 document.addEventListener('keydown', function(e){
   const box=document.getElementById('figbox');
