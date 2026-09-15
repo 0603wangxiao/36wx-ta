@@ -367,28 +367,36 @@ button{ font:inherit; color:inherit; background:none; border:none; cursor:pointe
 .case-btn{ font-size:.9rem; padding:.62rem .6rem; }
 .fig-wrap figcaption{ font-size:.6rem; letter-spacing:.05em; color:var(--faint); padding:.42rem .6rem; border-top:1px solid var(--line); text-align:center; }
 .figbox{ position:fixed; inset:0; z-index:40; display:grid; place-items:center; background:color-mix(in srgb,var(--seed-fg) 84%, transparent); padding:3vmin; cursor:zoom-out; }
-/* ══════ 放大视图 ══════
-   图与图注作为整体居中，图注的高度必须一起算进去。
+/* ══════ 放大视图 · 横版 ══════
+   图在左、图注在右。竖版会把横屏的宽度整个浪费掉 ——
+   图本身是 360:230 的横图，配一列竖排文字最合适。
+   窄屏（≤900px）自动退回竖版。
    ⚠ 尺寸三件事都要满足：尽量大、等比不歪、完整不裁。
      · width:auto 不行 —— SVG 只有 viewBox、没有固有尺寸，在 flex 里会塌成一点点
-     · 只给 width + max-height 不行 —— 高度被夹住而宽度不缩，比例就歪了
-     · 用 72vh 估也不行 —— 那只算了图、没算图注，加一起照样溢出，底部被切
-     · 正解：高度由可用空间驱动。.fb-fig 用 flex:1 吃掉剩余高度，
-       SVG 用 height:100% 撑满该高度、aspect-ratio 给出固有比例（max-height 只能封顶、撑不大），
-       width:auto 自然等比；图注 flex:0 不参与伸缩，永远完整。 */
-.figbox{ display:flex; align-items:center; justify-content:center; padding:2vh 2vw; }
-.figbox-in{ display:flex; flex-direction:column; align-items:center;
-  height:96vh; max-width:96vw; min-height:0; }
-.fb-fig{ flex:1 1 auto; min-height:0; width:100%; display:flex;
-  align-items:center; justify-content:center; }
-.figbox svg{ height:100%; width:auto; max-width:96vw;
-  aspect-ratio:360 / 230; display:block;
-  background:var(--surface); border-radius:var(--r-sm) var(--r-sm) 0 0;
+     · max-height 只能封顶、撑不大 —— 用它图会缩成一小块
+     · 正解：高度由可用空间驱动。.fb-fig 纵向拉伸拿满高度，
+       SVG 用 height:100% 撑满 + aspect-ratio 给固有比例，width:auto 自然等比。 */
+.figbox{ display:flex; align-items:center; justify-content:center; padding:3vh 3vw; }
+.figbox-in{ display:flex; flex-direction:row; align-items:stretch;
+  height:94vh; width:94vw; max-width:1600px; min-height:0; min-width:0; }
+.fb-fig{ flex:1 1 auto; min-width:0; min-height:0; display:flex;
+  align-items:center; justify-content:center;
+  background:var(--surface); border-radius:var(--r-sm) 0 0 var(--r-sm);
   box-shadow:0 18px 50px rgba(0,0,0,.3); }
-/* 放大态里的图注：字号整体上调 —— 教学页的解释文字必须看得清 */
-.fb-cap{ flex:0 0 auto; width:auto; max-width:96vw; background:var(--surface);
-  border-radius:0 0 var(--r-sm) var(--r-sm); box-shadow:0 18px 50px rgba(0,0,0,.3);
-  overflow:hidden; }
+.figbox svg{ height:100%; width:auto; max-width:100%;
+  aspect-ratio:360 / 230; display:block; }
+/* 右侧图注栏：固定宽度、可滚动 —— 解释文字是这一页的含金量所在 */
+.fb-cap{ flex:0 0 auto; width:clamp(320px, 30vw, 430px); background:var(--surface);
+  border-left:1px solid var(--line); border-radius:0 var(--r-sm) var(--r-sm) 0;
+  box-shadow:0 18px 50px rgba(0,0,0,.3); overflow-y:auto; }
+/* 窄屏退回竖版 */
+@media(max-width:900px){
+  .figbox-in{ flex-direction:column; height:94vh; width:96vw; }
+  .fb-fig{ border-radius:var(--r-sm) var(--r-sm) 0 0; }
+  .figbox svg{ height:auto; width:100%; }
+  .fb-cap{ width:auto; border-left:none; border-top:1px solid var(--line);
+    border-radius:0 0 var(--r-sm) var(--r-sm); }
+}
 .fb-cap .case-hd{ display:flex; align-items:baseline; gap:.6rem; padding:.55rem 1rem;
   border-bottom:1px solid var(--line); background:color-mix(in srgb,var(--seed-gold) 10%,var(--surface)); }
 .fb-cap .case-hd b{ font-family:var(--serif); font-size:1.1rem; font-weight:700; }
@@ -398,11 +406,15 @@ button{ font:inherit; color:inherit; background:none; border:none; cursor:pointe
 .fb-cap .cap-tag{ font-size:.95rem; padding:.16rem .8rem; }
 .fb-cap .cap-date{ font-size:.88rem; }
 .fb-cap .cap-crit{ font-size:1.1rem; line-height:1.7; padding:.5rem 1rem .6rem; }
-.fb-cap .cap-res{ padding:.05rem 1rem .75rem; gap:.45rem; }
-.fb-cap .cap-res .cr{ min-width:92px; padding:.35rem .75rem; }
-.fb-cap .cap-res .cr i{ font-size:.72rem; }
-.fb-cap .cap-res .cr b{ font-size:1.15rem; }
-.fb-cap .cap-res .cr.no b{ font-size:.95rem; }
+.fb-cap .cap-res{ display:grid; grid-template-columns:1fr 1fr; gap:.5rem;
+  padding:.15rem 1rem 1rem; }
+.fb-cap .cap-res .cr{ min-width:0; padding:.45rem .8rem; }
+.fb-cap .cap-res .cr i{ font-size:.74rem; }
+.fb-cap .cap-res .cr b{ font-size:1.3rem; }
+.fb-cap .cap-res .cr.no b{ font-size:1rem; }
+.fb-cap .case-hd{ flex-wrap:wrap; }
+.fb-cap .case-hd b{ font-size:1.2rem; }
+.fb-cap .cap-crit{ font-size:1.15rem; }
 .figbox[hidden]{ display:none; }
 .credit-line{ font-size:.6rem; line-height:1.7; letter-spacing:.06em; color:var(--faint); border-top:1px solid var(--line); padding-top:calc(1.2*var(--u)); }
 /* ===== 移动端：左栏转横向条，画布让位 ===== */
