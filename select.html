@@ -253,6 +253,15 @@ footer.credit{ margin-top:52px; padding-top:16px; border-top:1px solid var(--lin
 .bar{ height:3px; background:var(--line); border-radius:2px; overflow:hidden; margin-top:12px; }
 .bar i{ display:block; height:100%; width:0; background:linear-gradient(90deg,var(--gold),var(--primary)); transition:width .2s; }
 
+/* ══════ 扫描范围（指数成分股） ══════ */
+.idxrow{ display:flex; align-items:flex-end; gap:1rem; flex-wrap:wrap; margin:0 0 1rem;
+  padding:.7rem .95rem; border:1px solid var(--accent-line); border-radius:9px;
+  background:var(--accent-soft); }
+.f select{ width:100%; padding:.4rem .5rem; border:1px solid var(--line-strong); border-radius:6px;
+  background:var(--surface); font-family:var(--sans); font-size:.86rem; color:var(--fg); }
+.idxhint{ font-size:.78rem; color:var(--muted); line-height:1.65; max-width:560px; }
+.idxhint b{ color:var(--seed-primary); font-variant-numeric:tabular-nums; }
+
 /* ══════ 股票池：默认内置，折叠起来不占版面 ══════ */
 .poolbox{ margin:0 0 1.1rem; border:1px solid var(--line); border-radius:8px; background:var(--bg);
   padding:.5rem .85rem; }
@@ -301,7 +310,13 @@ footer.credit{ margin-top:52px; padding-top:16px; border-top:1px solid var(--lin
   <div id="pane-s" style="margin-top:22px">
     <h2>一、勾选你要的条件 <span class="cf cf-i">cf I</span></h2>
     <div class="panel">
-            <details class="poolbox"><summary>股票池：内置 10 只 · 点开可更换</summary>
+            <div class="idxrow">
+        <label class="f" style="max-width:320px;margin:0">扫描范围
+          <select id="idxSel"></select>
+        </label>
+        <span class="idxhint" id="idxHint"></span>
+      </div>
+      <details class="poolbox"><summary>股票池：内置 10 只 · 点开可更换</summary>
 <textarea id="codes" spellcheck="false" placeholder="600519 贵州茅台&#10;00700 腾讯控股&#10;AAPL 苹果"></textarea>
         <div class="row">
         <button class="ghost" id="demoS">载入示例</button>
@@ -1353,10 +1368,66 @@ function readCrit(list, pfx){
 /* ══════════════════════════════════════════════════════════════════
    股票择股
    ══════════════════════════════════════════════════════════════════ */
+/* ══════════════════════════════════════════════════════════════════
+   指数成分股 —— 择股全自动
+   东财 RPT_INDEX_TS_COMPONENT 按 TYPE 区分指数。TYPE↔名称的映射取自东财自己的
+   前端代码（newstatic/js/other/index.js 的下拉选项），不是猜的。
+   ⚠ pageSize 实测上限 500 —— 中证1000(1000) / 中证2000(2000) 必须翻页取。
+   ══════════════════════════════════════════════════════════════════ */
+var INDICES=[
+  [1,'沪深300',300],[2,'上证50',50],[3,'中证500',500],[4,'科创50',50],
+  [5,'中证A50',50],[6,'中证A500',500],[7,'中证1000',1000],[8,'深证50',50],
+  [9,'中小100',100],[10,'北证50',50],[11,'上证180',180],[12,'中证A100',100],
+  [13,'中证2000',2000]
+];
+async function indexMembers(type){
+  var out=[], page=1, guard=0;
+  while(page<=12 && guard++<12){
+    var u=DCAPI+'?reportName=RPT_INDEX_TS_COMPONENT'
+      +'&columns=SECURITY_CODE,SECURITY_NAME_ABBR,WEIGHT'
+      +'&filter='+encodeURIComponent('(TYPE="'+type+'")')
+      +'&pageSize=500&pageNumber='+page+'&sortColumns=WEIGHT&sortTypes=-1';
+    var d=null;
+    try{ d=await dcGet(u); }catch(e){ break; }
+    var arr=(d && d.success && d.result && d.result.data) || [];
+    if(!arr.length) break;
+    for(var i=0;i<arr.length;i++) out.push(arr[i]);
+    if(arr.length<500) break;      /* 不满一页说明取完了 */
+    page++;
+  }
+  return out;
+}
+function membersToCodes(rows){
+  var out=[], seen={};
+  rows.forEach(function(r){
+    var c=String(r.SECURITY_CODE||'').trim();
+    if(!c || seen[c]) return;
+    seen[c]=1;
+    var rc=resolveCode(c);
+    if(rc){ rc.wt=r.WEIGHT; rc.nm=r.SECURITY_NAME_ABBR; out.push(rc); }
+  });
+  return out;
+}
+
 var SRES=[], CRES=[];
 async function runStock(){
-  var codes=parseCodes($('codes').value);
-  if(!codes.length){ $('progS').innerHTML='<span class="err">没解析出代码</span>'; return; }
+  var codes=[], idxName='';
+  var sel=$('idxSel');
+  if(sel && sel.value!==''){
+    var t=parseInt(sel.value,10), info=null;
+    INDICES.forEach(function(x){ if(x[0]===t) info=x; });
+    idxName = info? info[1] : ('指数'+t);
+    $('progS').textContent='取 '+idxName+' 成分股…';
+    var mem=[];
+    try{ mem=await indexMembers(t); }
+    catch(e){ $('progS').innerHTML='<span class="err">取成分股失败：'+esc((e&&e.message)||String(e))+'</span>'; return; }
+    codes=membersToCodes(mem);
+    if(!codes.length){ $('progS').innerHTML='<span class="err">成分股为空</span>'; return; }
+    $('progS').textContent=idxName+' 共 '+codes.length+' 只，开始逐只计算…';
+  } else {
+    codes=parseCodes($('codes').value);
+    if(!codes.length){ $('progS').innerHTML='<span class="err">没解析出代码</span>'; return; }
+  }
   readCrit(S_CRIT,'sk');
   var A=1.0, B=240, lmt=500;
   var thr=Math.max(0,Math.min(100, parseInt($('thrS').value)||80));
@@ -1367,7 +1438,8 @@ async function runStock(){
   var today=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0');
   for(var i=0;i<codes.length;i++){
     var rc=codes[i];
-    $('progS').textContent='抓取 '+rc.raw+'（'+rc.market+'）…（'+(i+1)+' / '+codes.length+'）';
+    $('progS').textContent=(idxName? (idxName+' · '):'')+'抓取 '+rc.raw
+      +'（'+rc.market+'）…（'+(i+1)+' / '+codes.length+'）';
     try{
       var g=await getKline(rc,lmt);
       var rows=g.rows, partial=false, use=rows;
@@ -1379,7 +1451,7 @@ async function runStock(){
         if(!R) SRES.push({code:rc.digits,name:g.name,mk:rc.mk,market:rc.market,err:'数据不足或分布为空'});
         else{
           var GT=gateOf(use.map(function(r){ return r.c; }));
-          var o=Object.assign({code:rc.digits,name:g.name,src:g.src,mk:rc.mk,market:rc.market,
+          var o=Object.assign({code:rc.digits,name:(rc.nm||g.name),src:g.src,mk:rc.mk,market:rc.market,wt:rc.wt,
             fs0:fs0,n:use.length,partial:partial,pe:g.pe,pb:g.pb,mcap:g.mcap}, R, structOf(R), GT);
           o.coord=coordOf(o);
           o.bars=use.slice(-120).map(function(x){ return {d:x.d,o:x.o,h:x.h,l:x.l,c:x.c,v:x.v}; });
@@ -1403,11 +1475,11 @@ async function runStock(){
       }
     }catch(e){ SRES.push({code:rc.digits,name:'—',mk:rc.mk,market:rc.market,err:(e&&e.message)||String(e)}); }
     $('pbarS').style.width=((i+1)/codes.length*100).toFixed(0)+'%';
-    if(i<codes.length-1) await new Promise(function(r){ setTimeout(r,140); });
+    if(i<codes.length-1) await new Promise(function(r){ setTimeout(r, idxName? 40 : 140); });
   }
   renderStock(thr);
   $('runS').disabled=false;
-  $('progS').textContent='完成：'+codes.length+' 只';
+  $('progS').textContent='完成：'+codes.length+' 只'+(idxName? ('（'+idxName+' 成分股）'):'');
   $('outS').classList.remove('hide');
 }
 
@@ -1675,6 +1747,27 @@ function boot(){
     if(c){
       c.value = load(LS_POOL) || DEF_POOL;
       c.addEventListener('input', function(){ save(LS_POOL, c.value); });
+    }
+    var sel=$('idxSel');
+    if(sel){
+      var h='<option value="">自定义股票池（用下方折叠块里的代码）</option>';
+      INDICES.forEach(function(x){
+        h+='<option value="'+x[0]+'"'+(x[0]===1?' selected':'')+'>'+x[1]+'（'+x[2]+' 只）</option>';
+      });
+      sel.innerHTML=h;
+      var hint=$('idxHint');
+      function syncHint(){
+        var v=sel.value, t=null;
+        INDICES.forEach(function(x){ if(String(x[0])===v) t=x; });
+        if(!hint) return;
+        if(!t){ hint.innerHTML='用折叠块里的代码，自己维护池子。'; return; }
+        var sec=Math.round(t[2]*0.42);   /* 实测每只约 0.42 秒（含限速） */
+        hint.innerHTML='自动扫 <b>'+t[1]+'</b> 的全部 <b>'+t[2]+'</b> 只成分股，'
+          +'每只算一遍筹码位阶与 MACD，预计 <b>'+(sec>=60? (sec/60).toFixed(1)+' 分钟' : sec+' 秒')+'</b>。'
+          +'成分股取自东财，按权重从大到小。';
+      }
+      sel.addEventListener('change', syncHint);
+      syncHint();
     }
     on('runS','click', function(){ runStock(); });
     on('demoS','click', function(){ if($('codes')) $('codes').value=DEF_POOL; save(LS_POOL,DEF_POOL); });
