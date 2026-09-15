@@ -592,13 +592,19 @@ function secucodeOf(rc){
 const RP_A={org:'RPT_F10_BASIC_ORGINFO', mainop:'RPT_F10_FN_MAINOP', theme:'RPT_F10_CORETHEME_BOARDTYPE',
   fin:'RPT_F10_FINANCE_MAINFINADATA', num:'RPT_F10_EH_HOLDERNUM',
   free:'RPT_F10_EH_FREEHOLDERS', org2:'RPT_MAIN_ORGHOLD'};
-const RP_H={org:'RPT_HKF10_INFO_ORGPROFILE', fin:'RPT_HKF10_FN_MAININDICATOR'};
-const RP_U={org:'RPT_USF10_INFO_ORGPROFILE'};
+const RP_H={org:'RPT_HKF10_INFO_ORGPROFILE', fin:'RPT_HKF10_FN_MAININDICATOR',
+  inc:'RPT_HKF10_FN_INCOME', bal:'RPT_HKF10_FN_BALANCE'};
+const RP_U={org:'RPT_USF10_INFO_ORGPROFILE', inc:'RPT_USF10_FN_INCOME', bal:'RPT_USF10_FN_BALANCE'};
 
 /* 各市场拉哪些表 */
 function planOf_(rc){
-  if(rc.mk==='hk') return [['org',RP_H.org,null,5],['fin',RP_H.fin,'REPORT_DATE',12]];
-  if(rc.mk==='us') return [['org',RP_U.org,null,5]];
+  /* 港股／美股：概况 + 主要指标（仅港股）+ 利润表 + 资产负债表。
+     ⚠ 港美股这两张表是「长表」——一行一个科目，靠 ITEM_NAME（中文科目名）识别，
+       必须自行透视成宽表，才能跟 A 股同口径对比。 */
+  if(rc.mk==='hk') return [['org',RP_H.org,null,5],['fin',RP_H.fin,'REPORT_DATE',12],
+                           ['inc',RP_H.inc,'REPORT_DATE',400],['bal',RP_H.bal,'REPORT_DATE',400]];
+  if(rc.mk==='us') return [['org',RP_U.org,null,5],
+                           ['inc',RP_U.inc,'REPORT_DATE',400],['bal',RP_U.bal,'REPORT_DATE',400]];
   return [['org',RP_A.org,null,5],['mainop',RP_A.mainop,'REPORT_DATE',200],
           ['theme',RP_A.theme,null,60],['fin',RP_A.fin,'REPORT_DATE',12],
           ['num',RP_A.num,'END_DATE',8],['free',RP_A.free,'END_DATE',200],
@@ -666,6 +672,65 @@ function normFin(rows, mk){
 
 /* ══════ 结论生成器：每块先给一句人话，数据放它后面 ══════ */
 function hi(x, cls){ return '<b'+(cls?(' class="'+cls+'"'):'')+'>'+x+'</b>'; }
+
+/* ══════ 港美股长表 → 关键科目 ══════
+   这两张表每行一个科目，ITEM_NAME 是中文科目名（实测美股/港股都有）。
+   用正则匹配科目名，比硬编码 STD_ITEM_CODE 稳 —— 代码各市场不统一，名字基本一致。 */
+const STMT_KEYS=[
+  ['rev',  /^(营业收入|营运收入|营业总收入|主营收入|总收入)$/],
+  ['cost', /^(主营成本|营业成本|营运支出|营业总成本)$/],
+  ['gross',/^(毛利|毛利润)$/],
+  ['np',   /(归属于普通股股东净利润|归属于母公司(所有)?者?的?净利润|除税后溢利|净利润|期内溢利)$/],
+  ['eps',  /(摊薄每股收益|基本每股收益|每股摊薄盈利|每股基本盈利|每股收益)/],
+  ['asset',/^(总资产|资产总计|资产合计)$/],
+  ['liab', /^(总负债|负债合计|负债总计)$/],
+  ['equity',/^(股东权益合计|所有者权益(合计)?|归属于母公司股东权益合计|总权益)$/],
+  ['cash', /^(现金及现金等价物|现金及等价物|货币资金)$/],
+  ['inv',  /^(存货|库存)$/],
+  ['recv', /^(应收账款|应收帐款|应收票据及应收账款)$/]
+];
+/* 取「去年同期」。⚠ 报告期列表里年报送、半年报、季报混在一起，
+   直接拿相邻两期比会出现「半年报 ÷ 年报」这种荒唐结果（实测腾讯显示成 +104%）。
+   做法：找日期最接近「本期日期减一年」的那一期，容差 20 天 —— 能兼容苹果那种
+   财年错位（2026-06-27 对 2025-06-28）。找不到就返回 null，宁可不给也不给错的。 */
+function yoyOf(periods, d){
+  const t=new Date(d+'T00:00:00');
+  if(isNaN(t.getTime())) return null;
+  const want=new Date(t); want.setFullYear(want.getFullYear()-1);
+  let best=null, bestGap=1e9;
+  periods.forEach(function(p){
+    if(p===d) return;
+    const q=new Date(p+'T00:00:00');
+    if(isNaN(q.getTime())) return;
+    const gap=Math.abs(q-want)/86400000;
+    if(gap<bestGap){ bestGap=gap; best=p; }
+  });
+  return (best && bestGap<=20)? best : null;
+}
+function pivotStmt(rows){
+  if(!rows||!rows.length) return [];
+  const by={}, order=[];
+  rows.forEach(function(r){
+    const d=String(r.REPORT_DATE||'').slice(0,10);
+    if(!d) return;
+    if(!by[d]){ by[d]={}; order.push(d); }
+    const nm=String(r.ITEM_NAME||'').trim();
+    if(!nm) return;
+    const v=parseFloat(r.AMOUNT);
+    if(!isFinite(v)) return;
+    by[d][nm]=v;
+  });
+  order.sort(function(a,b){ return a<b? 1 : (a>b? -1 : 0); });
+  return order.map(function(d){
+    const m=by[d], o={d:d};
+    STMT_KEYS.forEach(function(pair){
+      if(o[pair[0]]!==undefined) return;
+      for(const nm in m){ if(pair[1].test(nm)){ o[pair[0]]=m[nm]; o[pair[0]+'_nm']=nm; break; } }
+    });
+    if(o.gross==null && o.rev!=null && o.cost!=null) o.gross=o.rev-o.cost;   /* 没现成毛利就自己减 */
+    return o;
+  });
+}
 
 /* ① 主营构成 —— 钱从哪来、集不集中、赚不赚钱 */
 function concMainop(rows){
@@ -1000,11 +1065,75 @@ function blkHold(o, rc){
     note:'机构类型代码取自行情商字段：「合计」经家数相加验证，其余为惯例推断（cf I）。'};
 }
 
+/* ── 港美股：财务报表要点（长表透视后按 A 股口径摆出来） ── */
+function blkStmt(inc, bal, rc){
+  if(rc.mk!=='hk' && rc.mk!=='us') return null;
+  const pi=pivotStmt(inc), pb=pivotStmt(bal);
+  if(!pi.length && !pb.length) return null;
+  const dates=[];
+  pi.forEach(function(r){ if(dates.indexOf(r.d)<0) dates.push(r.d); });
+  pb.forEach(function(r){ if(dates.indexOf(r.d)<0) dates.push(r.d); });
+  dates.sort(function(a,b){ return a<b? 1 : (a>b? -1 : 0); });
+  const show=dates.slice(0,6);
+  const gi={}, gb={};
+  pi.forEach(function(r){ gi[r.d]=r; }); pb.forEach(function(r){ gb[r.d]=r; });
+  const BAL=['asset','liab','equity','cash','inv','recv'];
+  const c0=gi[show[0]]||{}, b0=gb[show[0]]||{};
+  const _yp=dates.filter(function(d){ return gi[d]; }).map(function(d){ return d; });
+  const _yo=yoyOf(_yp, show[0]);
+  const c1=_yo? (gi[_yo]||{}) : {};
+  const out=[];
+  if(c0.rev!=null){
+    let s='最新报告期 '+fmtDate(show[0])+' 收入 '+hi(yi(c0.rev));
+    if(c1.rev!=null && c1.rev>0){
+      const g=(c0.rev/c1.rev-1)*100;
+      s+='，较去年同期（'+fmtDate(_yo)+'）'+hi((g>0?'+':'')+g.toFixed(1)+'%', g>0?'n':'dn');
+    } else {
+      s+='（<span style="font-size:.8rem;color:var(--faint)">找不到去年同期，不给同比</span>）';
+    }
+    s+='。';
+    if(c0.np!=null){
+      s+=' 净利 '+hi(yi(c0.np));
+      if(c0.rev>0) s+='，净利率 '+hi((c0.np/c0.rev*100).toFixed(1)+'%');
+      s+='。';
+    }
+    if(c0.gross!=null && c0.rev>0) s+=' 毛利率 '+hi((c0.gross/c0.rev*100).toFixed(1)+'%')+'。';
+    out.push(s);
+  }
+  if(b0.asset!=null && b0.liab!=null && b0.asset>0){
+    const dar=b0.liab/b0.asset*100;
+    out.push('资产 '+hi(yi(b0.asset))+'，负债 '+hi(yi(b0.liab))+'，资产负债率 '+hi(dar.toFixed(1)+'%')
+      +(dar>=70? '，<em>杠杆偏重</em>。' : (dar<=40? '，<em>负债轻</em>。' : '，中等。')));
+  }
+  if(b0.cash!=null) out.push('账上现金及等价物 '+hi(yi(b0.cash))+'。');
+  if(!out.length) return null;
+  const ROWS=[['营业收入','rev'],['营业成本','cost'],['毛利','gross'],['净利润','np'],
+              ['每股收益','eps'],['总资产','asset'],['总负债','liab'],['股东权益','equity'],
+              ['现金及等价物','cash'],['存货','inv'],['应收账款','recv']];
+  let b='<div class="dlab">关键科目（近 '+show.length+' 期 · 按报告期）</div>'
+    +'<div class="tw"><table><thead><tr><th>科目</th>'
+    + show.map(function(d){ return '<th style="text-align:right">'+fmtDate(d)+'</th>'; }).join('')
+    +'</tr></thead><tbody>';
+  ROWS.forEach(function(r){
+    const isBal=(BAL.indexOf(r[1])>=0);
+    const vals=show.map(function(d){ const src=isBal? gb[d] : gi[d]; return src? src[r[1]] : null; });
+    if(vals.every(function(v){ return v==null; })) return;   /* 整行都没有就整行不画 */
+    b+='<tr><td><b>'+esc(r[0])+'</b></td>'
+      + vals.map(function(v){ return '<td class="num">'+(v==null?'—':(r[1]==='eps'? v.toFixed(2) : yi(v)))+'</td>'; }).join('')
+      +'</tr>';
+  });
+  b+='</tbody></table></div>';
+  return {t:'财务报表要点', cf:'E', v:out.join(' '), b:b,
+    note:'港美股这两张表在数据源里是「长表」（一行一个科目），这里按中文科目名透视成宽表并与 A 股同口径排列。'
+      +'科目名各公司略有差异（如「营运收入」对「营业收入」），匹配不到就留空 —— 不猜。'};
+}
+
 /* ── 整卡：编号跟着实际渲染的块走 ── */
 const NUMC=['①','②','③','④','⑤','⑥'];
 function f10card(r, rc){
   const o=r.f10||{};
-  const blks=[blkMainop(o.mainop), blkTheme(o,o.theme,rc), blkFin(normFin(o.fin,rc.mk), rc), blkHold(o,rc)]
+  const blks=[blkMainop(o.mainop), blkTheme(o,o.theme,rc), blkFin(normFin(o.fin,rc.mk), rc),
+              blkStmt(o.inc, o.bal, rc), blkHold(o,rc)]
               .filter(function(x){ return !!x; });
   const nmTxt = (r.name && r.name!==rc.digits)? r.name : (r.name||rc.digits);
   let h='<div class="f10"><div class="f10-h">'
